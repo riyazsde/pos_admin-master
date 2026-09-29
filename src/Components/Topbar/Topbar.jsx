@@ -251,18 +251,8 @@ const Topbar = ({ onMenuClick }) => {
                       </button>
                     </div>
 
-                    {/* Sign Out */}
-                    <div className="p-2 border-t border-gray-100">
-                      <button
-                        onClick={handleSignOut}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
-                          <LogOut className="w-4 h-4" />
-                        </div>
-                        <span className="font-medium">Sign Out</span>
-                      </button>
-                    </div>
+                    
+                   
                   </div>
                 </>
               )}
@@ -340,7 +330,7 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       )}
 
-      {/* Profile Modal (UPDATED with real data) */}
+    
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
