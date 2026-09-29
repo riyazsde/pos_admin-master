@@ -1,13 +1,15 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+// Auth pages
 import SignInPage from '../../Components/SignIn/SignIn';
 import ForgotPassword from '../../Components/SignIn/ForgotPassword';
 import VerifyOtp from '../../Components/SignIn/VerifyOtp';
 import SetNewPassword from '../../Components/SignIn/SetNewPassword';
 import PasswordSuccess from '../../Components/SignIn/PasswordSuccess';
-import AdminPanel from '../AdminPanel/withAdminLayout';
+
+// Protected pages
 import Dashboard from '../Dashboard/Dashboard';
-import TopPerformers from '../../Components/Dashboard/TopPerformers';
 import TopPerformersMain from '../../Components/TopPerformers/TopPerformersMain';
 import Clients from '../../Components/Clients/Clients';
 import CreateClientForm from '../../Components/Clients/CreateClientForm';
@@ -31,70 +33,52 @@ import DateTimeSettings from '../../Components/Settings/DateTimeSettings';
 import CurrencySettings from '../../Components/Settings/CurrencySettings';
 import BillingHistory from '../../Components/Settings/BillingHistory';
 
-
-
+// Guards + 404
+import NotFound from '../NotFound/NotFound';
+import ProtectedRoute from '../../Routes/ProtectedRoute';
+import PublicRoute from '../../Routes/PublicRoute';
 
 const AppRoutes = () => {
-    return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<SignInPage />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/verify-otp" element={<VerifyOtp />} />
-                <Route path="/set-new-password" element={<SetNewPassword />} />
+  return (
+    <Router>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<PublicRoute><SignInPage /></PublicRoute>} />
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/verify-otp" element={<PublicRoute><VerifyOtp /></PublicRoute>} />
+        <Route path="/set-new-password" element={<PublicRoute><SetNewPassword /></PublicRoute>} />
+        <Route path="/password-success" element={<PublicRoute><PasswordSuccess /></PublicRoute>} />
 
+        {/* Protected routes */}
+        <Route path="/Dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/top-performers-list" element={<ProtectedRoute><TopPerformersMain /></ProtectedRoute>} />
+        <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+        <Route path="/create-clients" element={<ProtectedRoute><CreateClientForm /></ProtectedRoute>} />
+        <Route path="/client-details" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
+        <Route path="/renew-management" element={<ProtectedRoute><SubscriptionManagement /></ProtectedRoute>} />
+        <Route path="/subscription-list" element={<ProtectedRoute><SubscriptionTable /></ProtectedRoute>} />
+        <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
+        <Route path="/audit-log" element={<ProtectedRoute><AuditLogTable /></ProtectedRoute>} />
+        <Route path="/supports" element={<ProtectedRoute><SupportsPage /></ProtectedRoute>} />
+        <Route path="/ticket-details" element={<ProtectedRoute><TicketDetails /></ProtectedRoute>} />
+        <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+        <Route path="/pos-device" element={<ProtectedRoute><PosDevice /></ProtectedRoute>} />
+        <Route path="/pos-device-history" element={<ProtectedRoute><HardwareDeviceHistory /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+        <Route path="/sub-admin" element={<ProtectedRoute><SubAdminTable /></ProtectedRoute>} />
+        <Route path="/change-password" element={<ProtectedRoute><ChangePasswordForm /></ProtectedRoute>} />
+        <Route path="/account-management" element={<ProtectedRoute><AccountManagement /></ProtectedRoute>} />
+        <Route path="/device" element={<ProtectedRoute><DeviceActivity /></ProtectedRoute>} />
+        <Route path="/language" element={<ProtectedRoute><LanguageSettings /></ProtectedRoute>} />
+        <Route path="/date-time" element={<ProtectedRoute><DateTimeSettings /></ProtectedRoute>} />
+        <Route path="/currency" element={<ProtectedRoute><CurrencySettings /></ProtectedRoute>} />
+        <Route path="/billing-history" element={<ProtectedRoute><BillingHistory /></ProtectedRoute>} />
 
-                <Route path="/password-success" element={<PasswordSuccess />} />
-                <Route path="/Dashboard" element={< Dashboard />} />
-                <Route path="/top-performers-list" element={< TopPerformersMain />} />
-                <Route path="/clients" element={< Clients />} />
-                <Route path="/create-clients" element={< CreateClientForm />} />
-                <Route path="/client-details" element={< ClientDetails />} />
-                <Route path="/renew-management" element={< SubscriptionManagement />} />
-                <Route path="/subscription-list" element={< SubscriptionTable />} />
-                <Route path="/report" element={< Report />} />
-                <Route path="/audit-log" element={< AuditLogTable />} />
-                <Route path="/supports" element={< SupportsPage />} />
-                <Route path="/ticket-details" element={< TicketDetails />} />
-                <Route path="/notifications" element={< Notifications />} />
-                <Route path="/pos-device" element={< PosDevice />} />
-                <Route path="/pos-device-history" element={< HardwareDeviceHistory />} />
-                <Route path="/settings" element={< AccountSettings />} />
-                <Route path="/sub-admin" element={< SubAdminTable />} />
-                <Route path="/change-password" element={< ChangePasswordForm />} />
-                <Route path="/account-management" element={< AccountManagement />} />
-                <Route path="/device" element={< DeviceActivity />} />
-                <Route path="/language" element={< LanguageSettings />} />
-                <Route path="/date-time" element={< DateTimeSettings />} />
-                <Route path="/currency" element={< CurrencySettings />} />
-                                <Route path="/currency" element={< CurrencySettings />} />
-                <Route path="/billing-history" element={< BillingHistory  />} />
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            </Routes>
-        </Router>
-    );
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
+  );
 };
 
 export default AppRoutes;

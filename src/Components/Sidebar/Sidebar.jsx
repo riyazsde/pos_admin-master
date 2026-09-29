@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../assets/Images/Home/logo.png';
 import profileAvatar from '../../assets/Images/admin/SidebarIcon/profileAvatar.png';
-import SignOutModal from './SignOutModal'; // Adjust path as needed
+import SignOutModal from './SignOutModal';
 import image1 from '../../assets/Images/admin/SidebarIcon/1.png';
 import image2 from '../../assets/Images/admin/SidebarIcon/2.png';
 import image3 from '../../assets/Images/admin/SidebarIcon/3.png';
@@ -13,13 +13,15 @@ import image7 from '../../assets/Images/admin/SidebarIcon/7.png';
 import image8 from '../../assets/Images/admin/SidebarIcon/8.png';
 import image9 from '../../assets/Images/admin/SidebarIcon/9.png';
 
+import { authService } from '../../Services/apiService';
+
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSignOutOpen, setSignOutOpen] = useState(false);
 
   const menuItems = [
-    { icon: image1, label: 'Dashboard', route: '/dashboard' },
+    { icon: image1, label: 'Dashboard', route: '/Dashboard' },
     { icon: image2, label: 'Clients', route: '/clients' },
     { icon: image3, label: 'Subscriptions', route: '/subscription-list' },
     { icon: image4, label: 'Reports', route: '/report' },
@@ -38,41 +40,44 @@ export default function Sidebar() {
     }
   };
 
-  const handleConfirmSignOut = () => {
-    setSignOutOpen(false);
-    navigate('/');
+  const handleConfirmSignOut = async () => {
+    try {
+      await authService.logout(); // Calls API + clears storage
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setSignOutOpen(false);
+      navigate('/', { replace: true });
+    }
   };
 
   return (
     <>
       <div className="fixed left-0 top-0 w-[250px] sm:w-[280px] md:w-[250px] h-screen bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] flex flex-col z-40 overflow-hidden">
-        
-        {/* Scrollable Content Container */}
         <div className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-          
-          {/* Logo */}
           <div className="flex items-center justify-center gap-[8.83px] mt-6 sm:mt-8 md:mt-10 mb-8 sm:mb-12 md:mb-16 flex-shrink-0">
-            <img src={logo} className='w-[100px] sm:w-[120px] h-[16px] sm:h-[20px]' alt="Logo" />
+            <img src={logo} className="w-[100px] sm:w-[120px] h-[16px] sm:h-[20px]" alt="Logo" />
           </div>
 
-          {/* Profile */}
           <div className="flex justify-center mb-8 sm:mb-12 md:mb-16 px-4 flex-shrink-0">
             <div className="flex items-center gap-[12px] sm:gap-[15.24px] px-3 sm:px-4 py-[6px] sm:py-[7.62px] bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] rounded-[32px] w-full max-w-[148.57px] h-[50px] sm:h-[57.24px]">
               <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0">
                 <img src={profileAvatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
               </div>
               <div className="flex flex-col min-w-0 flex-1">
-                <p className="text-black font-medium text-sm sm:text-base leading-5 sm:leading-6 font-['Manrope'] truncate">Jimmy</p>
-                <p className="text-black font-light text-xs leading-[16px] sm:leading-[18px] font-['Manrope']">Admin</p>
+                <p className="text-black font-medium text-sm sm:text-base leading-5 sm:leading-6 font-['Manrope'] truncate">
+                  Jimmy
+                </p>
+                <p className="text-black font-light text-xs leading-[16px] sm:leading-[18px] font-['Manrope']">
+                  Admin
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Navigation */}
           <div className="flex flex-col gap-3 sm:gap-4 md:gap-[19px] px-3 sm:px-4 md:px-[20.5px] pb-6 flex-1">
             {menuItems.map(({ icon, label, route }, idx) => {
               const isSelected = location.pathname === route;
-
               return (
                 <div
                   key={idx}
@@ -104,7 +109,6 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* Sign Out Modal */}
       <SignOutModal
         isOpen={isSignOutOpen}
         onClose={() => setSignOutOpen(false)}

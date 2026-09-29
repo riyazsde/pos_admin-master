@@ -5,7 +5,8 @@ import Gradient from '../../assets/Images/Home/Gradient.png';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
-const BASE_URL = import.meta.env.VITE_BASEL_SERVER_URL;
+import { authService } from '../../Services/apiService';
+import { isAuthenticated } from '../../utils/authStorage';
 
 export default function SignInPage() {
   const navigate = useNavigate();
@@ -26,9 +27,16 @@ export default function SignInPage() {
     { label: 'French', code: 'fr' },
     { label: 'English', code: 'us' },
   ];
-
   const currentLang = languages.find((l) => l.label === language);
 
+  // If already logged in, redirect away from sign-in page
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/Dashboard', { replace: true });
+    }
+  }, [navigate]);
+
+  // Signup success toast
   useEffect(() => {
     if (location.state?.signupSuccess) {
       toast.success('Account created successfully!', {
@@ -39,6 +47,7 @@ export default function SignInPage() {
     }
   }, [location.state]);
 
+  // Close language dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (langRef.current && !langRef.current.contains(e.target)) {
@@ -51,87 +60,45 @@ export default function SignInPage() {
 
   const tabs = ['Restaurant', 'Employee', 'Admin'];
 
-  // 🔐 Map tab → API endpoint
-  const getLoginEndpoint = (type) => {
-    switch (type) {
-      case 'Admin':
-        return '/api/v1/user/login-admin';
-      case 'Restaurant':
-        return '/api/v1/user/login-restaurant';
-      case 'Employee':
-        return '/api/v1/user/login-employee';
-      default:
-        return '/api/v1/user/login-admin';
-    }
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
+    const toastId = toast.loading('Signing you in...');
 
-  const toastId = toast.loading('Signing you in...');
-
-  try {
-    const endpoint = getLoginEndpoint(userType);
-
-    const res = await fetch(`${BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    try {
+      const { user } = await authService.login(userType, {
         adminId: email,
         password,
         rememberMe,
-      }),
-    });
+      });
 
-    const payload = await res.json().catch(() => ({}));
+      toast.success('Login successful!', {
+        id: toastId,
+        description: `Welcome back, ${user?.Name || userType}.`,
+        duration: 2000,
+      });
 
-    if (!res.ok || payload?.success === false) {
-      throw new Error(
-        payload?.message || payload?.error || `Login failed (${res.status})`
-      );
+      const redirectTo = location.state?.from?.pathname || '/Dashboard';
+
+      setTimeout(() => {
+        navigate(redirectTo, { replace: true, state: { justLoggedIn: true } });
+      }, 1000);
+    } catch (err) {
+      console.error('Login error:', err);
+      toast.error('Login failed', {
+        id: toastId,
+        description:
+          err?.code === 'ERR_NETWORK' || err?.message === 'Failed to fetch'
+            ? 'Server is unavailable. Please try again later.'
+            : err?.response?.data?.message ||
+              err?.message ||
+              'Please check your credentials.',
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    // ✅ Token lives at payload.data.token
-    const token = payload?.data?.token;
-    const user  = payload?.data?.user;
-
-    if (!token) {
-      throw new Error('No token received from server');
-    }
-
-    // Persist based on rememberMe
-    const storage = rememberMe ? localStorage : sessionStorage;
-    storage.setItem('token', token);
-    storage.setItem('user', JSON.stringify(user ?? {}));
-
-    // Also store expiry if you want auto-logout later
-    // (JWT exp is 30 days per the payload: 1793259974)
-    const decoded = JSON.parse(atob(token.split('.')[1]));
-    storage.setItem('tokenExp', String(decoded.exp * 1000));
-
-    toast.success('Login successful!', {
-      id: toastId,
-      description: `Welcome back, ${user?.Name || userType}.`,
-      duration: 2000,
-    });
-
-    setTimeout(() => {
-      navigate('/Dashboard', { state: { justLoggedIn: true } });
-    }, 1200);
-  } catch (err) {
-    console.error('Login error:', err);
-    toast.error('Login failed', {
-      id: toastId,
-      description:
-        err?.message === 'Failed to fetch'
-          ? 'Server is unavailable. Please try again later.'
-          : err?.message || 'Please check your credentials.',
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
 
   return (
     <div className="relative w-full h-auto min-h-screen bg-white overflow-hidden">

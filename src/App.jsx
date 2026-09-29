@@ -17,7 +17,7 @@ function App() {
             zIndex: 9999,
           },
         }}
-      />note
+      />
       <AppRoutes />
     </div>
   )

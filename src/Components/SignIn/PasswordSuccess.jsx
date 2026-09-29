@@ -1,23 +1,23 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '../../assets/Images/Home/logo.png'; // adjust if needed
+import logo from '../../assets/Images/Home/logo.png';
 import Gradient from '../../assets/Images/Home/Gradient.png';
-import tickImg from '../../assets/Images/Home/tick.png'
+import tickImg from '../../assets/Images/Home/tick.png';
+
 export default function PasswordSuccess() {
   const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       navigate('/');
-    }, 3000); // redirect after 3 seconds
-
+    }, 3000);
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
     <div className="relative w-screen h-screen bg-white overflow-hidden">
       <div className="relative z-10 flex h-screen w-full">
-        {/* Left Side — keep same as SetNewPassword */}
+        {/* Left Side */}
         <div
           className="flex-1 flex flex-col justify-center px-16 lg:px-32"
           style={{
@@ -39,20 +39,24 @@ export default function PasswordSuccess() {
               <div className="flex items-center gap-10">
                 <div className="flex items-center gap-3 justify-between">
                   <span className="font-medium text-xl">English</span>
-                  <img src="https://flagcdn.com/us.svg" alt="USA Flag" className="w-8 h-5 rounded-sm shadow-sm object-cover" />
+                  <img
+                    src="https://flagcdn.com/us.svg"
+                    alt="USA Flag"
+                    className="w-8 h-5 rounded-sm shadow-sm object-cover"
+                  />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* ✅ Right Side — success message */}
+        {/* Right Side */}
         <div className="w-full max-w-2xl flex items-center justify-center bg-white">
           <div className="text-center px-4">
             <img src={logo} alt="Triaxx Logo" className="h-[40px] mx-auto mb-4" />
 
             <div className="flex justify-center items-center gap-2 mb-3">
-              <img src={tickImg}/>
+              <img src={tickImg} alt="Success" />
               <h2 className="text-3xl font-bold text-black">All done !</h2>
             </div>
 
