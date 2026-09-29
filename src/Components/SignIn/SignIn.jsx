@@ -6,9 +6,11 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { authService } from '../../Services/apiService';
-import { isAuthenticated } from '../../utils/authStorage';
+import { useAppSelector } from '../../Store/hooks';
 
 export default function SignInPage() {
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -29,12 +31,11 @@ export default function SignInPage() {
   ];
   const currentLang = languages.find((l) => l.label === language);
 
-  // If already logged in, redirect away from sign-in page
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/Dashboard', { replace: true });
-    }
-  }, [navigate]);
+ useEffect(() => {
+  if (isAuthenticated) {
+    navigate('/Dashboard', { replace: true });
+  }
+}, [isAuthenticated, navigate]);
 
   // Signup success toast
   useEffect(() => {

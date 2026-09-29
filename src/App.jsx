@@ -1,13 +1,13 @@
-import React from 'react'
-import Sign from './Views/Sign/Sign'
-import ForgotPassword from './Components/SignIn/ForgotPassword'
-import AppRoutes from './Views/AppRoutes/AppRoutes'
-import { Toaster, toast } from 'sonner';
+// src/App.jsx
+
+import React from 'react';
+import { Toaster } from 'sonner';
+import AppRoutes from './Views/AppRoutes/AppRoutes';
 
 function App() {
   return (
     <div>
-         <Toaster
+      <Toaster
         position="top-right"
         richColors
         closeButton
@@ -20,7 +20,7 @@ function App() {
       />
       <AppRoutes />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

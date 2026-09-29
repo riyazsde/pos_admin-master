@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { isAuthenticated } from '../utils/authStorage';
+import { useAppSelector } from '../Store/hooks';
 
 const PublicRoute = ({ children }) => {
-  // If user has a valid token (localStorage OR sessionStorage) → send to dashboard
-  if (isAuthenticated()) {
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+
+  if (isAuthenticated) {
     return <Navigate to="/Dashboard" replace />;
   }
 

@@ -1,7 +1,7 @@
 // src/Services/apiClient.js
 
 import axios from 'axios';
-import { getToken, clearAuth } from '../utils/authStorage';
+import { getToken } from '../utils/authStorage';
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_BASEL_SERVER_URL,
@@ -9,7 +9,7 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach token from localStorage OR sessionStorage
+// ✅ Attach token
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -21,12 +21,17 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle 401 globally
+// ✅ Handle 401 globally — dispatch logout action to Redux
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      clearAuth();
+      // Lazy import to avoid circular dependency
+      const { store } = await import('../Store/store');
+      const { logoutSuccess } = await import('../Store/Features/auth/authSlice');
+
+      store.dispatch(logoutSuccess());
+
       if (window.location.pathname !== '/') {
         window.location.href = '/';
       }

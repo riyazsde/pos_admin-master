@@ -2,7 +2,9 @@
 
 import apiClient from './apiClient';
 import { ENDPOINTS } from './endpoints';
-import { saveAuth, clearAuth } from '../utils/authStorage';
+import { clearAuth } from '../utils/authStorage';
+import { store } from '../Store/store';
+import { loginSuccess, logoutSuccess } from '../Store/Features/auth/authSlice';
 
 /**
  * Auth Services
@@ -22,7 +24,10 @@ export const authService = {
 
     if (!token) throw new Error('No token received from server');
 
-    saveAuth(token, user, credentials.rememberMe);
+    // ✅ Dispatch Redux action (also saves to storage)
+    store.dispatch(
+      loginSuccess({ token, user, rememberMe: credentials.rememberMe })
+    );
 
     return { token, user };
   },
@@ -33,7 +38,8 @@ export const authService = {
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      clearAuth();
+      // ✅ Dispatch Redux action (also clears storage)
+      store.dispatch(logoutSuccess());
     }
   },
 };
@@ -42,10 +48,6 @@ export const authService = {
  * Forgot Password Services
  */
 export const forgotPasswordService = {
-  /**
-   * Send OTP to the user's registered email.
-   * @param {string} email
-   */
   sendOtp: async (email) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.SEND_OTP,
@@ -54,11 +56,6 @@ export const forgotPasswordService = {
     return response.data;
   },
 
-  /**
-   * Verify the OTP entered by the user.
-   * @param {string} email
-   * @param {string} otp
-   */
   verifyOtp: async (email, otp) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.VERIFY_OTP,
@@ -67,10 +64,6 @@ export const forgotPasswordService = {
     return response.data;
   },
 
-  /**
-   * Reset password after OTP is verified.
-   * @param {object} payload - { email, otp, newPassword, confirmPassword }
-   */
   resetPassword: async (payload) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.RESET_PASSWORD,
