@@ -1,0 +1,220 @@
+/* General Layout & Container Styles */
+.subscription-management-container {
+    min-height: 100vh;
+    padding: 64px; /* Equivalent to p-8 */
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
+}
+
+.main-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+    width: 946px;
+    margin: 0 auto;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    width: 100%;
+}
+
+.section-title {
+    width: 100%;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    font-size: 21px;
+    line-height: 150%;
+    color: rgba(0, 0, 0, 0.6);
+    margin: 0;
+}
+
+/* Subscription Plans Section */
+.plans-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+}
+
+.plan-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    flex: 1; /* Each plan takes equal space */
+}
+
+.plan-title-wrapper {
+    padding: 0 8px;
+}
+
+.plan-title {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 150%;
+    text-align: center;
+    color: #000000;
+}
+
+.plan-price-box {
+    position: relative;
+    width: 100%; /* Make it responsive to the container */
+    height: 56px;
+    background: linear-gradient(180deg, rgba(106, 27, 154, 0.1) 0%, rgba(211, 47, 47, 0.1) 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.plan-price {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 120%;
+    color: #000000;
+}
+
+/* Subscription Renewal Messages Section */
+.renewal-options-container {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 32px;
+    width: 100%;
+}
+
+.renewal-option-card {
+    position: relative;
+    flex: 1; /* Each card takes equal space */
+    height: 56px;
+    background: linear-gradient(180deg, rgba(106, 27, 154, 0.1) 0%, rgba(211, 47, 47, 0.1) 100%);
+    border-radius: 8px;
+}
+
+.renewal-option-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 100%;
+}
+
+.renewal-option-label {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 150%;
+    color: #000000;
+}
+
+/* Toggle Switch Component */
+.toggle-switch {
+    position: relative;
+    cursor: pointer;
+    width: 80px;
+    height: 31.24px;
+    background: linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%);
+    border-radius: 47.3373px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px; /* Provides space for text */
+}
+
+.toggle-circle {
+    position: absolute;
+    background-color: white;
+    transition: transform 0.3s ease-in-out;
+    width: 28.4px;
+    height: 28.4px;
+    top: calc(50% - 28.4px/2);
+    border-radius: 50%;
+}
+
+.toggle-circle.off {
+    transform: translateX(0px); /* Start position */
+}
+
+.toggle-circle.on {
+    transform: translateX(47px); /* Moved position */
+}
+
+.toggle-text {
+    transition: opacity 0.3s ease-in-out;
+    font-size: 16.0947px;
+    line-height: 21px;
+    color: white;
+}
+
+.on-text {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 300;
+    opacity: 0;
+}
+
+.off-text {
+    font-family: 'Segoe UI', sans-serif;
+    font-weight: 700;
+    opacity: 1;
+}
+
+.toggle-text.visible {
+    opacity: 1;
+}
+.toggle-text.hidden {
+    opacity: 0;
+}
+
+
+/* Renewal Message Box */
+.renewal-message-box {
+    position: relative;
+    width: 100%;
+    height: 127px;
+    background: linear-gradient(180deg, rgba(106, 27, 154, 0.1) 0%, rgba(211, 47, 47, 0.1) 100%);
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.renewal-message-text {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 0.435197px;
+    color: #000000;
+    margin: 0;
+}
+
+/* Save Changes Button */
+.save-button-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end; /* Aligns button to the right */
+    margin-top: 20px; /* Added space above the button */
+}
+
+.save-changes-btn {
+    padding: 12px 32px;
+    color: white;
+    font-family: 'Manrope', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%);
+    transition: opacity 0.3s ease;
+}
+
+.save-changes-btn:hover {
+    opacity: 0.9;
+}
