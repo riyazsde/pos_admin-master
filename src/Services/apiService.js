@@ -72,3 +72,19 @@ export const forgotPasswordService = {
     return response.data;
   },
 };
+export const dashboardService = {
+  /**
+   * Fetch the main dashboard data.
+   * Returns: { kpis, dailyActivity, monthlyGrowth, lastUpdated }
+   */
+  getMainDashboard: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN);
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load dashboard');
+    }
+
+    return payload?.data || null;
+  },
+};

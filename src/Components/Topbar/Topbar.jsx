@@ -8,29 +8,51 @@ import {
 import porfileImg from '../../assets/Images/admin/Avatar.png';
 import { useNavigate } from 'react-router-dom';
 
+// ✅ NEW: Redux + helpers + auth service
+import { useAppSelector } from '../../Store/hooks';
+import { authService } from '../../Services/apiService';
+import {
+  getFullName,
+  getRoleName,
+  getResponsibility,
+  getLocation,
+  getAvatar,
+  formatDate,
+} from '../../utils/userHelpers';
+
 const Topbar = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState('French');
+
+ 
+  const reduxUser = useAppSelector((state) => state.auth.user);
+
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    reduxUser?.Language_id?.Language_name || 'English'
+  );
+
   const navigate = useNavigate();
 
   const languages = ['French', 'English'];
 
-  // Mock user data
+  // ✅ Build the user object from Redux data
   const user = {
-    name: 'Jack Anderson',
-    email: 'jack.anderson@triaxx.com',
-    phone: '+1 (555) 123-4567',
-    role: 'Administrator',
-    location: 'New York, USA',
-    joined: 'Jan 15, 2024',
-    avatar: porfileImg,
+    name: getFullName(reduxUser),
+    email: reduxUser?.email || 'N/A',
+    phone: reduxUser?.phone || 'N/A',
+    role: getRoleName(reduxUser),
+    responsibility: getResponsibility(reduxUser),
+    location: getLocation(reduxUser),
+    joined: formatDate(reduxUser?.OnboardingDate),
+    avatar: getAvatar(reduxUser, porfileImg),
+    employeeId: reduxUser?.Employee_id || 'N/A',
+    gender: reduxUser?.gender || 'N/A',
   };
 
-  // Mock notification data
+  // Mock notification data (unchanged)
   const notifications = [
     { id: 1, type: 'subscription', title: 'Subscription Renewal Due Soon', desc: 'Downtown Bistro - 6 Months Plan renewing on June 30, 2026', tag: 'MEDIUM', time: '4 minutes ago', icon: CreditCard, color: 'bg-blue-100 text-blue-600' },
     { id: 2, type: 'device', title: 'Device Offline Alert', desc: 'POS Terminal at Harbor Grill has been offline for 24 hours', tag: 'HIGH', time: '10 minutes ago', icon: Wifi, color: 'bg-red-100 text-red-600' },
@@ -51,18 +73,21 @@ const Topbar = ({ onMenuClick }) => {
     }
   };
 
-  const handleSignOut = () => {
+  // ✅ UPDATED: Use authService (clears Redux + storage + calls API)
+  const handleSignOut = async () => {
     setIsProfileOpen(false);
-    // Clear any auth tokens here
-    localStorage.removeItem('token');
-    navigate('/login');
+    try {
+      await authService.logout();
+    } finally {
+      navigate('/', { replace: true });
+    }
   };
 
   return (
     <>
       <div className="w-full bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-4 md:px-6 py-4">
-          {/* Left Section - Menu and Search */}
+          {/* Left Section */}
           <div className="flex items-center space-x-4">
             <button
               onClick={onMenuClick}
@@ -149,14 +174,16 @@ const Topbar = ({ onMenuClick }) => {
                 <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white">
                   <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
                 </div>
-                <span className="text-sm font-medium text-gray-700 hidden sm:block">Jack</span>
+                {/* ✅ Shows first name from Redux */}
+                <span className="text-sm font-medium text-gray-700 hidden sm:block">
+                  {reduxUser?.Name || 'User'}
+                </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {/* Profile Dropdown Menu */}
               {isProfileOpen && (
                 <>
-                  {/* Click outside overlay */}
                   <div
                     className="fixed inset-0 z-40"
                     onClick={() => setIsProfileOpen(false)}
@@ -213,7 +240,7 @@ const Topbar = ({ onMenuClick }) => {
                       <button
                         onClick={() => {
                           setIsProfileOpen(false);
-                          navigate('/help');
+                          navigate('/supports');
                         }}
                         className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                       >
@@ -244,7 +271,7 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       </div>
 
-      {/* Notification Slide-Over Panel */}
+      {/* Notification Slide-Over (unchanged) */}
       {isNotificationOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div
@@ -313,7 +340,7 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       )}
 
-      {/* Profile Modal */}
+      {/* Profile Modal (UPDATED with real data) */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
@@ -322,7 +349,6 @@ const Topbar = ({ onMenuClick }) => {
           ></div>
 
           <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
-            {/* Cover / Header */}
             <div className="relative h-32 bg-gradient-to-r from-purple-500 via-purple-400 to-red-400">
               <button
                 onClick={() => setIsProfileModalOpen(false)}
@@ -335,7 +361,6 @@ const Topbar = ({ onMenuClick }) => {
               </button>
             </div>
 
-            {/* Avatar */}
             <div className="px-6 pb-6">
               <div className="flex items-end justify-between -mt-12 mb-4">
                 <div className="relative">
@@ -353,13 +378,15 @@ const Topbar = ({ onMenuClick }) => {
                 </button>
               </div>
 
-              {/* User Info */}
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-800">{user.name}</h2>
-                <p className="text-sm text-gray-500 mt-0.5">{user.role}</p>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {user.role}
+                  {user.responsibility && ` • ${user.responsibility}`}
+                </p>
               </div>
 
-              {/* Details Grid */}
+              {/* ✅ Real data from Redux */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                   <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
@@ -402,7 +429,6 @@ const Topbar = ({ onMenuClick }) => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="mt-6 flex gap-3">
                 <button
                   onClick={() => setIsProfileModalOpen(false)}
@@ -413,7 +439,7 @@ const Topbar = ({ onMenuClick }) => {
                 <button
                   onClick={() => {
                     setIsProfileModalOpen(false);
-                    navigate('/settings');
+                    navigate('/change-password');
                   }}
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-red-500 rounded-xl hover:shadow-md transition-all flex items-center justify-center gap-2"
                 >
@@ -426,7 +452,6 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       )}
 
-      {/* Animations */}
       <style jsx>{`
         @keyframes slide-in-right {
           from { transform: translateX(100%); }

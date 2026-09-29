@@ -1,16 +1,14 @@
 // src/Store/store.js
 
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../Store/Features/auth/authSlice';
+import authReducer from './Features/auth/authSlice';
+import dashboardReducer from './Features/dashboard/dashboardSlice';   // ✅ NEW
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    // Add more slices here as your app grows:
-    // products: productReducer,
-    // orders: orderReducer,
+    dashboard: dashboardReducer,   // ✅ NEW
   },
-  // Optional: disable serializable check if you store non-serializable data
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,

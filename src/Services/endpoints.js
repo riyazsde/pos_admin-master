@@ -15,12 +15,17 @@ export const ENDPOINTS = {
       }
     },
     LOGOUT: '/api/v1/user/logout',
-
-    // ✅ Forgot Password Flow
     FORGOT_PASSWORD: {
       SEND_OTP: '/api/v1/user/forget-password/send-otp',
       VERIFY_OTP: '/api/v1/user/forget-password/verify-otp',
       RESET_PASSWORD: '/api/v1/user/forget-password/reset-password',
+    },
+  },
+
+  // ✅ ADMIN section — MUST be present
+  ADMIN: {
+    DASHBOARD: {
+      MAIN: '/api/v1/admin/dashboard/main-dashboard',
     },
   },
 };
