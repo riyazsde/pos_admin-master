@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronDown,
   Wallet,
@@ -29,6 +29,9 @@ import {
   setDashboardLoading,
   setDashboardData,
   setDashboardError,
+  setCompleteDashboardLoading,
+  setCompleteDashboardData,
+  setCompleteDashboardError,
 } from '../../Store/Features/dashboard/dashboardSlice';
 import { dashboardService } from '../../Services/apiService';
 
@@ -44,15 +47,22 @@ const Dashboard = () => {
     monthlyGrowth,
     lastUpdated,
     loading,
-    error,
     hasLoaded,
+    completeDashboardLoaded,
   } = useAppSelector((state) => state.dashboard);
 
-  // ✅ Fetch dashboard on mount (only if not already loaded)
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      if (hasLoaded) return; // avoid re-fetch on every render
+  // ✅ Refs to prevent double-fetch in React StrictMode
+  const fetchedMain = useRef(false);
+  const fetchedComplete = useRef(false);
 
+  // ---------------------------------------------------------------------
+  // ✅ Fetch main dashboard (KPIs + charts)
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    if (hasLoaded || fetchedMain.current) return;
+    fetchedMain.current = true;
+
+    const fetchDashboard = async () => {
       dispatch(setDashboardLoading(true));
       try {
         const data = await dashboardService.getMainDashboard();
@@ -72,13 +82,39 @@ const Dashboard = () => {
     fetchDashboard();
   }, [dispatch, hasLoaded]);
 
-  // ✅ Format number with commas
+  // ---------------------------------------------------------------------
+  // ✅ Fetch complete dashboard (subscriptions, heatmap, tickets, renewals)
+  // ---------------------------------------------------------------------
+  useEffect(() => {
+    if (completeDashboardLoaded || fetchedComplete.current) return;
+    fetchedComplete.current = true;
+
+    const fetchComplete = async () => {
+      dispatch(setCompleteDashboardLoading(true));
+      try {
+        const data = await dashboardService.getCompleteDashboard();
+        dispatch(setCompleteDashboardData(data));
+      } catch (err) {
+        console.error('Complete dashboard fetch error:', err);
+        dispatch(
+          setCompleteDashboardError(
+            err?.message || 'Failed to load dashboard widgets'
+          )
+        );
+      }
+    };
+
+    fetchComplete();
+  }, [dispatch, completeDashboardLoaded]);
+
+  // ---------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------
   const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
     return Number(num).toLocaleString('en-US');
   };
 
-  // ✅ Format the "lastUpdated" timestamp
   const formatLastUpdated = (iso) => {
     if (!iso) return '';
     try {
@@ -94,15 +130,19 @@ const Dashboard = () => {
     }
   };
 
-  // ✅ Metrics now use live data from Redux
+  // ---------------------------------------------------------------------
+  // KPIs (from main dashboard)
+  // ---------------------------------------------------------------------
   const metrics = [
     {
       title: 'MRR',
-      value: `${formatNumber(kpis?.monthlySecurity)} XOF`, // Adjust field if MRR has its own
+      value: `${formatNumber(kpis?.monthlySecurity)} XOF`,
       icon: Wallet,
       bgColor: 'bg-yellow-100',
       iconColor: 'text-yellow-600',
-      badge: kpis?.totalRevenue ? `Total: ${formatNumber(kpis.totalRevenue)} XOF` : null,
+      badge: kpis?.totalRevenue
+        ? `Total: ${formatNumber(kpis.totalRevenue)} XOF`
+        : null,
       badgeColor: 'text-green-500',
     },
     {
@@ -119,7 +159,6 @@ const Dashboard = () => {
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
     },
-    // The following are placeholders until your API returns them
     {
       title: 'Active Restaurants',
       value: '—',
@@ -152,10 +191,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen p-4 md:p-3 w-full">
-      {/* Topbar */}
+      {/* ------------------------------ Topbar ------------------------------ */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Dashboard
+          </h1>
           {lastUpdated && (
             <p className="text-xs text-gray-500 mt-1">
               Last updated: {formatLastUpdated(lastUpdated)}
@@ -169,40 +210,47 @@ const Dashboard = () => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 w-[129px] h-[35px] px-4 py-2 bg-white border border-black rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
           >
-            <span className="text-gray-700 text-sm font-medium">{selectedPeriod}</span>
+            <span className="text-gray-700 text-sm font-medium">
+              {selectedPeriod}
+            </span>
             <ChevronDown className="w-4 h-4 text-gray-500" />
           </button>
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-[246px] bg-white shadow rounded-lg flex flex-col px-3 py-5 gap-2 border">
-              {['Today', 'Yesterday', 'This Week', 'Three Month', 'Six Month', 'This Month'].map(
-                (period) => (
-                  <button
-                    key={period}
-                    onClick={() => {
-                      setSelectedPeriod(period);
-                      setDropdownOpen(false);
-                    }}
-                    className={`
-                      w-full text-left px-2 py-2 rounded 
-                      text-sm font-medium font-[Manrope] 
-                      ${
-                        selectedPeriod === period
-                          ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white'
-                          : 'hover:bg-gray-100 text-black'
-                      }
-                    `}
-                  >
-                    {period}
-                  </button>
-                )
-              )}
+              {[
+                'Today',
+                'Yesterday',
+                'This Week',
+                'Three Month',
+                'Six Month',
+                'This Month',
+              ].map((period) => (
+                <button
+                  key={period}
+                  onClick={() => {
+                    setSelectedPeriod(period);
+                    setDropdownOpen(false);
+                  }}
+                  className={`
+                    w-full text-left px-2 py-2 rounded 
+                    text-sm font-medium font-[Manrope] 
+                    ${
+                      selectedPeriod === period
+                        ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white'
+                        : 'hover:bg-gray-100 text-black'
+                    }
+                  `}
+                >
+                  {period}
+                </button>
+              ))}
             </div>
           )}
         </div>
       </div>
 
-      {/* Loading state */}
+      {/* ------------------------------ KPI Cards ------------------------------ */}
       {loading && !hasLoaded ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-6">
           {[...Array(6)].map((_, i) => (
@@ -238,12 +286,16 @@ const Dashboard = () => {
                       {metric.title}
                     </h3>
                     {metric.badge && (
-                      <span className={`text-[10px] font-semibold ${metric.badgeColor}`}>
+                      <span
+                        className={`text-[10px] font-semibold ${metric.badgeColor}`}
+                      >
                         {metric.badge}
                       </span>
                     )}
                   </div>
-                  <p className="text-gray-900 font-bold text-lg md:text-xl">{metric.value}</p>
+                  <p className="text-gray-900 font-bold text-lg md:text-xl">
+                    {metric.value}
+                  </p>
                 </div>
               </div>
             );
@@ -251,7 +303,7 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Section 1 */}
+      {/* --------------------------- Section 1: Charts --------------------------- */}
       <div className="flex flex-col lg:flex-row gap-4 mb-6 items-stretch">
         <div className="w-full lg:w-3/5 flex">
           <CurrentMonthActivity data={dailyActivity} />
@@ -261,7 +313,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Section 2 */}
+      {/* --------------------------- Section 2: Profit + Top Performers --------------------------- */}
       <style>{`
         .dashboard-grid {
           display: grid;
@@ -283,7 +335,7 @@ const Dashboard = () => {
         <TopPerformers />
       </div>
 
-      {/* Section 3 */}
+      {/* --------------------------- Section 3: Subscriptions + Heatmap --------------------------- */}
       <div className="flex flex-col mt-4 lg:flex-row gap-6 mb-6 items-stretch">
         <div className="w-full lg:w-3/5">
           <SubscriptionsPurchased />
@@ -293,7 +345,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Section 4 */}
+      {/* --------------------------- Section 4: Support Tickets + Renewal Alerts --------------------------- */}
       <div className="flex flex-col lg:flex-row gap-4 mb-6 items-stretch">
         <div className="w-full lg:w-2/5">
           <SupportTickets />
@@ -303,7 +355,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Section 5 */}
+      {/* --------------------------- Section 5: Upcoming Renewals + Active Alerts --------------------------- */}
       <div className="flex flex-col lg:flex-row gap-6 mb-3 items-stretch p-4">
         <div className="w-full lg:w-[68%]">
           <UpcommingRenewals />
@@ -313,7 +365,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Section 6 */}
+      {/* --------------------------- Section 6: Action --------------------------- */}
       <div>
         <Action />
       </div>

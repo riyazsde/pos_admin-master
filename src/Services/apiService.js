@@ -182,27 +182,62 @@ getRenewalAlerts: async (page = 1, limit = 10) => {
     pagination: payload?.pagination || null,
   };
 },
+// ✅ NEW: Single call to fetch all 4 dashboard widgets at once
+getCompleteDashboard: async () => {
+  const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.COMPLETE);
+  const payload = response.data;
 
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load complete dashboard');
+  }
+
+  const data = payload?.data || {};
+
+  return {
+    subscriptionsPurchased: data.subscriptionsPurchased || [],
+    heatMap: data.heatMap || { title: '', data: [] },
+    supportTickets: data.supportTickets || { title: '', count: 0, data: [] },
+    renewalAlerts: data.renewalAlerts || { title: '', count: 0, data: [] },
+  };
+},
 
 };
 // -------------- Client Services------------------------
 
 export const clientService = {
-  /**
-   * Create a new client.
-   * @param {object} payload - Form fields
-   */
   createClient: async (payload) => {
-    const response = await apiClient.post(
-      ENDPOINTS.ADMIN.CLIENTS.CREATE,
-      payload
-    );
+    const response = await apiClient.post(ENDPOINTS.ADMIN.CLIENTS.CREATE, payload);
     const data = response.data;
-
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to create client');
     }
-
     return data?.data || null;
+  },
+
+  // ✅ NEW: Get all clients
+  getAllClients: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.CLIENTS.GET_ALL);
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load clients');
+    }
+
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  // ✅ NEW: Get single client by ID
+  getClientById: async (id) => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.CLIENTS.GET_BY_ID(id));
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load client details');
+    }
+
+    return payload?.data || null;
   },
 };

@@ -28,6 +28,21 @@ const initialState = {
   renewalAlerts: [],
   renewalAlertsPagination: null,
   renewalAlertsLoading: false,
+  subscriptions: [],
+subscriptionsLoading: false,
+
+heatmap: null,
+heatmapLoading: false,
+
+supportTickets: [],
+supportTicketsLoading: false,
+
+renewalAlerts: [],
+renewalAlertsLoading: false,
+
+completeDashboardLoading: false,
+completeDashboardLoaded: false,
+completeDashboardError: null,
   // Existing
   loading: false,
   error: null,
@@ -108,6 +123,31 @@ const dashboardSlice = createSlice({
     setRenewalAlertsLoading: (state, action) => {
       state.renewalAlertsLoading = action.payload;
     },
+    setCompleteDashboardData: (state, action) => {
+  const { subscriptionsPurchased, heatMap, supportTickets, renewalAlerts } =
+    action.payload || {};
+
+  state.subscriptions = subscriptionsPurchased || [];
+  state.heatmap = heatMap || null;
+  state.supportTickets = supportTickets?.data || [];
+  state.renewalAlerts = renewalAlerts?.data || [];
+
+  state.subscriptionsLoading = false;
+  state.heatmapLoading = false;
+  state.supportTicketsLoading = false;
+  state.renewalAlertsLoading = false;
+
+  state.completeDashboardLoaded = true;
+  state.completeDashboardLoading = false;
+  state.completeDashboardError = null;
+},
+setCompleteDashboardLoading: (state, action) => {
+  state.completeDashboardLoading = action.payload;
+},
+setCompleteDashboardError: (state, action) => {
+  state.completeDashboardError = action.payload;
+  state.completeDashboardLoading = false;
+},
 
     resetDashboard: () => initialState,
   },
