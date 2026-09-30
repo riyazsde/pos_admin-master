@@ -24,7 +24,7 @@ export const authService = {
 
     if (!token) throw new Error('No token received from server');
 
-    // ✅ Dispatch Redux action (also saves to storage)
+    //  Dispatch Redux action (also saves to storage)
     store.dispatch(
       loginSuccess({ token, user, rememberMe: credentials.rememberMe })
     );
@@ -38,7 +38,7 @@ export const authService = {
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      // ✅ Dispatch Redux action (also clears storage)
+      // Dispatch Redux action (also clears storage)
       store.dispatch(logoutSuccess());
     }
   },
@@ -72,11 +72,12 @@ export const forgotPasswordService = {
     return response.data;
   },
 };
+
+
+/**
+ * Admin Dashboard Services
+ */
 export const dashboardService = {
-  /**
-   * Fetch the main dashboard data.
-   * Returns: { kpis, dailyActivity, monthlyGrowth, lastUpdated }
-   */
   getMainDashboard: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN);
     const payload = response.data;
@@ -86,5 +87,122 @@ export const dashboardService = {
     }
 
     return payload?.data || null;
+  },
+
+  //  Profit After Tax
+  getProfitAfterTax: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.PROFIT_AFTER_TAX);
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load profit data');
+    }
+
+    return payload?.data || null;
+  },
+
+  // Top Performers (with pagination)
+  getTopPerformers: async (page = 1, limit = 10) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.DASHBOARD.TOP_PERFORMERS,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load top performers');
+    }
+
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+  // Subscriptions
+getSubscriptions: async (page = 1, limit = 10) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.DASHBOARD.SUBSCRIPTIONS,
+    { params: { page, limit } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load subscriptions');
+  }
+
+  return {
+    data: payload?.data || [],
+    pagination: payload?.pagination || null,
+  };
+},
+
+//  Heatmap
+getHeatmap: async () => {
+  const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.HEATMAP);
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load heatmap');
+  }
+
+  return payload?.data || null;
+},
+// ✅ NEW: Support Tickets
+getSupportTickets: async (page = 1, limit = 5, status = 'Open') => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.DASHBOARD.SUPPORT_TICKETS,
+    { params: { page, limit, status } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load support tickets');
+  }
+
+  return {
+    data: payload?.data || [],
+    pagination: payload?.pagination || null,
+  };
+},
+
+// ✅ NEW: Renewal Alerts
+getRenewalAlerts: async (page = 1, limit = 10) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.DASHBOARD.RENEWAL_ALERTS,
+    { params: { page, limit } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load renewal alerts');
+  }
+
+  return {
+    data: payload?.data || [],
+    pagination: payload?.pagination || null,
+  };
+},
+
+
+};
+// -------------- Client Services------------------------
+
+export const clientService = {
+  /**
+   * Create a new client.
+   * @param {object} payload - Form fields
+   */
+  createClient: async (payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.CLIENTS.CREATE,
+      payload
+    );
+    const data = response.data;
+
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create client');
+    }
+
+    return data?.data || null;
   },
 };

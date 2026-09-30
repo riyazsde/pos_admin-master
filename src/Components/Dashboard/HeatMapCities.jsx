@@ -1,18 +1,87 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
+import {
+  setHeatmapData,
+  setHeatmapLoading,
+} from '../../Store/Features/dashboard/dashboardSlice';
+import { dashboardService } from '../../Services/apiService';
+import { getCityName, SLICE_COLORS } from '../../utils/dashboardMaps';
 
 const HeatMapCities = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
+  const dispatch = useAppDispatch();
 
-  const data = [
-    { name: 'Johannesburg', value: 30, color: '#525B7A', startAngle: 0, endAngle: 108 },
-    { name: 'Cairo', value: 15, color: '#FF7A1A', startAngle: 108, endAngle: 162 },
-    { name: 'Cape Town', value: 35, color: '#2563EB', startAngle: 162, endAngle: 288 },
-    { name: 'Nairobi', value: 20, color: '#FF00FF', startAngle: 288, endAngle: 360 }
-  ];
+  const { heatmap, heatmapLoading } = useAppSelector((state) => state.dashboard);
+
+  // ✅ Fetch on mount
+  useEffect(() => {
+    if (heatmap) return;
+
+    const fetchHeatmap = async () => {
+      dispatch(setHeatmapLoading(true));
+      try {
+        const data = await dashboardService.getHeatmap();
+        dispatch(setHeatmapData(data));
+      } catch (err) {
+        console.error('Heatmap fetch error:', err);
+        dispatch(setHeatmapLoading(false));
+      }
+    };
+
+    fetchHeatmap();
+  }, [dispatch, heatmap]);
+
+  // ✅ Transform API data → pie slices with angles + colors + percentages
+  const rawData = heatmap?.data || [];
+  const total = rawData.reduce((sum, item) => sum + (item.restaurant_count || 0), 0);
+
+  let currentAngle = 0;
+  const data = rawData.map((item, idx) => {
+    const value = item.restaurant_count || 0;
+    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+    const sweep = total > 0 ? (value / total) * 360 : 0;
+
+    const slice = {
+      name: getCityName(item.City_id),
+      value: percentage,
+      rawCount: value,
+      color: SLICE_COLORS[idx % SLICE_COLORS.length],
+      startAngle: currentAngle,
+      endAngle: currentAngle + sweep,
+    };
+
+    currentAngle += sweep;
+    return slice;
+  });
+
+  // ✅ Loading skeleton
+  if (heatmapLoading && !heatmap) {
+    return (
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+        <h2 className="text-lg font-bold mb-4 self-start text-black">
+          Heat Map(<span className="font-bold">Cities</span>)
+        </h2>
+        <div className="w-full aspect-square max-w-[280px] mt-2 rounded-full bg-gray-100 animate-pulse" />
+      </div>
+    );
+  }
+
+  // ✅ Empty state
+  if (data.length === 0 || total === 0) {
+    return (
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+        <h2 className="text-lg font-bold mb-4 self-start text-black">
+          Heat Map(<span className="font-bold">Cities</span>)
+        </h2>
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+          No city data available
+        </div>
+      </div>
+    );
+  }
 
   const createPath = (cx, cy, r, startAngle, endAngle, isHovered) => {
-    // Reduced hover effect from 8 to 5 so it doesn't jump out of the container too much
-    const rad = isHovered ? r + 5 : r; 
+    const rad = isHovered ? r + 5 : r;
     const start = (startAngle - 90) * (Math.PI / 180);
     const end = (endAngle - 90) * (Math.PI / 180);
 
@@ -28,20 +97,19 @@ const HeatMapCities = () => {
 
   const getTextPosition = (cx, cy, r, startAngle, endAngle) => {
     const midAngle = ((startAngle + endAngle) / 2 - 90) * (Math.PI / 180);
-    // Increased from 0.6 to 0.65 to push the text slightly outward like the Figma image
-    const tr = r * 0.65; 
+    const tr = r * 0.65;
     return {
       x: cx + tr * Math.cos(midAngle),
-      y: cy + tr * Math.sin(midAngle)
+      y: cy + tr * Math.sin(midAngle),
     };
   };
 
   return (
-    // Wrapped in matching white card style, removed fixed height so it stretches to match the table
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
       <h2 className="text-lg font-bold mb-4 self-start text-black">
-        Heat Map(<span className="font-bold">Cities</span>)
+        {heatmap?.title || 'Heat Map (Cities)'}
       </h2>
+
       <div className="relative w-full aspect-square max-w-[280px] mt-2">
         <svg width="100%" height="100%" viewBox="0 0 320 320">
           {data.map((slice, i) => {
@@ -51,42 +119,71 @@ const HeatMapCities = () => {
             const isHovered = hoveredIndex === i;
             const textPos = getTextPosition(cx, cy, r, slice.startAngle, slice.endAngle);
 
+            // Only render text if the slice is big enough to fit it
+            const sliceAngle = slice.endAngle - slice.startAngle;
+            const showText = sliceAngle > 15;
+
             return (
               <g key={i}>
                 <path
                   d={createPath(cx, cy, r, slice.startAngle, slice.endAngle, isHovered)}
                   fill={slice.color}
                   stroke="#fff"
-                  // Reduced stroke width from 6 to 4 to match the thinner lines in the image
-                  strokeWidth="4" 
+                  strokeWidth="4"
                   style={{ cursor: 'pointer', transition: 'all 0.3s ease' }}
                   onMouseEnter={() => setHoveredIndex(i)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 />
-                <text
-                  x={textPos.x}
-                  y={textPos.y - 6}
-                  textAnchor="middle"
-                  fill="#fff"
-                  fontSize="14"
-                  fontWeight="700"
-                >
-                  {slice.value}%
-                </text>
-                <text
-                  x={textPos.x}
-                  y={textPos.y + 12}
-                  textAnchor="middle"
-                  fill="#fff"
-                  fontSize="12"
-                  fontWeight="600"
-                >
-                  {slice.name}
-                </text>
+                {showText && (
+                  <>
+                    <text
+                      x={textPos.x}
+                      y={textPos.y - 6}
+                      textAnchor="middle"
+                      fill="#fff"
+                      fontSize="14"
+                      fontWeight="700"
+                    >
+                      {slice.value}%
+                    </text>
+                    <text
+                      x={textPos.x}
+                      y={textPos.y + 12}
+                      textAnchor="middle"
+                      fill="#fff"
+                      fontSize="12"
+                      fontWeight="600"
+                    >
+                      {slice.name}
+                    </text>
+                  </>
+                )}
               </g>
             );
           })}
         </svg>
+
+        {/* Hover tooltip */}
+        {hoveredIndex !== null && data[hoveredIndex] && (
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded">
+            {data[hoveredIndex].name}: {data[hoveredIndex].rawCount} ({data[hoveredIndex].value}%)
+          </div>
+        )}
+      </div>
+
+      {/* Legend below chart */}
+      <div className="mt-4 w-full flex flex-wrap gap-x-4 gap-y-2 justify-center">
+        {data.map((slice, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ background: slice.color }}
+            />
+            <span className="text-[10px] font-medium text-gray-700">
+              {slice.name} ({slice.value}%)
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

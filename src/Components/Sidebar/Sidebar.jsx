@@ -59,7 +59,7 @@ export default function Sidebar() {
             <img src={logo} className="w-[100px] sm:w-[120px] h-[16px] sm:h-[20px]" alt="Logo" />
           </div>
 
-          <div className="flex justify-center mb-8 sm:mb-12 md:mb-16 px-4 flex-shrink-0">
+          {/* <div className="flex justify-center mb-8 sm:mb-12 md:mb-16 px-4 flex-shrink-0">
             <div className="flex items-center gap-[12px] sm:gap-[15.24px] px-3 sm:px-4 py-[6px] sm:py-[7.62px] bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] rounded-[32px] w-full max-w-[148.57px] h-[50px] sm:h-[57.24px]">
               <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full flex items-center justify-center flex-shrink-0">
                 <img src={profileAvatar} alt="Profile" className="w-full h-full object-cover rounded-full" />
@@ -73,7 +73,7 @@ export default function Sidebar() {
                 </p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="flex flex-col gap-3 sm:gap-4 md:gap-[19px] px-3 sm:px-4 md:px-[20.5px] pb-6 flex-1">
             {menuItems.map(({ icon, label, route }, idx) => {

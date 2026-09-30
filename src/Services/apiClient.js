@@ -9,7 +9,6 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// ✅ Attach token
 apiClient.interceptors.request.use(
   (config) => {
     const token = getToken();
@@ -21,7 +20,7 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ Handle 401 globally — dispatch logout action to Redux
+// Handle 401 globally — dispatch logout action to Redux
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
