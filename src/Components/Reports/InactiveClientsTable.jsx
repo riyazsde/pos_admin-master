@@ -1,74 +1,166 @@
-// InactiveClientsTable.js (or App.js, depending on your file structure)
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2, UserX, ChevronRight } from 'lucide-react';
 
-// Renamed main component to InactiveClientsTable
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
+import {
+  setInactiveClientsData,
+  setInactiveClientsLoading,
+} from '../../Store/Features/reports/reportsSlice';
+import { reportService } from '../../Services/apiService';
+
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear()}`;
+  } catch {
+    return '—';
+  }
+};
+
 function InactiveClientsTable() {
-  // Sample data for the table rows
-  const clients = [
-    { id: '01', businessName: 'AOH Bars', planPurchased: '3 months Plan', purchasedDate: '23/09/2025', status: 'Inactive' },
-    { id: '02', businessName: 'AOH Bars', planPurchased: '6 months Plan', purchasedDate: '23/09/2025', status: 'Inactive' },
-    { id: '03', businessName: 'AOH Bars', planPurchased: '3 months Plan', purchasedDate: '23/09/2025', status: 'Inactive' },
-    { id: '04', businessName: 'AOH Bars', planPurchased: '1 Year Plan', purchasedDate: '23/09/2025', status: 'Inactive' },
-    { id: '05', businessName: 'AOH Bars', planPurchased: '6 months Plan', purchasedDate: '23/09/2025', status: 'Inactive' },
-  ];
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const { inactiveClients, inactiveClientsLoading, inactiveClientsPagination } =
+    useAppSelector((state) => state.reports);
+
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const fetchClients = async () => {
+      dispatch(setInactiveClientsLoading(true));
+      try {
+        const result = await reportService.getInactiveClients(1, 10);
+        dispatch(setInactiveClientsData(result));
+      } catch (err) {
+        console.error('Inactive clients fetch error:', err);
+        dispatch(setInactiveClientsLoading(false));
+      }
+    };
+
+    fetchClients();
+  }, [dispatch]);
+
+  const hasData = inactiveClients.length > 0;
+  const totalCount = inactiveClientsPagination?.total || inactiveClients.length;
 
   return (
-    // Main container, responsive padding and width
-    <div className="flex flex-col items-center  w-full font-sans">
-      {/* Inner container for the entire 'Inactive Clients' section */}
-      <div className="flex flex-col items-start gap-4 w-full max-w-4xl mx-auto">
-        {/* Header section with title and 'See all' button */}
-        <div className="flex flex-row justify-between items-center w-full">
-          {/* Title */}
-          <h2 className="text-2xl sm:text-3xl font-bold text-black poppins-font">
+    <div className="w-full h-full flex flex-col">
+      {/* ---------- Header ---------- */}
+      <div className="flex justify-between items-start w-full shrink-0 mb-4">
+        <div>
+          <h2 className="font-poppins font-bold text-2xl text-black">
             Inactive Clients
           </h2>
-          {/* 'See all' button/link */}
-          <button className="flex items-center justify-center px-4 py-2 gap-2 h-9 sm:h-10 text-black font-semibold text-sm rounded-lg hover:bg-gray-100 transition-colors poppins-font" onClick={()=>navigate('/clients')}>
-            See all
-          </button>
+          <p className="text-xs text-gray-500 mt-1">
+            {totalCount} client{totalCount !== 1 ? 's' : ''} inactive
+          </p>
         </div>
-
-        {/* Table container */}
-        <div className="flex flex-col justify-center items-start w-full shadow-md rounded-2xl overflow-hidden">
-          {/* Table Header Row */}
-          <div
-            className="flex items-center w-full h-12 sm:h-14 bg-gradient-to-r from-purple-100 to-red-100
-                       border border-gray-300 rounded-t-2xl text-gray-600 font-semibold text-sm sm:text-base
-                       px-4 sm:px-6"
-          >
-            {/* Header Columns */}
-            <span className="w-1/12">#</span>
-            <span className="w-3/12">Business Name</span>
-            <span className="w-3/12 text-center">Plan Purchased</span>
-            <span className="w-3/12">Purchased Date</span>
-            <span className="w-2/12 text-center">Status</span>
-          </div>
-
-          {/* Table Data Rows */}
-          {clients.map((client, index) => (
-            <div
-              key={client.id}
-              className={`flex items-center w-full h-12 sm:h-14 bg-white border-x border-b border-gray-300 text-black
-                          font-normal text-sm sm:text-base px-4 sm:px-6
-                          ${index === clients.length - 1 ? 'rounded-b-2xl' : ''}`} // Apply bottom radius to last row
-            >
-              {/* Data Columns */}
-              <span className="w-1/12">{client.id}</span>
-              <span className="w-3/12">{client.businessName}</span>
-              <span className="w-3/12 text-center">{client.planPurchased}</span>
-              <span className="w-3/12">{client.purchasedDate}</span>
-              <span className="w-2/12 text-center font-bold text-red-500 poppins-font">
-                {client.status}
-              </span>
-            </div>
-          ))}
-        </div>
+        <button
+          onClick={() => navigate('/clients')}
+          className="group flex items-center gap-1 font-poppins font-semibold text-sm text-gray-700 hover:text-black transition-colors"
+        >
+          See all
+          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
+
+      {/* ---------- Card ---------- */}
+      <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col min-h-0">
+        {inactiveClientsLoading && !hasData ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="text-sm">Loading inactive clients…</span>
+          </div>
+        ) : !hasData ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3 p-8">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-50 to-red-50 flex items-center justify-center">
+              <UserX className="w-6 h-6 text-purple-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">
+              No inactive clients
+            </p>
+            <p className="text-xs text-gray-400 text-center max-w-xs">
+              All your clients are currently active. Inactive ones will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col min-h-0">
+            {/* ---------- Table Header (sticky) ---------- */}
+            <div
+              className="shrink-0 grid [grid-template-columns:56px_1.4fr_1.2fr_1fr_90px] items-center gap-3 px-5 py-3
+                         bg-gradient-to-r from-purple-50 to-red-50 text-gray-600 text-xs font-semibold uppercase tracking-wider"
+            >
+              <span>#</span>
+              <span>Business Name</span>
+              <span>Plan</span>
+              <span>Purchased</span>
+              <span className="text-center">Status</span>
+            </div>
+
+            {/* ---------- Scrollable body ---------- */}
+            <div className="flex-1 overflow-y-auto min-h-0 reports-scroll">
+              {inactiveClients.map((client, index) => {
+                const id = String(index + 1).padStart(2, '0');
+                return (
+                  <div
+                    key={client.user_id || index}
+                    className="grid [grid-template-columns:56px_1.4fr_1.2fr_1fr_90px] items-center gap-3
+                               px-5 py-3 border-b border-gray-100 last:border-b-0
+                               text-sm text-gray-800 hover:bg-red-50/40 transition-colors"
+                  >
+                    <span className="text-gray-500 font-medium tabular-nums">
+                      {id}
+                    </span>
+                    <span
+                      className="font-medium truncate"
+                      title={client.businessName}
+                    >
+                      {client.businessName || '—'}
+                    </span>
+                    <span className="text-gray-600 truncate">
+                      {client.planPurchased || 'No Plan'}
+                    </span>
+                    <span className="text-gray-600 tabular-nums">
+                      {formatDate(client.purchasedDate)}
+                    </span>
+                    <span className="text-center">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                        {client.status || 'Inactive'}
+                      </span>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <style jsx>{`
+        .reports-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .reports-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .reports-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #b934d8, #e91e63);
+          border-radius: 9999px;
+        }
+        .reports-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #6a1b9a, #d32f2f);
+        }
+      `}</style>
     </div>
   );
 }
 
-export default InactiveClientsTable; // Export the new component name
+export default InactiveClientsTable;

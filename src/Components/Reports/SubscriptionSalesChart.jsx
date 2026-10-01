@@ -1,147 +1,231 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, YAxis } from 'recharts';
+import React, { useEffect, useRef } from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  Tooltip,
+  ResponsiveContainer,
+  YAxis,
+} from 'recharts';
+import { TrendingUp, Loader2 } from 'lucide-react';
 
-// Custom Bar component to create the background effect
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
+import {
+  setSubscriptionSalesData,
+  setSubscriptionSalesLoading,
+} from '../../Store/Features/reports/reportsSlice';
+import { reportService } from '../../Services/apiService';
+
+// ---------------------------------------------------------------------------
+// Custom bar with grey background track
+// ---------------------------------------------------------------------------
 const CustomBar = (props) => {
-  const { x, y, width, height, fill, chartHeight, sales } = props;
-
-  // The actual sales bar's top position (y) is calculated by Recharts.
-  // The bottom of the bar is at chartHeight - margin.bottom - xAxisHeight.
-  // We want the background bar to extend from the bottom of the chart
-  // up to the effective top of the chart area where bars can reach.
-  // A good approximation for the top of the background bar is a small offset from the top of the chart area.
-  // We can calculate the maximum possible height for a bar on the chart, which is essentially
-  // the Y-axis range that Recharts uses.
-  const backgroundBarMaxHeight = chartHeight - 10 - 30; // Approx chart height - top margin - x-axis height
-                                                      // (adjust based on your margin and exact layout)
+  const { x, y, width, height, fill, backgroundHeight } = props;
 
   return (
     <g>
-      {/* Background bar: should fill the available bar space from bottom to effective top */}
+      {/* Grey background track */}
       <rect
         x={x}
-        y={10} // Start background bar from roughly the chart's top margin (adjust if needed)
+        y={props.backgroundTop || 0}
         width={width}
-        height={backgroundBarMaxHeight} // Make background bar span the full available height
+        height={backgroundHeight}
         fill="#E9ECF1"
         rx="3"
         ry="3"
       />
       {/* Actual data bar */}
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        fill={fill}
-        rx="3"
-        ry="3"
-      />
+      <rect x={x} y={y} width={width} height={height} fill={fill} rx="3" ry="3" />
     </g>
   );
 };
 
-const SubscriptionSalesChart = () => {
-  const data = [
-    { name: 'Jan', sales: 28 },
-    { name: 'Feb', sales: 88 },
-    { name: 'Mar', sales: 16 },
-    { name: 'Apr', sales: 98 },
-    { name: 'May', sales: 59 },
-    { name: 'Jun', sales: 76 },
-    { name: 'Jul', sales: 88 },
-    { name: 'Aug', sales: 61 },
-    { name: 'Sep', sales: 100 },
-    { name: 'Oct', sales: 22 },
-    { name: 'Nov', sales: 80 },
-    { name: 'Dec', sales: 83 },
-  ];
+// ---------------------------------------------------------------------------
+// Helper: format ISO date → "DD"
+// ---------------------------------------------------------------------------
+const getDay = (iso) => {
+  if (!iso) return '';
+  try {
+    const d = new Date(iso);
+    return String(d.getDate()).padStart(2, '0');
+  } catch {
+    return '';
+  }
+};
 
-  const maxSales = Math.max(...data.map(item => item.sales));
-  const yAxisDomain = [0, maxSales + (maxSales * 0.2)]; // 20% padding above max sales
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
+const SubscriptionSalesChart = () => {
+  const dispatch = useAppDispatch();
+
+  const { subscriptionSales, subscriptionSalesLoading } = useAppSelector(
+    (state) => state.reports
+  );
+
+  // ✅ Fetch once
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const fetchSales = async () => {
+      dispatch(setSubscriptionSalesLoading(true));
+      try {
+        // Use current month/year; adjust if you have a period selector
+        const now = new Date();
+        const data = await reportService.getSubscriptionSales(
+          now.getMonth() + 1,
+          now.getFullYear()
+        );
+        dispatch(setSubscriptionSalesData(data));
+      } catch (err) {
+        console.error('Subscription sales fetch error:', err);
+        dispatch(setSubscriptionSalesLoading(false));
+      }
+    };
+
+    fetchSales();
+  }, [dispatch]);
+
+  // ✅ Transform salesByDay object → array for Recharts
+  const salesByDay = subscriptionSales?.chartData?.salesByDay || {};
+  const data = Object.values(salesByDay).map((item) => ({
+    name: getDay(item.date),
+    sales: item.sales ?? 0,
+    revenue: item.revenue ?? 0,
+  }));
+
+  const maxSales = data.length ? Math.max(...data.map((d) => d.sales), 1) : 100;
+  const yAxisDomain = [0, maxSales + maxSales * 0.2];
+
+  const totalSales = subscriptionSales?.summary?.totalSales ?? 0;
+  const totalRevenue = subscriptionSales?.summary?.totalRevenue ?? 0;
+  const period = subscriptionSales?.period;
+
+  const MONTHS = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  ];
+  const periodLabel = period
+    ? `${MONTHS[period.month - 1]} ${period.year}`
+    : '';
+
+  const formatNumber = (n) => {
+    if (n === null || n === undefined) return '0';
+    return Number(n).toLocaleString('en-US');
+  };
 
   return (
-    <div className="w-full max-w-full ">
-
-
-
-
- <h2 className="text-2xl font-bold text-[#2E2E30] mb-8 poppins-text">
-        Subscription Sales <span className="text-gray-500 font-normal">(Report)</span>
-      </h2>
-
-<div className='bg-white rounded-3xl overflow-hidden shadow-lg p-6'>
-
-      {/* Header Section */}
-      <div className="mb-6">
-        <h1 className="text-4xl font-bold text-[#344BFD] mb-2">
-          9 137 XOF
-        </h1>
-        <div className="flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="#34C759"
-          >
-            <path
-              fillRule="evenodd"
-              d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-[#34C759] text-lg">
-            12% Sold more <spam className="text-[#00000099]">than Last Month</spam>
-          </span>
+    <div className="w-full h-full flex flex-col">
+      {/* ---------- Header ---------- */}
+      <div className="flex justify-between items-start w-full shrink-0 mb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-[#2E2E30]">
+            Subscription Sales{' '}
+            <span className="text-gray-400 font-medium">(Report)</span>
+          </h2>
+          {periodLabel && (
+            <p className="text-xs text-gray-500 mt-1">{periodLabel}</p>
+          )}
         </div>
       </div>
 
-      {/* Chart Title */}
-     
+      {/* ---------- Card ---------- */}
+      <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-6 flex flex-col min-h-0">
+        {subscriptionSalesLoading && !subscriptionSales ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="text-sm">Loading sales data…</span>
+          </div>
+        ) : (
+          <>
+            {/* ---------- Summary ---------- */}
+            <div className="shrink-0 mb-6">
+              <div className="flex items-baseline gap-2 mb-2">
+                <h1 className="text-3xl sm:text-4xl font-bold text-[#344BFD] tabular-nums">
+                  {formatNumber(totalRevenue)}
+                </h1>
+                <span className="text-sm text-gray-500 font-medium">XOF</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[#34C759]" />
+                <span className="text-[#34C759] text-sm font-medium">
+                  {formatNumber(totalSales)}{' '}
+                  <span className="text-gray-500">total sales</span>
+                </span>
+              </div>
+            </div>
 
-      {/* Chart Container */}
-      <div className="relative w-full h-64"> {/* h-64 means 256px */}
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={data}
-            margin={{ top: 10, right: 20, left: 20, bottom: 30 }} // Keep bottom margin for XAxis ticks
-            barCategoryGap="20%"
-          >
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#2E2E30', fontSize: 12, fontWeight: 600 }}
-              interval={0}
-              padding={{ left: 10, right: 10 }}
-            />
-            <YAxis
-              hide={true}
-              domain={yAxisDomain}
-            />
-            <Tooltip
-              cursor={{ fill: 'rgba(52, 75, 253, 0.1)' }}
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #E5E7EB',
-                borderRadius: '12px',
-                fontSize: '14px',
-                padding: '12px',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              }}
-              labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
-              formatter={(value) => [`${value} XOF`, 'Sales']} // Removed unnecessary props, just use value
-            />
-            <Bar
-              dataKey="sales"
-              fill="#344BFD"
-              // Pass the total chart height to CustomBar so it can scale its background
-              shape={<CustomBar chartHeight={256 - 10 - 30} />} // Total height 256px - top margin - bottom margin
-              maxBarSize={28}
-            />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+            {/* ---------- Chart ---------- */}
+            <div className="flex-1 min-h-0 w-full">
+              {data.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-gray-400 text-sm">
+                  No sales data for this period
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={data}
+                    margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                    barCategoryGap="20%"
+                  >
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{
+                        fill: '#2E2E30',
+                        fontSize: 10,
+                        fontWeight: 600,
+                      }}
+                      interval={
+                        data.length > 15
+                          ? Math.floor(data.length / 10) - 1
+                          : 0
+                      }
+                      padding={{ left: 5, right: 5 }}
+                    />
+                    <YAxis hide domain={yAxisDomain} />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(52, 75, 253, 0.08)' }}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #E5E7EB',
+                        borderRadius: '12px',
+                        fontSize: '13px',
+                        padding: '10px 12px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      }}
+                      labelStyle={{
+                        color: '#1F2937',
+                        fontWeight: 'bold',
+                        marginBottom: 4,
+                      }}
+                      formatter={(value, name) => [
+                        `${formatNumber(value)}`,
+                        name === 'sales' ? 'Sales' : 'Revenue',
+                      ]}
+                      labelFormatter={(label) => `Day ${label}`}
+                    />
+                    <Bar
+                      dataKey="sales"
+                      fill="#344BFD"
+                      shape={
+                        <CustomBar
+                          backgroundTop={0}
+                          backgroundHeight={220}
+                        />
+                      }
+                      maxBarSize={data.length > 20 ? 14 : 28}
+                      radius={[3, 3, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

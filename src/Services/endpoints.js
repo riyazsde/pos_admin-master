@@ -32,15 +32,32 @@ export const ENDPOINTS = {
       HEATMAP: '/api/v1/admin/dashboard/heatmap',
       SUPPORT_TICKETS: '/api/v1/admin/dashboard/support-tickets',
       RENEWAL_ALERTS: '/api/v1/admin/dashboard/renewal-alerts',
-      COMPLETE: '/api/v1/admin/dashboard/complete-dashboard', 
+      COMPLETE: '/api/v1/admin/dashboard/complete-dashboard',
     },
-     CLIENTS: {
+    CLIENTS: {
       CREATE: '/api/v1/admin/clients/create',
-      GET_ALL: '/api/v1/admin/clients/getall', 
+      GET_ALL: '/api/v1/admin/clients/getall',
       GET_BY_ID: (id) => `/api/v1/admin/clients/getbyid/${id}`,
       // UPDATE: (id) => `/api/v1/admin/clients/${id}`,
       // DELETE: (id) => `/api/v1/admin/clients/${id}`,
     },
+     SUBSCRIPTION: {
+    DASHBOARD: '/api/v1/admin/admin_plan/subscription-dashboard',  
+     CREATE: '/api/v1/admin/admin_plan/create', 
+      GET_ALL: '/api/v1/admin/admin_plan/getall',  
+      HISTORY: '/api/v1/admin/subscription-history/listing', 
+  },
+    REPORTS: {
+      KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
+      ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',
+      INACTIVE_CLIENTS: '/api/v1/admin/reports/inactive-clients',
+      SUBSCRIPTION_SALES: '/api/v1/admin/reports/subscription-sales',
+      LATEST_TRANSACTIONS: '/api/v1/admin/reports/latest-transactions',
+      TRANSACTION_GRAPH: '/api/v1/admin/reports/transaction-graph',
+       SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets', 
+        CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage', 
+    },
+
   },
 
 

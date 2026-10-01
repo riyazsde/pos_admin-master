@@ -1,85 +1,290 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2, LifeBuoy, ChevronRight } from 'lucide-react';
+import { toast } from 'sonner';
 
-const tickets = [
-  {
-    id: '01',
-    business: 'Chinese Ramen',
-    issue: "Message isn’t working",
-    date: '23/09/2025',
-  },
-  {
-    id: '02',
-    business: 'Indiana Bar',
-    issue: 'Employee performance issue...',
-    date: '23/09/2025',
-  },
-  {
-    id: '03',
-    business: 'Sushi Nights',
-    issue: 'Kitchen Panel issue...',
-    date: '23/09/2025',
-  },
-  {
-    id: '04',
-    business: 'Chinese Ramen',
-    issue: 'Kitchen Panel issue...',
-    date: '23/09/2025',
-  },
-  {
-    id: '05',
-    business: 'Chinese Ramen',
-    issue: 'Kitchen Panel issue...',
-    date: '23/09/2025',
-  },
-];
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
+import {
+  setSupportTicketsReportData,
+  setSupportTicketsReportLoading,
+} from '../../Store/Features/reports/reportsSlice';
+import { reportService } from '../../Services/apiService';
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const formatDate = (iso) => {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear()}`;
+  } catch {
+    return '—';
+  }
+};
+
+// Priority → pill color
+const getPriorityStyle = (priority) => {
+  switch (priority?.toLowerCase()) {
+    case 'high':
+      return 'bg-red-50 text-red-700 border border-red-100';
+    case 'critical':
+      return 'bg-red-100 text-red-800 border border-red-200';
+    case 'low':
+      return 'bg-green-50 text-green-700 border border-green-100';
+    case 'medium':
+    case 'normal':
+    default:
+      return 'bg-blue-50 text-blue-700 border border-blue-100';
+  }
+};
+
+// Status → pill color
+const getStatusStyle = (status) => {
+  switch (status?.toLowerCase()) {
+    case 'open':
+      return 'bg-yellow-50 text-yellow-700';
+    case 'resolved':
+    case 'closed':
+      return 'bg-green-50 text-green-700';
+    case 'pending':
+      return 'bg-blue-50 text-blue-700';
+    default:
+      return 'bg-gray-100 text-gray-600';
+  }
+};
+
+// Compact issue preview
+const getIssuePreview = (ticket) => {
+  const text = ticket.subject || ticket.issue || 'No subject';
+  const cleaned = text.replace(/\n+/g, ' ').trim();
+  return cleaned.length > 30 ? `${cleaned.slice(0, 30)}...` : cleaned;
+};
+
+// Grid columns — total ≈ 860px
+const GRID_COLS =
+  '56px minmax(180px,1.4fr) minmax(200px,1.5fr) minmax(120px,0.9fr) minmax(100px,0.8fr) minmax(110px,0.8fr)';
+
+// ✅ Fixed height: 5 rows × 52px + header 44px = 304px
+const ROW_HEIGHT_PX = 52;
+const VISIBLE_ROWS = 5;
+const BODY_HEIGHT = ROW_HEIGHT_PX * VISIBLE_ROWS; // 260px
 
 const SupportTickets = () => {
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
+  const {
+    supportTicketsReport,
+    supportTicketsReportPagination,
+    supportTicketsReportLoading,
+  } = useAppSelector((state) => state.reports);
 
-    const navigate=useNavigate()
+  // ✅ Fetch once
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const fetchTickets = async () => {
+      dispatch(setSupportTicketsReportLoading(true));
+      try {
+        const result = await reportService.getSupportTicketsReport(1, 20, 'Open');
+        dispatch(setSupportTicketsReportData(result));
+      } catch (err) {
+        console.error('Support tickets fetch error:', err);
+        dispatch(setSupportTicketsReportLoading(false));
+        toast.error('Failed to load support tickets', {
+          description:
+            err?.response?.data?.message ||
+            err?.message ||
+            'Please try again later.',
+        });
+      }
+    };
+
+    fetchTickets();
+  }, [dispatch]);
+
+  const hasData = supportTicketsReport.length > 0;
+  const totalCount =
+    supportTicketsReportPagination?.total || supportTicketsReport.length || 0;
+
+  const handleResolve = (ticket) => {
+    toast.success('Ticket marked for resolution', {
+      description: `Ticket #${ticket.ticketId} — ${ticket.businessName}`,
+    });
+    // TODO: call resolve API when available
+    // await reportService.resolveTicket(ticket.ticketId);
+  };
 
   return (
-    <div className="w-full mx-auto bg-white rounded-lg p-4">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-xl font-bold">Support Tickets</h2>
-        <span className="text-sm text-black font-medium cursor-pointer hover:underline" onClick={()=>navigate('/supports')}>
+    <div className="w-full h-full flex flex-col font-poppins">
+      {/* ---------- Header ---------- */}
+      <div className="flex justify-between items-start w-full shrink-0 mb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-black">Support Tickets</h2>
+          <p className="text-xs text-gray-500 mt-1">
+            {totalCount} open ticket{totalCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <button
+          onClick={() => navigate('/supports')}
+          className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors"
+        >
           See all
-        </span>
+          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
 
-      {/* Table */}
-      <div className="overflow-auto">
-        <table className="min-w-full text-sm text-left">
-          <thead>
-            <tr className="bg-gradient-to-r from-[#f7edf8] to-[#f5e0e0] text-gray-700 rounded-[14px]">
-              <th className="py-3 px-4">#</th>
-              <th className="py-3 px-4">Business Name</th>
-              <th className="py-3 px-4">Ticket Raised</th>
-              <th className="py-3 px-4">Issue Date</th>
-              <th className="py-3 px-4">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tickets.map((ticket, index) => (
-              <tr key={index} className="border-b border-gray-200">
-                <td className="py-3 px-4 font-semibold">{ticket.id}</td>
-                <td className="py-3 px-4">{ticket.business}</td>
-                <td className="py-3 px-4 text-red-500 font-semibold truncate max-w-[180px]">
-                  {ticket.issue}
-                </td>
-                <td className="py-3 px-4">{ticket.date}</td>
-                <td className="py-3 px-4">
-                  <button className="bg-gradient-to-r from-[#D63384] to-[#9D00FF] text-white px-4 py-1 rounded-md text-sm font-semibold">
-                    Resolve
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* ---------- Card ---------- */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] overflow-hidden">
+        {supportTicketsReportLoading && !hasData ? (
+          <div
+            className="flex flex-col items-center justify-center text-gray-400 gap-3"
+            style={{ height: BODY_HEIGHT + 44 }}
+          >
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="text-sm">Loading support tickets…</span>
+          </div>
+        ) : !hasData ? (
+          <div
+            className="flex flex-col items-center justify-center text-gray-400 gap-3 p-8"
+            style={{ height: BODY_HEIGHT + 44 }}
+          >
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-50 to-red-50 flex items-center justify-center">
+              <LifeBuoy className="w-6 h-6 text-purple-400" />
+            </div>
+            <p className="text-sm font-medium text-gray-500">
+              No open tickets
+            </p>
+            <p className="text-xs text-gray-400 text-center max-w-xs">
+              You're all caught up! New tickets will appear here.
+            </p>
+          </div>
+        ) : (
+          /* ✅ Two-axis scroll with fixed 5-row height */
+          <div
+            className="overflow-auto reports-scroll"
+            style={{ height: BODY_HEIGHT + 44 }}
+          >
+            <div className="min-w-[860px]">
+              {/* ---- Sticky header ---- */}
+              <div
+                className="sticky top-0 z-20 grid items-center gap-3 px-5 py-3
+                           bg-gradient-to-r from-purple-50 to-red-50
+                           text-gray-600 text-xs font-semibold uppercase tracking-wider
+                           border-b border-gray-100"
+                style={{ gridTemplateColumns: GRID_COLS, height: 44 }}
+              >
+                <span className="sticky left-0 z-30 -mx-2 px-2 bg-gradient-to-r from-purple-50 to-purple-50">
+                  #
+                </span>
+                <span>Business Name</span>
+                <span>Issue</span>
+                <span>Date</span>
+                <span className="text-center">Priority</span>
+                <span className="text-center">Status</span>
+              </div>
+
+              {/* ---- Rows ---- */}
+              {supportTicketsReport.map((ticket, index) => {
+                const id = String(index + 1).padStart(2, '0');
+                const isEven = index % 2 === 0;
+
+                return (
+                  <div
+                    key={ticket.ticketId || index}
+                    className={`group grid items-center gap-3 px-5 border-b border-gray-100 last:border-b-0
+                               text-sm text-gray-800 transition-colors
+                               ${isEven ? 'bg-white' : 'bg-gray-50/40'}
+                               hover:bg-purple-50/60`}
+                    style={{
+                      gridTemplateColumns: GRID_COLS,
+                      height: ROW_HEIGHT_PX,
+                    }}
+                  >
+                    {/* Frozen # */}
+                    <span
+                      className={`sticky left-0 z-10 -mx-2 px-2 h-full flex items-center tabular-nums text-gray-500 font-medium
+                                  ${isEven ? 'bg-white' : 'bg-gray-50'}
+                                  group-hover:bg-purple-50`}
+                    >
+                      {id}
+                    </span>
+
+                    <span
+                      className="font-medium text-gray-800 truncate"
+                      title={ticket.businessName}
+                    >
+                      {ticket.businessName || '—'}
+                    </span>
+
+                    <span
+                      className="text-red-500 font-medium truncate"
+                      title={ticket.subject}
+                    >
+                      {getIssuePreview(ticket)}
+                    </span>
+
+                    <span className="text-gray-600 tabular-nums">
+                      {formatDate(ticket.createdDate)}
+                    </span>
+
+                    <span className="flex justify-center">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold ${getPriorityStyle(
+                          ticket.priority
+                        )}`}
+                      >
+                        {ticket.priority || '—'}
+                      </span>
+                    </span>
+
+                    <span className="flex justify-center">
+                      <button
+                        onClick={() => handleResolve(ticket)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold transition-opacity hover:opacity-90 ${getStatusStyle(
+                          ticket.status
+                        )}`}
+                      >
+                        {ticket.status === 'Open' ? 'Resolve' : ticket.status}
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
+
+      <style jsx>{`
+        .reports-scroll::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .reports-scroll::-webkit-scrollbar-track {
+          background: #f5f5f7;
+          border-radius: 8px;
+        }
+        .reports-scroll::-webkit-scrollbar-thumb {
+          background: linear-gradient(180deg, #b934d8, #e91e63);
+          border-radius: 8px;
+        }
+        .reports-scroll::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(180deg, #6a1b9a, #d32f2f);
+        }
+        .reports-scroll::-webkit-scrollbar-corner {
+          background: transparent;
+        }
+        .reports-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: #b934d8 #f5f5f7;
+        }
+      `}</style>
     </div>
   );
 };

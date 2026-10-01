@@ -241,3 +241,192 @@ export const clientService = {
     return payload?.data || null;
   },
 };
+
+// --------------------subscription service------------------
+
+export const subscriptionService = {
+  // Dashboard (aggregate counts)
+  getSubscriptionDashboard: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.SUBSCRIPTION.DASHBOARD);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscription dashboard');
+    }
+    return payload?.data || null;
+  },
+
+  // ✅ NEW: List all plans (optionally filter by Subscription_Type)
+  getAllPlans: async (subscriptionType) => {
+    const params = {};
+    if (subscriptionType) params.Subscription_Type = subscriptionType;
+
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.GET_ALL,
+      { params }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load plans');
+    }
+
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+  getSubscriptionHistory: async (page = 1, limit = 10, status = 'all') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.HISTORY,
+      { params: { page, limit, status } }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscription history');
+    }
+
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+  // Create a new plan
+  createPlan: async (payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.CREATE,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create plan');
+    }
+    return data?.data || null;
+  },
+};
+// -----------------reports services api------------------
+
+export const reportService = {
+  getKpiDashboard: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.REPORTS.KPI_DASHBOARD);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load KPI dashboard');
+    }
+    return payload?.data || null;
+  },
+
+  // ✅ NEW: Active clients
+  getActiveClients: async (page = 1, limit = 10, search = '') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.ACTIVE_CLIENTS,
+      { params: { page, limit, search } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load active clients');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // ✅ NEW: Inactive clients
+  getInactiveClients: async (page = 1, limit = 10, search = '') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.INACTIVE_CLIENTS,
+      { params: { page, limit, search } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load inactive clients');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+  // ✅ NEW: Subscription Sales Report
+getSubscriptionSales: async (month, year) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.REPORTS.SUBSCRIPTION_SALES,
+    { params: { month, year } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load subscription sales');
+  }
+
+  return payload?.data || null;
+},
+// ✅ NEW: Latest transactions
+getLatestTransactions: async (page = 1, limit = 20) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.REPORTS.LATEST_TRANSACTIONS,
+    { params: { page, limit } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load transactions');
+  }
+
+  return {
+    data: payload?.data || [],
+    summary: payload?.summary || null,
+    pagination: payload?.pagination || null,
+  };
+},
+
+// ✅ NEW: Transaction graph
+getTransactionGraph: async (months = 12) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.REPORTS.TRANSACTION_GRAPH,
+    { params: { months } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load transaction graph');
+  }
+
+  return payload?.data || null;
+},
+// ✅ NEW: Support tickets for reports
+getSupportTicketsReport: async (page = 1, limit = 10, status = 'Open') => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.REPORTS.SUPPORT_TICKETS,
+    { params: { page, limit, status } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load support tickets');
+  }
+
+  return {
+    data: payload?.data || [],
+    pagination: payload?.pagination || null,
+  };
+},
+// ✅ NEW: City-wise usage
+getCityWiseUsage: async (page = 1, limit = 20) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.REPORTS.CITY_WISE_USAGE,
+    { params: { page, limit } }
+  );
+  const payload = response.data;
+
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load city-wise usage');
+  }
+
+  return {
+    data: payload?.data || [],
+    summary: payload?.summary || null,
+    pagination: payload?.pagination || null,
+  };
+},
+};
