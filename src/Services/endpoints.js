@@ -24,6 +24,9 @@ export const ENDPOINTS = {
 
   // ADMIN section
   ADMIN: {
+      LANGUAGE: {
+    GET_ALL: '/api/v1/admin/language/getall',
+  },
     DASHBOARD: {
       MAIN: '/api/v1/admin/dashboard/main-dashboard',
       PROFIT_AFTER_TAX: '/api/v1/admin/dashboard/profit-after-tax',
@@ -57,7 +60,12 @@ export const ENDPOINTS = {
        SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets', 
         CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage', 
     },
-
+ AUDITS: {
+    OVERVIEW: '/api/v1/admin/audits/dashboard/overview',
+    ACTIVITY: '/api/v1/admin/audits/report/activity',
+    GET_BY_ID: (id) => `/api/v1/admin/audits/getbyid/${id}`,
+    EXPORT_SUMMARY: '/api/v1/admin/audits/report/export-summary',
+  },
   },
 
 

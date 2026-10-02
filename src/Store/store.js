@@ -6,7 +6,8 @@ import dashboardReducer from './Features/dashboard/dashboardSlice';
 import clientsReducer from '../Store/Features/clients/clientsSlice';
 import subscriptionsReducer from '../Store/Features/subscriptions/subscriptionsSlice';
 import reportsReducer from '../Store/Features/reports/reportsSlice';
-
+import languageReducer from '../Store/Features/language/languageSlice';
+import auditsReducer from '../Store/Features/audits/auditsSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -14,6 +15,8 @@ export const store = configureStore({
     clients: clientsReducer,
     subscriptions: subscriptionsReducer,
     reports: reportsReducer,
+     language: languageReducer, 
+     audits: auditsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

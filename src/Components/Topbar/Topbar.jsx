@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// src/Components/Topbar/Topbar.jsx
+
+import React, { useState, useEffect } from 'react';
 import {
   Search, Menu, Bell, ChevronDown, User, X, AlertTriangle, CreditCard,
   ShieldAlert, CheckCircle, Wifi, UserPlus, DollarSign, Settings,
@@ -7,9 +9,10 @@ import {
 } from 'lucide-react';
 import porfileImg from '../../assets/Images/admin/Avatar.png';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-// ✅ NEW: Redux + helpers + auth service
-import { useAppSelector } from '../../Store/hooks';
+// Redux + helpers + auth service
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import { authService } from '../../Services/apiService';
 import {
   getFullName,
@@ -20,6 +23,12 @@ import {
   formatDate,
 } from '../../utils/userHelpers';
 
+// Language slice
+import {
+  setLanguageCode,
+  NAME_TO_CODE,
+} from '../../Store/Features/language/languageSlice';
+
 const Topbar = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -27,18 +36,42 @@ const Topbar = ({ onMenuClick }) => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
- 
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { i18n, t } = useTranslation();
+
+  // Redux user
   const reduxUser = useAppSelector((state) => state.auth.user);
 
-  const [selectedLanguage, setSelectedLanguage] = useState(
-    reduxUser?.Language_id?.Language_name || 'English'
-  );
+  // Redux language state
+  const languages = useAppSelector((s) => s.language.languages);
+  const currentCode = useAppSelector((s) => s.language.currentCode);
+  const currentName = useAppSelector((s) => s.language.currentName);
 
-  const navigate = useNavigate();
+  // Preferred language from login response
+  const preferredName = reduxUser?.Language_id?.Language_name;
 
-  const languages = ['French', 'English'];
+  // Align Redux language with user's saved preference once list is loaded
+  useEffect(() => {
+    if (!languages.length || !preferredName) return;
+    const match = languages.find((l) => l.Language_name === preferredName);
+    if (!match) return;
 
-  // ✅ Build the user object from Redux data
+    const code = NAME_TO_CODE[match.Language_name] || 'en';
+    if (code !== currentCode) {
+      dispatch(setLanguageCode({ code, name: match.Language_name }));
+    }
+  }, [languages, preferredName, currentCode, dispatch]);
+
+  // Handle language selection
+  const handleLanguageChange = (lang) => {
+    const code = NAME_TO_CODE[lang.Language_name] || 'en';
+    dispatch(setLanguageCode({ code, name: lang.Language_name }));
+    setIsLanguageOpen(false);
+    i18n.changeLanguage(code); // instant UI flip
+  };
+
+  // Build the user object from Redux data
   const user = {
     name: getFullName(reduxUser),
     email: reduxUser?.email || 'N/A',
@@ -52,7 +85,7 @@ const Topbar = ({ onMenuClick }) => {
     gender: reduxUser?.gender || 'N/A',
   };
 
-  // Mock notification data (unchanged)
+  // Mock notification data
   const notifications = [
     { id: 1, type: 'subscription', title: 'Subscription Renewal Due Soon', desc: 'Downtown Bistro - 6 Months Plan renewing on June 30, 2026', tag: 'MEDIUM', time: '4 minutes ago', icon: CreditCard, color: 'bg-blue-100 text-blue-600' },
     { id: 2, type: 'device', title: 'Device Offline Alert', desc: 'POS Terminal at Harbor Grill has been offline for 24 hours', tag: 'HIGH', time: '10 minutes ago', icon: Wifi, color: 'bg-red-100 text-red-600' },
@@ -73,7 +106,6 @@ const Topbar = ({ onMenuClick }) => {
     }
   };
 
-  // ✅ UPDATED: Use authService (clears Redux + storage + calls API)
   const handleSignOut = async () => {
     setIsProfileOpen(false);
     try {
@@ -101,7 +133,7 @@ const Topbar = ({ onMenuClick }) => {
                 <Menu className="w-5 h-5 text-gray-700 mr-3" />
                 <input
                   type="text"
-                  placeholder="Search"
+                  placeholder={t('search') || 'Search'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent border-none outline-none flex-1 text-gray-700 placeholder-gray-500"
@@ -121,7 +153,7 @@ const Topbar = ({ onMenuClick }) => {
                 className="flex items-center space-x-2 bg-gradient-to-r from-purple-50 to-red-50 rounded-xl px-4 py-2 hover:shadow-sm transition-all"
                 onClick={() => setIsLanguageOpen(!isLanguageOpen)}
               >
-                <span className="text-sm font-medium text-gray-700">{selectedLanguage}</span>
+                <span className="text-sm font-medium text-gray-700">{currentName}</span>
                 <div className="w-6 h-4 bg-gradient-to-r from-blue-600 via-white to-red-600 rounded-sm flex overflow-hidden">
                   <div className="w-2 bg-blue-600"></div>
                   <div className="w-2 bg-white"></div>
@@ -131,24 +163,36 @@ const Topbar = ({ onMenuClick }) => {
               </button>
 
               {isLanguageOpen && (
-                <div className="absolute right-0 mt-2 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                  {languages.map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => {
-                        setSelectedLanguage(lang);
-                        setIsLanguageOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        selectedLanguage === lang
-                          ? 'bg-purple-50 text-purple-700 font-medium'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {lang}
-                    </button>
-                  ))}
-                </div>
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsLanguageOpen(false)}
+                  ></div>
+                  <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                    {languages.filter((l) => l.Status).length === 0 ? (
+                      <div className="px-4 py-2.5 text-sm text-gray-400">Loading…</div>
+                    ) : (
+                      languages
+                        .filter((l) => l.Status)
+                        .map((lang) => {
+                          const isActive = currentName === lang.Language_name;
+                          return (
+                            <button
+                              key={lang.Language_id ?? lang.Language_name}
+                              onClick={() => handleLanguageChange(lang)}
+                              className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                                isActive
+                                  ? 'bg-purple-50 text-purple-700 font-medium'
+                                  : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              {lang.Language_name}
+                            </button>
+                          );
+                        })
+                    )}
+                  </div>
+                </>
               )}
             </div>
 
@@ -174,14 +218,12 @@ const Topbar = ({ onMenuClick }) => {
                 <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white">
                   <img src={user.avatar} alt="Profile" className="w-full h-full object-cover" />
                 </div>
-                {/* ✅ Shows first name from Redux */}
                 <span className="text-sm font-medium text-gray-700 hidden sm:block">
                   {reduxUser?.Name || 'User'}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {/* Profile Dropdown Menu */}
               {isProfileOpen && (
                 <>
                   <div
@@ -221,7 +263,7 @@ const Topbar = ({ onMenuClick }) => {
                         <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center">
                           <User className="w-4 h-4" />
                         </div>
-                        <span className="font-medium">My Profile</span>
+                        <span className="font-medium">{t('myProfile') || 'My Profile'}</span>
                       </button>
 
                       <button
@@ -234,7 +276,7 @@ const Topbar = ({ onMenuClick }) => {
                         <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
                           <Settings className="w-4 h-4" />
                         </div>
-                        <span className="font-medium">Settings</span>
+                        <span className="font-medium">{t('settings') || 'Settings'}</span>
                       </button>
 
                       <button
@@ -247,12 +289,19 @@ const Topbar = ({ onMenuClick }) => {
                         <div className="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
                           <HelpCircle className="w-4 h-4" />
                         </div>
-                        <span className="font-medium">Help & Support</span>
+                        <span className="font-medium">{t('helpSupport') || 'Help & Support'}</span>
+                      </button>
+
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                          <LogOut className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">{t('signOut') || 'Sign Out'}</span>
                       </button>
                     </div>
-
-                    
-                   
                   </div>
                 </>
               )}
@@ -261,7 +310,7 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       </div>
 
-      {/* Notification Slide-Over (unchanged) */}
+      {/* Notification Slide-Over */}
       {isNotificationOpen && (
         <div className="fixed inset-0 z-[100] flex justify-end">
           <div
@@ -271,12 +320,14 @@ const Topbar = ({ onMenuClick }) => {
 
           <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-slide-in-right">
             <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-800">All Notifications</h2>
+              <h2 className="text-xl font-semibold text-gray-800">
+                {t('notifications') || 'All Notifications'}
+              </h2>
               <div className="flex items-center gap-3">
                 <div className="relative hidden sm:block">
                   <input
                     type="text"
-                    placeholder="Search notifications..."
+                    placeholder={t('searchNotifications') || 'Search notifications...'}
                     className="bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 w-48"
                   />
                   <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -330,7 +381,7 @@ const Topbar = ({ onMenuClick }) => {
         </div>
       )}
 
-    
+      {/* Profile Modal */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
@@ -376,7 +427,6 @@ const Topbar = ({ onMenuClick }) => {
                 </p>
               </div>
 
-              {/* ✅ Real data from Redux */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
                   <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
@@ -434,7 +484,7 @@ const Topbar = ({ onMenuClick }) => {
                   className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-red-500 rounded-xl hover:shadow-md transition-all flex items-center justify-center gap-2"
                 >
                   <Lock className="w-4 h-4" />
-                  Change Password
+                  {t('changePassword') || 'Change Password'}
                 </button>
               </div>
             </div>

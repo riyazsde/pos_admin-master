@@ -430,3 +430,89 @@ getCityWiseUsage: async (page = 1, limit = 20) => {
   };
 },
 };
+// -----------language-------------------
+export const languageService = {
+  getAllLanguages: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.LANGUAGE.GET_ALL);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load languages');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+};
+/**
+ * ✅ NEW: Audit Services
+ */
+export const auditService = {
+  // Dashboard overview (stats)
+  getOverview: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.AUDITS.OVERVIEW);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load audit overview');
+    }
+    return payload?.data || null;
+  },
+
+  // Activity report (paginated)
+  getActivity: async ({
+    page = 1,
+    limit = 20,
+    startDate,
+    endDate,
+    environment,
+    action,
+    ipAddress,
+  } = {}) => {
+    const params = { page, limit };
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    if (environment) params.environment = environment;
+    if (action) params.action = action;
+    if (ipAddress) params.ipAddress = ipAddress;
+
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.AUDITS.ACTIVITY,
+      { params }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load audit activity');
+    }
+
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // Get single audit log
+  getById: async (id) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.AUDITS.GET_BY_ID(id)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Audit not found');
+    }
+    return payload?.data || null;
+  },
+
+  // Export summary (for CSV/PDF)
+  getExportSummary: async (startDate, endDate) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.AUDITS.EXPORT_SUMMARY,
+      { params: { startDate, endDate } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to generate export');
+    }
+    return payload?.data || null;
+  },
+};
