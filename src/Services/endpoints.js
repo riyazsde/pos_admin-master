@@ -82,6 +82,17 @@ export const ENDPOINTS = {
   SOLD_IN_RESTAURANT: '/api/v1/admin/admin_pos_mydevices_sold_in_restaurant/getall',
   INVENTORY_STATUS: '/api/v1/admin/pos-hardware-devices/inventory-status',
 },
+ MDM: {
+    GET_ALL: '/api/v1/master/myDevices/getall',
+    GET_BY_AUTH: '/api/v1/master/myDevices/getbyauth',
+    SESSION_LOGS: (id) => `/api/v1/master/myDevices/${id}/session-logs`,
+    SESSION_LOGS_EXPORT: (id) => `/api/v1/master/myDevices/${id}/session-logs/export`,
+    LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
+    RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
+    PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
+    WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
+    WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`, // same URL, different payload
+  },
   },
 
 

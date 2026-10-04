@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import withAdminLayout from '../AdminPanel/withAdminLayout';
-import { 
-  Wifi, 
-  WifiOff, 
-  RefreshCw, 
-  Bell, 
-  Search, 
-  Filter, 
-  MoreVertical,
+import React, { useState, useEffect, useRef } from 'react';
+import { toast } from 'sonner';
+import {
+  Wifi,
+  WifiOff,
+  Search,
+  Filter,
   Smartphone,
   Tablet,
   Printer,
@@ -18,379 +15,130 @@ import {
   Download,
   Trash2,
   Plus,
-  X
+  X,
+  Loader2,
+  FileText,
 } from 'lucide-react';
 
-// --- Mock Data & API Simulation ---
-// In a real app, these would be replaced with actual fetch calls to your endpoints.
+import withAdminLayout from '../AdminPanel/withAdminLayout';
+import { useAppSelector, useAppDispatch } from '../../Store/hooks';
+import {
+  setMdmLoading,
+  setDevicesData,
+  patchDevice,
+  setSessionLogs,
+  setActionLoading,
+  setMdmError,
+} from '../../Store/Features/mdm/mdmSlice';
+import { mdmService } from '../../Services/apiService';
 
-const INITIAL_DEVICES = [
-  {
-    "_id": "6ac1f89fbcf753575e7381e1",
-    "Name": "riyaz",
-    "type": "Tablet",
-    "isActive": true,
-    "Devices_ModelNo": "2",
-    "Total_Stocks": 0,
-    "Serial_Number": "12",
-    "IMEI": "asfdg423423",
-    "Android_ID": null,
-    "Merchant_Assignment": null,
-    "Enrollment_Token": null,
-    "Provisioning_Type": null,
-    "Device_Ownership": null,
-    "Kiosk_Profile": null,
-    "MDM_Policy_Assignment": null,
-    "Enrollment_Mode": null,
-    "MAC_Address": null,
-    "Firmware": null,
-    "Purchase_Vendor": null,
-    "Warehouse": null,
-    "Procurement_Batch": null,
-    "Import_Batch": null,
-    "Acquisition_Cost": 0,
-    "App_Version": null,
-    "Last_Seen": null,
-    "Battery_Percentage": null,
-    "Storage_Used_Percentage": null,
-    "Uptime_Days": 0,
-    "isLocked": false,
-    "Needs_Update": false,
-    "Scheduled_Restart": null,
-    "Auto_Recovery_Mode": true,
-    "Last_Restart_Status": null,
-    "WipedAt": null,
-    "Devices_company": "a",
-    "Devices_Operating_system": null,
-    "timeZone": null,
-    "Device_browser": null,
-    "location": null,
-    "IPAddress": null,
-    "price": 0,
-    "Status": true,
-    "CreateBy": {
-      "user_id": 1,
-      "Name": "Admin",
-      "email": "admin_pos@yopmail.com"
-    },
-    "CreateAt": "2026-10-04T06:56:31.389Z",
-    "UpdatedAt": "2026-10-04T06:56:31.389Z",
-    "MyDevices_id": 4,
-    "UpdatedBy": null
-  },
-  {
-    "_id": "6ab631f3883b53ca622154f8",
-    "Name": "Z500C Payment Terminal",
-    "type": "POS Terminal",
-    "isActive": true,
-    "Devices_ModelNo": "Z500C",
-    "Total_Stocks": 0,
-    "Serial_Number": "Z500C-00001234",
-    "IMEI": null,
-    "Android_ID": null,
-    "Merchant_Assignment": null,
-    "Enrollment_Token": null,
-    "Provisioning_Type": null,
-    "Device_Ownership": null,
-    "Kiosk_Profile": null,
-    "MDM_Policy_Assignment": null,
-    "Enrollment_Mode": null,
-    "MAC_Address": null,
-    "Firmware": null,
-    "Purchase_Vendor": null,
-    "Warehouse": null,
-    "Procurement_Batch": null,
-    "Import_Batch": null,
-    "Acquisition_Cost": 0,
-    "App_Version": null,
-    "Last_Seen": "2026-09-25T08:39:52.461Z",
-    "Battery_Percentage": null,
-    "Storage_Used_Percentage": null,
-    "Uptime_Days": 0,
-    "isLocked": false,
-    "Needs_Update": false,
-    "Scheduled_Restart": null,
-    "Auto_Recovery_Mode": true,
-    "Last_Restart_Status": null,
-    "WipedAt": null,
-    "Devices_company": null,
-    "Devices_Operating_system": null,
-    "timeZone": null,
-    "Device_browser": null,
-    "location": null,
-    "IPAddress": null,
-    "price": 0,
-    "Status": true,
-    "CreateBy": {
-      "user_id": 18,
-      "Name": "alt.xa-5o6j10us",
-      "email": "alt.xa-5o6j10us@yopmail.com"
-    },
-    "CreateAt": "2026-09-25T08:33:55.816Z",
-    "UpdatedAt": "2026-09-25T08:39:52.462Z",
-    "MyDevices_id": 3,
-    "UpdatedBy": null
-  },
-  {
-    "_id": "6a8ef4dc75719d1c9a5ee36d",
-    "Name": "Receipt Printer",
-    "type": "Printer",
-    "isActive": true,
-    "Devices_ModelNo": "Epson TM-T88VII",
-    "Total_Stocks": 25,
-    "Serial_Number": "PRN-SN-0001",
-    "IMEI": "356789012345678",
-    "Android_ID": null,
-    "Merchant_Assignment": null,
-    "Enrollment_Token": null,
-    "Provisioning_Type": null,
-    "Device_Ownership": null,
-    "Kiosk_Profile": null,
-    "MDM_Policy_Assignment": null,
-    "Enrollment_Mode": null,
-    "MAC_Address": "00:1A:2B:3C:4D:5E",
-    "Firmware": "v2.4.1",
-    "Purchase_Vendor": "POS Hardware Supply Ltd",
-    "Warehouse": "Central Warehouse",
-    "Procurement_Batch": "PROC-2026-08-001",
-    "Import_Batch": "IMP-2026-08-001",
-    "Acquisition_Cost": 550,
-    "App_Version": null,
-    "Last_Seen": null,
-    "Battery_Percentage": null,
-    "Storage_Used_Percentage": null,
-    "Uptime_Days": 0,
-    "isLocked": false,
-    "Needs_Update": false,
-    "Scheduled_Restart": null,
-    "Auto_Recovery_Mode": true,
-    "Last_Restart_Status": null,
-    "WipedAt": null,
-    "Devices_company": "Epson",
-    "Devices_Operating_system": null,
-    "timeZone": null,
-    "Device_browser": null,
-    "location": null,
-    "IPAddress": null,
-    "price": 0,
-    "Status": true,
-    "CreateBy": {
-      "user_id": 1,
-      "Name": "Admin",
-      "email": "admin_pos@yopmail.com"
-    },
-    "CreateAt": "2026-08-26T14:14:52.461Z",
-    "UpdatedAt": "2026-08-26T14:14:52.461Z",
-    "MyDevices_id": 2,
-    "UpdatedBy": null
-  },
-  {
-    "MAC_Address": null,
-    "Firmware": null,
-    "Purchase_Vendor": null,
-    "Warehouse": null,
-    "Procurement_Batch": null,
-    "Import_Batch": null,
-    "Acquisition_Cost": 0,
-    "Last_Seen": null,
-    "Battery_Percentage": null,
-    "Storage_Used_Percentage": null,
-    "WipedAt": null,
-    "_id": "6a8ee742ce2c9c60c0348e1e",
-    "Name": "Front Counter POS",
-    "type": "POS Terminal",
-    "isActive": true,
-    "Devices_ModelNo": "Samsung Galaxy Tab Active4 Pro",
-    "Total_Stocks": 10,
-    "Serial_Number": "POS-SN-0001",
-    "IMEI": "356789012345678",
-    "Android_ID": "a1b2c3d4e5f67890",
-    "Merchant_Assignment": "Restaurant Beef Cairo",
-    "Enrollment_Token": "ENROLL-2026-0001",
-    "Provisioning_Type": "Fully Managed",
-    "Device_Ownership": "Company Owned",
-    "Kiosk_Profile": "Restaurant POS Kiosk",
-    "MDM_Policy_Assignment": "Standard POS Policy",
-    "Enrollment_Mode": "Token",
-    "Devices_company": null,
-    "Devices_Operating_system": null,
-    "timeZone": null,
-    "Device_browser": null,
-    "location": "Downtown Bistro",
-    "IPAddress": null,
-    "price": 0,
-    "Status": true,
-    "CreateBy": {
-      "user_id": 1,
-      "Name": "Admin",
-      "email": "admin_pos@yopmail.com"
-    },
-    "CreateAt": "2026-08-26T13:16:50.537Z",
-    "UpdatedAt": "2026-08-26T13:55:18.018Z",
-    "MyDevices_id": 1,
-    "Auto_Recovery_Mode": true,
-    "Needs_Update": false,
-    "UpdatedBy": {
-      "user_id": 1,
-      "Name": "Admin",
-      "email": "admin_pos@yopmail.com"
-    },
-    "Uptime_Days": 0,
-    "isLocked": true,
-    "Last_Restart_Status": "Queued",
-    "Scheduled_Restart": "2026-08-27T02:00:00.000Z",
-    "App_Version": "v3.2.2"
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+const isDeviceOnline = (d) => {
+  if (!d) return false;
+  if (d.isActive === false) return false;
+  if (!d.Last_Seen) return false;
+  // Consider "online" if last seen within 24h
+  const diff = Date.now() - new Date(d.Last_Seen).getTime();
+  return diff < 24 * 60 * 60 * 1000;
+};
+
+const formatDate = (iso) => {
+  if (!iso) return 'Never';
+  try {
+    return new Date(iso).toLocaleString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return 'Never';
   }
-];
-
-// --- Components ---
-
-const StatusBadge = ({ status }) => {
-  const isOnline = status === 'Online';
-  return (
-    <div className={`flex items-center gap-1.5 text-sm font-medium ${isOnline ? 'text-green-600' : 'text-red-500'}`}>
-      <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}></div>
-      {status}
-    </div>
-  );
 };
 
 const DeviceIcon = ({ type }) => {
-  const commonClasses = "text-purple-600";
+  const props = { className: 'text-purple-600', size: 20 };
   switch (type) {
-    case 'Tablet': return <Tablet className={commonClasses} size={20} />;
-    case 'POS Terminal': return <Monitor className={commonClasses} size={20} />;
-    case 'Printer': return <Printer className={commonClasses} size={20} />;
-    default: return <Smartphone className={commonClasses} size={20} />;
+    case 'Tablet':
+      return <Tablet {...props} />;
+    case 'POS Terminal':
+      return <Monitor {...props} />;
+    case 'Printer':
+      return <Printer {...props} />;
+    default:
+      return <Smartphone {...props} />;
   }
 };
 
-const ActionButton = ({ icon: Icon, label, onClick, color = "text-gray-500", hoverColor = "hover:text-gray-700" }) => (
-  <button 
-    onClick={onClick} 
-    title={label}
-    className={`p-1.5 rounded-full hover:bg-gray-100 transition-colors ${color} ${hoverColor}`}
+// ---------------------------------------------------------------------------
+// Status badge
+// ---------------------------------------------------------------------------
+const StatusBadge = ({ online }) => (
+  <div
+    className={`flex items-center gap-1.5 text-sm font-medium ${
+      online ? 'text-green-600' : 'text-red-500'
+    }`}
   >
-    <Icon size={18} />
-  </button>
+    <div
+      className={`w-2 h-2 rounded-full ${
+        online ? 'bg-green-500' : 'bg-red-500'
+      }`}
+    ></div>
+    {online ? 'Online' : 'Offline'}
+  </div>
 );
 
-const EnrollModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+// ---------------------------------------------------------------------------
+// Action modals
+// ---------------------------------------------------------------------------
+
+// Lock modal
+const LockModal = ({ device, onClose, onConfirm, loading }) => {
+  const [reason, setReason] = useState('Device reported lost');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <div>
-            <h2 className="text-lg font-bold text-gray-800">Enroll New Device</h2>
-            <p className="text-xs text-gray-500">Lorem ipsum is simply dummy text of the printing and typesetting industry</p>
-          </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100">
-            <X size={20} />
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900">Lock Device</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-
-        {/* Modal Body */}
-        <div className="p-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Information</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-            {/* Row 1 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Device Name</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Total Stocks</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 2 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Serial Number</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">IMEI</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 3 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Android ID</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Hardware Model</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 4 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Merchant Assignment</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Enrollment Token</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 5 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Provisioning Type</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Device Ownership</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 6 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Kiosk Profile</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">MDM Policy Assignment</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-
-            {/* Row 7 */}
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
-              <input type="text" placeholder="Enter" className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Enrollment Mode</label>
-              <select className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-purple-500 bg-white">
-                <option>Select one...</option>
-                <option>Token</option>
-                <option>Zero Touch</option>
-                <option>Manual</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center justify-between">
-             <h3 className="text-sm font-semibold text-gray-700">Status</h3>
-             <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">Active</span>
-                <div className="w-10 h-5 bg-green-500 rounded-full relative cursor-pointer">
-                    <div className="w-4 h-4 bg-white rounded-full absolute top-0.5 right-0.5 shadow-sm"></div>
-                </div>
-             </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">
+            Locking <strong>{device?.Name}</strong> will prevent it from being
+            used until unlocked.
+          </p>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              Reason
+            </label>
+            <input
+              type="text"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
           </div>
         </div>
-
-        {/* Modal Footer */}
-        <div className="p-4 border-t border-gray-100 flex justify-end gap-3">
-          <button onClick={onClose} className="px-6 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+          >
             Cancel
           </button>
-          <button className="px-6 py-2 bg-purple-600 rounded-lg text-sm font-medium text-white hover:bg-purple-700">
-            Enroll
+          <button
+            onClick={() => onConfirm(reason)}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-lg hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+            Lock Device
           </button>
         </div>
       </div>
@@ -398,198 +146,857 @@ const EnrollModal = ({ isOpen, onClose }) => {
   );
 };
 
-
-// --- Main Page Component ---
-
-function MomPage() {
-  const [devices, setDevices] = useState(INITIAL_DEVICES);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('All Devices');
-
-  // Calculate stats
-  const totalDevices = devices.length;
-  const onlineDevices = devices.filter(d => d.isActive && d.Last_Seen).length; // Simplified logic for demo
-  const offlineDevices = devices.filter(d => !d.isActive || !d.Last_Seen).length; // Simplified
-  const needsUpdate = devices.filter(d => d.Needs_Update).length;
-
-  // Filter Logic
-  const filteredDevices = devices.filter(device => {
-    if (activeFilter === 'All Devices') return true;
-    if (activeFilter === 'Online') return device.isActive && device.Last_Seen;
-    if (activeFilter === 'Offline') return !device.isActive || !device.Last_Seen;
-    if (activeFilter === 'Active') return device.isActive;
-    if (activeFilter === 'Idle') return !device.isActive; // Simplified mapping
-    if (activeFilter === 'Sync Delay') return device.Needs_Update; 
-    return true;
+// Restart modal
+const RestartModal = ({ device, onClose, onConfirm, loading }) => {
+  const [form, setForm] = useState({
+    Restart_Reason: 'Apply configuration changes',
+    Scheduled_Restart: new Date(Date.now() + 60 * 60 * 1000).toISOString().slice(0, 16),
+    Restart_Queue: 'maintenance',
+    Restart_Success_Confirmation: 'Required',
+    Auto_Recovery_Mode: true,
   });
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Never';
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900">Restart Device</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">
+            Restart <strong>{device?.Name}</strong>. You can schedule it in the
+            future.
+          </p>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              Reason
+            </label>
+            <input
+              type="text"
+              value={form.Restart_Reason}
+              onChange={(e) => update('Restart_Reason', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              Scheduled Time
+            </label>
+            <input
+              type="datetime-local"
+              value={form.Scheduled_Restart}
+              onChange={(e) => update('Scheduled_Restart', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="autoRecovery"
+              checked={form.Auto_Recovery_Mode}
+              onChange={(e) => update('Auto_Recovery_Mode', e.target.checked)}
+              className="w-4 h-4 accent-purple-600"
+            />
+            <label htmlFor="autoRecovery" className="text-sm text-gray-700">
+              Auto Recovery Mode
+            </label>
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(form)}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-lg hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+            Schedule Restart
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Update modal
+const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
+  const [version, setVersion] = useState(device?.App_Version || 'v3.2.2');
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900">Push Update</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <p className="text-sm text-gray-600">
+            Push a new app version to <strong>{device?.Name}</strong>.
+          </p>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              App Version
+            </label>
+            <input
+              type="text"
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(version)}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-lg hover:opacity-90 disabled:opacity-60 flex items-center gap-2"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Push Update
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Wipe modal (2-step)
+const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
+  const [step, setStep] = useState(1);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [mode, setMode] = useState('Full Factory Reset');
+
+  const handleNext = async () => {
+    if (!email.trim() || !password.trim()) {
+      toast.error('Email and password are required');
+      return;
+    }
+    const ok = await onInitiate({ email, password });
+    if (ok) setStep(2);
+  };
+
+  const handleWipe = async () => {
+    if (!otp.trim()) {
+      toast.error('OTP is required');
+      return;
+    }
+    await onVerify({ otp, mode });
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">MDM Device Management</h1>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-        >
-          Enroll New Device <Plus size={16} />
-        </button>
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900 flex items-center gap-2">
+            <Trash2 className="w-5 h-5 text-red-500" />
+            Wipe Device
+          </h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {step === 1 ? (
+            <>
+              <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-xs text-red-700">
+                ⚠️ This will erase all data on <strong>{device?.Name}</strong>.
+                This action cannot be undone.
+              </div>
+              <p className="text-sm text-gray-600">
+                Confirm your admin credentials to proceed.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  Admin Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@example.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-600">
+                Enter the OTP sent to your email to confirm the wipe.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  OTP
+                </label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                  placeholder="123456"
+                  maxLength={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-center tracking-[0.5em] font-bold focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-2">
+                  Wipe Mode
+                </label>
+                <select
+                  value={mode}
+                  onChange={(e) => setMode(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option>Full Factory Reset</option>
+                  <option>Selective Wipe</option>
+                  <option>Enterprise Reset</option>
+                </select>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={step === 1 ? handleNext : handleWipe}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-semibold text-white bg-red-500 rounded-lg hover:bg-red-600 disabled:opacity-60 flex items-center gap-2"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : step === 1 ? (
+              'Continue'
+            ) : (
+              'Wipe Device'
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Session logs modal
+const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => (
+  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <div>
+          <h3 className="font-bold text-gray-900">Session Logs</h3>
+          <p className="text-xs text-gray-500 mt-0.5">{device?.Name}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onExport}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Export CSV
+          </button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
+            <X className="w-5 h-5 text-gray-500" />
+          </button>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      <div className="flex-1 overflow-y-auto">
+        {loading ? (
+          <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="text-sm">Loading logs…</span>
+          </div>
+        ) : logs.length === 0 ? (
+          <div className="p-12 text-center text-gray-400">
+            <FileText className="w-8 h-8 mx-auto mb-2" />
+            <p className="text-sm">No session logs</p>
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 sticky top-0">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  Date
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  Action
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  Description
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {logs.map((log) => (
+                <tr key={log._id}>
+                  <td className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                    {formatDate(log.CreateAt)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-gray-800 font-medium">{log.Action}</span>
+                  </td>
+                  <td className="px-4 py-3 text-gray-600">{log.Description}</td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                        log.Status === 'Completed'
+                          ? 'bg-green-50 text-green-700'
+                          : log.Status === 'Queued'
+                          ? 'bg-yellow-50 text-yellow-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
+                      {log.Status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+// Main Page
+// ---------------------------------------------------------------------------
+const MomPage = () => {
+  const dispatch = useAppDispatch();
+
+  const { devices, loading, hasLoaded } = useAppSelector((state) => state.mdm);
+  const [actionLoading, setLocalActionLoading] = useState(false);
+
+  const [activeFilter, setActiveFilter] = useState('All Devices');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Modal state
+  const [modal, setModal] = useState(null); // { type, device }
+  const [sessionLogs, setSessionLogs] = useState([]);
+  const [sessionLogsLoading, setSessionLogsLoading] = useState(false);
+
+  // ✅ Fetch devices on mount
+  const hasFetched = useRef(false);
+  useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const fetchDevices = async () => {
+      dispatch(setMdmLoading(true));
+      try {
+        const result = await mdmService.getAllDevices();
+        dispatch(setDevicesData(result));
+      } catch (err) {
+        console.error('MDM fetch error:', err);
+        dispatch(setMdmError(err?.message || 'Failed to load devices'));
+        toast.error('Failed to load devices', {
+          description: err?.message || 'Please try again.',
+        });
+      }
+    };
+
+    fetchDevices();
+  }, [dispatch]);
+
+  // Stats
+  const totalDevices = devices.length;
+  const onlineDevices = devices.filter(isDeviceOnline).length;
+  const offlineDevices = totalDevices - onlineDevices;
+  const needsUpdate = devices.filter((d) => d.Needs_Update).length;
+
+  // Filtered
+  const filteredDevices = devices.filter((d) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matches =
+        d.Name?.toLowerCase().includes(q) ||
+        d.Devices_ModelNo?.toLowerCase().includes(q) ||
+        d.Serial_Number?.toLowerCase().includes(q);
+      if (!matches) return false;
+    }
+    const online = isDeviceOnline(d);
+    if (activeFilter === 'All Devices') return true;
+    if (activeFilter === 'Online') return online;
+    if (activeFilter === 'Offline') return !online;
+    if (activeFilter === 'Active') return d.isActive;
+    if (activeFilter === 'Idle') return !d.isActive;
+    if (activeFilter === 'Sync Delay') return d.Needs_Update;
+    return true;
+  });
+
+  // ---- Action handlers ----
+  const handleLock = async (reason) => {
+    setLocalActionLoading(true);
+    const id = modal.device.MyDevices_id;
+    const toastId = toast.loading('Locking device...');
+    try {
+      await mdmService.lockDevice(id, reason);
+      dispatch(patchDevice({ id, changes: { isLocked: true } }));
+      toast.success('Device locked', { id: toastId });
+      setModal(null);
+    } catch (err) {
+      toast.error('Failed to lock device', {
+        id: toastId,
+        description: err?.message || 'Please try again.',
+      });
+    } finally {
+      setLocalActionLoading(false);
+    }
+  };
+
+  const handleRestart = async (payload) => {
+    setLocalActionLoading(true);
+    const id = modal.device.MyDevices_id;
+    const toastId = toast.loading('Scheduling restart...');
+    try {
+      await mdmService.restartDevice(id, payload);
+      dispatch(
+        patchDevice({
+          id,
+          changes: {
+            Last_Restart_Status: 'Queued',
+            Scheduled_Restart: payload.Scheduled_Restart,
+          },
+        })
+      );
+      toast.success('Restart scheduled', { id: toastId });
+      setModal(null);
+    } catch (err) {
+      toast.error('Failed to schedule restart', {
+        id: toastId,
+        description: err?.message || 'Please try again.',
+      });
+    } finally {
+      setLocalActionLoading(false);
+    }
+  };
+
+  const handleUpdate = async (version) => {
+    setLocalActionLoading(true);
+    const id = modal.device.MyDevices_id;
+    const toastId = toast.loading('Pushing update...');
+    try {
+      await mdmService.pushUpdate(id, version);
+      dispatch(patchDevice({ id, changes: { Needs_Update: false } }));
+      toast.success('Update pushed', { id: toastId });
+      setModal(null);
+    } catch (err) {
+      toast.error('Failed to push update', {
+        id: toastId,
+        description: err?.message || 'Please try again.',
+      });
+    } finally {
+      setLocalActionLoading(false);
+    }
+  };
+
+  const handleWipeInitiate = async ({ email, password }) => {
+    setLocalActionLoading(true);
+    const id = modal.device.MyDevices_id;
+    try {
+      await mdmService.wipeDevice(id, { email, password });
+      toast.success('OTP sent to your email');
+      return true;
+    } catch (err) {
+      toast.error('Failed to initiate wipe', {
+        description: err?.message || 'Please try again.',
+      });
+      return false;
+    } finally {
+      setLocalActionLoading(false);
+    }
+  };
+
+  const handleWipeVerify = async ({ otp, mode }) => {
+    setLocalActionLoading(true);
+    const id = modal.device.MyDevices_id;
+    const toastId = toast.loading('Wiping device...');
+    try {
+      await mdmService.verifyWipeDevice(id, { otp, mode });
+      dispatch(
+        patchDevice({ id, changes: { WipedAt: new Date().toISOString() } })
+      );
+      toast.success('Device wiped', { id: toastId });
+      setModal(null);
+    } catch (err) {
+      toast.error('Failed to wipe device', {
+        id: toastId,
+        description: err?.message || 'Please try again.',
+      });
+    } finally {
+      setLocalActionLoading(false);
+    }
+  };
+
+  const openSessionLogs = async (device) => {
+    setModal({ type: 'logs', device });
+    setSessionLogsLoading(true);
+    setSessionLogs([]);
+    try {
+      const result = await mdmService.getSessionLogs(device.MyDevices_id);
+      setSessionLogs(result.logs || []);
+    } catch (err) {
+      toast.error('Failed to load session logs', {
+        description: err?.message || 'Please try again.',
+      });
+    } finally {
+      setSessionLogsLoading(false);
+    }
+  };
+
+  const exportLogs = () => {
+    if (!sessionLogs.length) {
+      toast.error('No logs to export');
+      return;
+    }
+    const rows = [
+      ['Date', 'Action', 'Description', 'Status'],
+      ...sessionLogs.map((l) => [
+        l.CreateAt,
+        l.Action,
+        `"${(l.Description || '').replace(/"/g, '""')}"`,
+        l.Status,
+      ]),
+    ];
+    const csv = rows.map((r) => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `session-logs-${modal.device.MyDevices_id}-${Date.now()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('CSV downloaded');
+  };
+
+  const ActionButton = ({ icon: Icon, label, onClick, color = 'text-gray-500', hoverColor = 'hover:text-gray-700' }) => (
+    <button
+      onClick={onClick}
+      title={label}
+      className={`p-1.5 rounded-full hover:bg-gray-100 transition-colors ${color} ${hoverColor}`}
+    >
+      <Icon size={18} />
+    </button>
+  );
+
+  return (
+    <div className="p-6 bg-gray-50 min-h-screen font-sans">
+      {/* ============== Header ============== */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">
+            MDM Device Management
+          </h1>
+          <p className="text-xs text-gray-500 mt-1">
+            {totalDevices} device{totalDevices !== 1 ? 's' : ''} in fleet
+          </p>
+        </div>
+      </div>
+
+      {/* ============== Stats ============== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Total Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              Total Devices
+            </span>
             <Smartphone className="text-gray-400" size={18} />
           </div>
-          <div className="text-2xl font-bold text-gray-800">{totalDevices}</div>
+          <div className="text-2xl font-bold text-gray-800 tabular-nums">
+            {totalDevices}
+          </div>
         </div>
-        
+
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Online Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              Online Devices
+            </span>
             <Wifi className="text-green-500" size={18} />
           </div>
-          <div className="text-2xl font-bold text-green-600">{onlineDevices}</div>
-          <div className="text-xs text-gray-400 mt-1">67% uptime</div>
+          <div className="text-2xl font-bold text-green-600 tabular-nums">
+            {onlineDevices}
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            {totalDevices > 0
+              ? Math.round((onlineDevices / totalDevices) * 100)
+              : 0}
+            % uptime
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Offline Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              Offline Devices
+            </span>
             <WifiOff className="text-red-500" size={18} />
           </div>
-          <div className="text-2xl font-bold text-red-500">{offlineDevices}</div>
-          <div className="text-xs text-gray-400 mt-1">Requires attention</div>
+          <div className="text-2xl font-bold text-red-500 tabular-nums">
+            {offlineDevices}
+          </div>
+          <div className="text-xs text-gray-400 mt-1">
+            Requires attention
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Needs Update</span>
+            <span className="text-sm text-gray-500 font-medium">
+              Needs Update
+            </span>
             <Download className="text-orange-500" size={18} />
           </div>
-          <div className="text-2xl font-bold text-orange-500">{needsUpdate}</div>
+          <div className="text-2xl font-bold text-orange-500 tabular-nums">
+            {needsUpdate}
+          </div>
           <div className="text-xs text-gray-400 mt-1">Updates available</div>
         </div>
       </div>
 
-      {/* Filter Bar */}
+      {/* ============== Filter bar ============== */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         <div className="flex flex-wrap gap-2">
-          {['All Devices', 'Online', 'Offline', 'Active', 'Idle', 'Sync Delay'].map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setActiveFilter(filter)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                activeFilter === filter 
-                  ? 'bg-purple-600 text-white border-purple-600' 
-                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {filter}
-            </button>
-          ))}
+          {['All Devices', 'Online', 'Offline', 'Active', 'Idle', 'Sync Delay'].map(
+            (filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                  activeFilter === filter
+                    ? 'bg-purple-600 text-white border-purple-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                {filter}
+              </button>
+            )
+          )}
         </div>
-        
+
         <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative w-full md:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search devices..." 
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              size={16}
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search devices..."
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
           </div>
-          <button className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm text-gray-600 hover:bg-gray-50">
-            <Filter size={16} /> Filter
-          </button>
         </div>
       </div>
 
-      {/* Device Table */}
+      {/* ============== Table ============== */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-gray-600">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-medium">
-              <tr>
-                <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Device Name</th>
-                <th className="px-6 py-4">Location</th>
-                <th className="px-6 py-4">App Version</th>
-                <th className="px-6 py-4">Last Seen</th>
-                <th className="px-6 py-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredDevices.map((device) => {
-                const isOnline = device.isActive && device.Last_Seen; // Simulated logic
-                return (
-                  <tr key={device._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <StatusBadge status={isOnline ? 'Online' : 'Offline'} />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-purple-50 rounded-lg">
-                          <DeviceIcon type={device.type} />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-800">{device.Name}</div>
-                          <div className="text-xs text-gray-500">{device.Devices_ModelNo || 'Unknown Model'}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-gray-700">{device.location || 'N/A'}</div>
-                      <div className="text-xs text-gray-400">New York, NY</div> {/* Mocked secondary location */}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-gray-700">{device.App_Version || 'v3.2.1'}</div>
-                      <div className="text-xs text-gray-400">Android 12</div>
-                      {device.Needs_Update && (
-                        <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] rounded-full font-medium">
-                          Update Available
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-gray-700">{formatDate(device.Last_Seen)}</div>
-                      <div className="text-xs text-gray-400">{device.Last_Seen ? 'Recently' : 'Long ago'}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <ActionButton icon={Lock} label="Lock" />
-                        <ActionButton icon={RotateCcw} label="Restart" />
-                        <ActionButton icon={Download} label="Update" />
-                        <ActionButton icon={Trash2} label="Wipe" color="text-red-400" hoverColor="hover:text-red-600" />
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredDevices.length === 0 && (
+        {loading && !hasLoaded ? (
+          <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
+            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+            <span className="text-sm">Loading devices…</span>
+          </div>
+        ) : filteredDevices.length === 0 ? (
+          <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
+            <Smartphone className="w-8 h-8" />
+            <p className="text-sm font-medium text-gray-500">
+              No devices found
+            </p>
+            <p className="text-xs text-gray-400">
+              Try adjusting your filters.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm text-gray-600">
+              <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-medium">
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
-                    No devices found matching the current filter.
-                  </td>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Device Name</th>
+                  <th className="px-6 py-4">Location</th>
+                  <th className="px-6 py-4">App Version</th>
+                  <th className="px-6 py-4">Last Seen</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredDevices.map((device) => {
+                  const online = isDeviceOnline(device);
+                  return (
+                    <tr
+                      key={device._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <StatusBadge online={online} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => openSessionLogs(device)}
+                          className="flex items-center gap-3 text-left hover:opacity-80"
+                          title="View session logs"
+                        >
+                          <div className="p-2 bg-purple-50 rounded-lg">
+                            <DeviceIcon type={device.type} />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-800">
+                              {device.Name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {device.Devices_ModelNo || 'Unknown Model'}
+                            </div>
+                          </div>
+                        </button>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-700">
+                          {device.location || 'N/A'}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {device.Merchant_Assignment || ''}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-700">
+                          {device.App_Version || '—'}
+                        </div>
+                        {device.Needs_Update && (
+                          <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] rounded-full font-medium">
+                            Update Available
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-700">
+                          {formatDate(device.Last_Seen)}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-1">
+                          <ActionButton
+                            icon={device.isLocked ? Unlock : Lock}
+                            label={device.isLocked ? 'Locked' : 'Lock'}
+                            onClick={() => setModal({ type: 'lock', device })}
+                            color={device.isLocked ? 'text-red-500' : 'text-gray-500'}
+                          />
+                          <ActionButton
+                            icon={RotateCcw}
+                            label="Restart"
+                            onClick={() => setModal({ type: 'restart', device })}
+                          />
+                          <ActionButton
+                            icon={Download}
+                            label="Push Update"
+                            onClick={() => setModal({ type: 'update', device })}
+                          />
+                          <ActionButton
+                            icon={Trash2}
+                            label="Wipe"
+                            onClick={() => setModal({ type: 'wipe', device })}
+                            color="text-red-400"
+                            hoverColor="hover:text-red-600"
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* Enrollment Modal */}
-      <EnrollModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {/* ============== Modals ============== */}
+      {modal?.type === 'lock' && (
+        <LockModal
+          device={modal.device}
+          onClose={() => setModal(null)}
+          onConfirm={handleLock}
+          loading={actionLoading}
+        />
+      )}
+      {modal?.type === 'restart' && (
+        <RestartModal
+          device={modal.device}
+          onClose={() => setModal(null)}
+          onConfirm={handleRestart}
+          loading={actionLoading}
+        />
+      )}
+      {modal?.type === 'update' && (
+        <UpdateModal
+          device={modal.device}
+          onClose={() => setModal(null)}
+          onConfirm={handleUpdate}
+          loading={actionLoading}
+        />
+      )}
+      {modal?.type === 'wipe' && (
+        <WipeModal
+          device={modal.device}
+          onClose={() => setModal(null)}
+          onInitiate={handleWipeInitiate}
+          onVerify={handleWipeVerify}
+          loading={actionLoading}
+        />
+      )}
+      {modal?.type === 'logs' && (
+        <SessionLogsModal
+          device={modal.device}
+          logs={sessionLogs}
+          loading={sessionLogsLoading}
+          onClose={() => setModal(null)}
+          onExport={exportLogs}
+        />
+      )}
     </div>
   );
-}
+};
 
 export default withAdminLayout(MomPage);

@@ -11,6 +11,7 @@ import auditsReducer from '../Store/Features/audits/auditsSlice';
 import posHardwareReducer from '../Store/Features/posHardware/posHardwareSlice';
 import supportTicketsReducer from '../Store/Features/supportTickets/supportTicketsSlice';
 import hamReducer from '../Store/Features/ham/hamSlice';
+import mdmReducer from '../Store/Features/mdm/mdmSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -23,6 +24,7 @@ export const store = configureStore({
      posHardware: posHardwareReducer,
      supportTickets: supportTicketsReducer,
       ham: hamReducer,
+      mdm: mdmReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

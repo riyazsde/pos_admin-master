@@ -683,3 +683,109 @@ export const hamService = {
     return data?.data || null;
   },
 };
+/**
+ * ✅ MDM Device Management Services
+ */
+export const mdmService = {
+  // Get all devices
+  getAllDevices: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_ALL);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load devices');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  // Get devices for the authenticated user
+  getMyDevicesByAuth: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_BY_AUTH);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load devices');
+    }
+    return payload?.data || [];
+  },
+
+  // Session logs
+  getSessionLogs: async (id) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.MDM.SESSION_LOGS(id)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load session logs');
+    }
+    // Response can be either { data: [...] } or { device, logs }
+    if (Array.isArray(payload?.data)) return { logs: payload.data };
+    return payload?.data || { logs: [] };
+  },
+
+  // ✅ Lock device
+  lockDevice: async (id, reason) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.LOCK(id),
+      { reason }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to lock device');
+    }
+    return payload?.data || null;
+  },
+
+  // ✅ Restart device
+  restartDevice: async (id, payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.RESTART(id),
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to restart device');
+    }
+    return data?.data || null;
+  },
+
+  // ✅ Push app update
+  pushUpdate: async (id, App_Version) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.PUSH_UPDATE(id),
+      { App_Version }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to push update');
+    }
+    return data?.data || null;
+  },
+
+  // ✅ Wipe device — step 1: initiate with credentials
+  wipeDevice: async (id, { email, password }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.WIPE(id),
+      { Email: email, password }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to initiate wipe');
+    }
+    return data?.data || null;
+  },
+
+  // ✅ Wipe device — step 2: verify with OTP
+  verifyWipeDevice: async (id, { otp, mode }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id),
+      { OTP: otp, Wipe_Mode: mode }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to verify wipe');
+    }
+    return data?.data || null;
+  },
+};
