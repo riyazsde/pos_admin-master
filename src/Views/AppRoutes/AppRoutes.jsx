@@ -33,6 +33,7 @@ import DateTimeSettings from '../../Components/Settings/DateTimeSettings';
 import CurrencySettings from '../../Components/Settings/CurrencySettings';
 import BillingHistory from '../../Components/Settings/BillingHistory';
 import HamPage from '../../Views/Ham/HamPage';
+import MomPage from '../../Views/mom/MomPage'
 // Guards + 404
 import NotFound from '../NotFound/NotFound';
 import ProtectedRoute from '../../Routes/ProtectedRoute';
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="/subscription-list" element={<ProtectedRoute><SubscriptionTable /></ProtectedRoute>} />
         <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
          <Route path="/ham" element={<ProtectedRoute><HamPage/></ProtectedRoute>} />
+          <Route path="/mom" element={<ProtectedRoute><MomPage/></ProtectedRoute>} />
         <Route path="/audit-log" element={<ProtectedRoute><AuditLogTable /></ProtectedRoute>} />
         <Route path="/supports" element={<ProtectedRoute><SupportsPage /></ProtectedRoute>} />
         <Route path="/ticket-details" element={<ProtectedRoute><TicketDetails /></ProtectedRoute>} />

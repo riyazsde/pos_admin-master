@@ -25,7 +25,8 @@ export default function Sidebar() {
     { icon: image2, label: 'Clients', route: '/clients' },
     { icon: image3, label: 'Subscriptions', route: '/subscription-list' },
     { icon: image4, label: 'Reports', route: '/report' },
-      { icon: image4, label: 'HAM', route: '/ham' },
+    { icon: image4, label: 'HAM', route: '/ham' },
+    { icon: image4, label: 'MOM Device', route: '/mom' },
     { icon: image5, label: 'Audit Log', route: '/audit-log' },
     { icon: image6, label: 'Supports', route: '/supports' },
     { icon: image7, label: 'POS Device', route: '/pos-device' },
@@ -83,23 +84,20 @@ export default function Sidebar() {
                 <div
                   key={idx}
                   onClick={() => handleItemClick(route)}
-                  className={`cursor-pointer flex items-center gap-[8px] sm:gap-[10px] px-4 sm:px-[22px] py-2 sm:py-3 rounded-[20px] sm:rounded-[24px] transition-all duration-300 min-h-[44px] sm:min-h-[48px] ${
-                    isSelected
+                  className={`cursor-pointer flex items-center gap-[8px] sm:gap-[10px] px-4 sm:px-[22px] py-2 sm:py-3 rounded-[20px] sm:rounded-[24px] transition-all duration-300 min-h-[44px] sm:min-h-[48px] ${isSelected
                       ? 'bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] shadow-lg scale-[1.02] sm:scale-105'
                       : 'bg-transparent hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   <img
                     src={icon}
                     alt={label}
-                    className={`w-5 sm:w-6 h-5 sm:h-6 transition-all duration-300 flex-shrink-0 ${
-                      isSelected ? 'filter brightness-0 invert' : ''
-                    }`}
+                    className={`w-5 sm:w-6 h-5 sm:h-6 transition-all duration-300 flex-shrink-0 ${isSelected ? 'filter brightness-0 invert' : ''
+                      }`}
                   />
                   <span
-                    className={`font-bold text-base sm:text-lg leading-[120%] transition-colors duration-300 truncate ${
-                      isSelected ? 'text-white' : 'text-black'
-                    }`}
+                    className={`font-bold text-base sm:text-lg leading-[120%] transition-colors duration-300 truncate ${isSelected ? 'text-white' : 'text-black'
+                      }`}
                   >
                     {label}
                   </span>
