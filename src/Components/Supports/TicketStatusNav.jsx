@@ -14,72 +14,68 @@ const TicketStatusNav = ({ activeTab, setActiveTab }) => {
       name: 'All Tickets',
       statusMatch: 'All Tickets',
       defaultImage: smsBlue,
-      blueImage: smsIcon,
+      activeImage: smsIcon,
+      activeColor: 'text-purple-700',
+      borderColor: 'border-purple-700',
     },
     {
       name: 'New',
       statusMatch: 'New',
       defaultImage: notificationIcon,
-      blueImage: notificationBlue,
+      activeImage: notificationBlue,
+      activeColor: 'text-[#2D7FF9]',
+      borderColor: 'border-[#2D7FF9]',
     },
     {
       name: 'On-Going',
       statusMatch: 'On-Going',
       defaultImage: tracking,
-      yellowImage: trackingYellow,
+      activeImage: trackingYellow,
+      activeColor: 'text-[#F5A623]',
+      borderColor: 'border-[#F5A623]',
+    },
+    {
+      name: 'Escalated',
+      statusMatch: 'Escalated',
+      defaultImage: notificationIcon,
+      activeImage: notificationBlue,
+      activeColor: 'text-red-600',
+      borderColor: 'border-red-600',
     },
     {
       name: 'Resolved',
       statusMatch: 'Resolved',
       defaultImage: starr,
-      greenImage: starrGreen,
+      activeImage: starrGreen,
+      activeColor: 'text-[#34C759]',
+      borderColor: 'border-[#34C759]',
     },
   ];
 
-  const getImage = (tab, isActive) => {
-    if (tab.statusMatch === 'All Tickets') {
-      return isActive ? tab.blueImage : tab.defaultImage;
-    }
-    if (!isActive) return tab.defaultImage;
-
-    switch (tab.statusMatch) {
-      case 'New': return tab.blueImage;
-      case 'On-Going': return tab.yellowImage;
-      case 'Resolved': return tab.greenImage;
-      default: return tab.defaultImage;
-    }
-  };
-
-  const getColorClass = (status, isActive) => {
-    if (!isActive) return { text: 'text-gray-500', border: '' };
-
-    switch (status) {
-      case 'New': return { text: 'text-blue-500', border: 'border-b-2 border-blue-500' };
-      case 'On-Going': return { text: 'text-yellow-500', border: 'border-b-2 border-yellow-500' };
-      case 'Resolved': return { text: 'text-green-500', border: 'border-b-2 border-green-500' };
-      default: return { text: 'text-purple-700', border: 'border-b-2 border-purple-700' };
-    }
-  };
-
   return (
-    <div className="flex flex-wrap md:flex-nowrap items-end gap-6 w-full relative">
+    <div className="flex flex-wrap md:flex-nowrap items-end gap-6 w-full border-b border-gray-100 pb-2">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.statusMatch;
-        const { text, border } = getColorClass(tab.statusMatch, isActive);
-        const icon = getImage(tab, isActive);
+        const icon = isActive ? tab.activeImage : tab.defaultImage;
 
         return (
           <div
             key={tab.name}
             onClick={() => setActiveTab(tab.statusMatch)}
-            className={`flex items-center gap-2 pb-1 cursor-pointer transition-all duration-200 ${text} ${border}`}
+            className={`flex items-center gap-2 pb-1 cursor-pointer transition-all duration-200 ${
+              isActive
+                ? `${tab.activeColor} border-b-2 ${tab.borderColor}`
+                : 'text-gray-400 border-b-2 border-transparent hover:text-gray-600'
+            }`}
           >
             <img
               src={icon}
               alt={`${tab.name} icon`}
-              className="h-5 w-5 object-contain transition-transform duration-200"
+              className="h-4 w-4 sm:h-5 sm:w-5 object-contain"
             />
-            <span className="font-medium text-base sm:text-lg">{tab.name}</span>
+            <span className="font-medium text-sm sm:text-base whitespace-nowrap">
+              {tab.name}
+            </span>
           </div>
         );
       })}

@@ -534,3 +534,152 @@ export const posHardwareService = {
     return payload?.data || null;
   },
 };
+/**
+ * ✅ NEW: Support Ticket Services
+ */
+/**
+ * ✅ Support Ticket Services
+ */
+export const supportTicketService = {
+  // GET
+  getSummary: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.SUMMARY
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load ticket summary');
+    }
+    return payload?.data || null;
+  },
+
+  // GET
+  getTickets: async (page = 1, limit = 10, status = null) => {
+    const params = { page, limit };
+    if (status) params.status = status;
+
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.LIST,
+      { params }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load tickets');
+    }
+
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // ✅ PUT (was POST)
+  updateTicketStatus: async (id, status) => {
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.UPDATE,
+      { id, Ticket_status: status }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to update ticket');
+    }
+    return payload?.data || null;
+  },
+
+  // POST (create reply — creating a new resource)
+  createReply: async ({
+    support_ticket_id,
+    reply,
+    employee_id,
+    Ticket_status,
+    Status = true,
+  }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.REPLY,
+      {
+        support_ticket_id,
+        reply,
+        employee_id,
+        Ticket_status,
+        Status,
+      }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to submit reply');
+    }
+    return payload?.data || null;
+  },
+
+  // GET
+  getChart: async (filter = '1Month') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.CHART,
+      { params: { filter } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load chart');
+    }
+    return payload?.data || null;
+  },
+};
+
+/**
+ * ✅ NEW: Hardware Asset Management Services
+ */
+export const hamService = {
+  // Get all devices in the master inventory
+  getMyDevices: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.HAM.MY_DEVICES);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load devices');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  // Get devices that were sold & assigned to restaurants
+  getSoldInRestaurant: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.HAM.SOLD_IN_RESTAURANT
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load assigned devices');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  // Inventory status (aggregate counts)
+  getInventoryStatus: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.HAM.INVENTORY_STATUS
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load inventory status');
+    }
+    return payload?.data || null;
+  },
+
+  // Create a new device
+  createDevice: async (payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.HAM.CREATE_DEVICE,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create device');
+    }
+    return data?.data || null;
+  },
+};

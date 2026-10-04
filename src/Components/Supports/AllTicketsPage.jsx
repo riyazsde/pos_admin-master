@@ -15,10 +15,13 @@ const AllTicketsPage = ({ allTickets }) => {
             description={ticket.description}
             userName={ticket.userName}
             isFirst={index === 0}
+            ticketData={ticket}
           />
         ))
       ) : (
-        <p className="text-center w-full text-gray-600 text-lg">No tickets found.</p>
+        <p className="text-center w-full text-gray-600 text-lg">
+          No tickets found.
+        </p>
       )}
     </div>
   );

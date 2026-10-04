@@ -25,6 +25,7 @@ export default function Sidebar() {
     { icon: image2, label: 'Clients', route: '/clients' },
     { icon: image3, label: 'Subscriptions', route: '/subscription-list' },
     { icon: image4, label: 'Reports', route: '/report' },
+      { icon: image4, label: 'HAM', route: '/ham' },
     { icon: image5, label: 'Audit Log', route: '/audit-log' },
     { icon: image6, label: 'Supports', route: '/supports' },
     { icon: image7, label: 'POS Device', route: '/pos-device' },

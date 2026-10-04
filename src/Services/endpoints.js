@@ -69,6 +69,19 @@ export const ENDPOINTS = {
   POS_HARDWARE: {
     DASHBOARD: '/api/v1/admin/pos-hardware-devices/dashboard',
   },
+    SUPPORT_TICKETS: {
+    SUMMARY: '/api/v1/admin/dashboard/support-tickets/summary',
+    LIST: '/api/v1/admin/dashboard/support-tickets',
+    UPDATE: '/api/v1/restaurant/support_ticket/update',
+    REPLY: '/api/v1/restaurant/support_ticket_reply/create',
+    CHART: '/api/v1/restaurant/support_ticket/chart',
+  },
+  HAM: {
+  MY_DEVICES: '/api/v1/master/myDevices/getall',
+  CREATE_DEVICE: '/api/v1/master/myDevices/create',
+  SOLD_IN_RESTAURANT: '/api/v1/admin/admin_pos_mydevices_sold_in_restaurant/getall',
+  INVENTORY_STATUS: '/api/v1/admin/pos-hardware-devices/inventory-status',
+},
   },
 
 

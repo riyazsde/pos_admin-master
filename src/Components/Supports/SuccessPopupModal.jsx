@@ -1,33 +1,46 @@
 import React from 'react';
-import successIcon from '../../assets/Images/admin/client/successIcon.png'; // Replace with actual success image path
 import { useNavigate } from 'react-router-dom';
+import successIcon from '../../assets/Images/admin/client/successIcon.png';
 
 const SuccessPopupModal = ({ onClose }) => {
+  const navigate = useNavigate();
 
-    const navigate=useNavigate()
+  const handleContinue = () => {
+    // Close the modal
+    onClose?.();
+    // Navigate to the supports list
+    navigate('/supports');
+  };
+
   return (
-    <div className="fixed inset-0  bg-opacity-40 z-50 flex justify-center items-center">
-      <div className="relative w-[642px] h-[409px] bg-white rounded-[20px] shadow-lg">
-        <div className="absolute w-[454px] h-[328px] left-1/2 -translate-x-1/2 top-[40px] flex flex-col items-center gap-[40px]">
+    <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4">
+      <div className="relative w-full max-w-[642px] bg-white rounded-[20px] shadow-lg">
+        <div className="flex flex-col items-center gap-8 px-6 py-10 sm:p-10">
           {/* Title + Subtitle */}
-          <div className="flex flex-col items-center gap-[8px] w-[454px] h-[70px]">
-            <h1 className="text-[32px] font-bold text-center text-black  leading-[120%]">
-Successfully Reply Submitted            </h1>
-            <p className="text-[16px] text-center  leading-[24px] tracking-[0.43px] font-[Poppins]">
-Clients ticket looks like urgent so it falls under High Priority            </p>
+          <div className="flex flex-col items-center gap-2 max-w-[454px] text-center">
+            <h1 className="text-2xl sm:text-[32px] font-bold text-black leading-tight">
+              Successfully Reply Submitted
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600 leading-6">
+              Client's ticket looks urgent, so it falls under High Priority
+            </p>
           </div>
 
           {/* Checkmark */}
-          <div className="relative w-[132px] h-[132px]">
-              <img src={successIcon} alt="success" className="" />
+          <div className="w-24 h-24 sm:w-32 sm:h-32 flex items-center justify-center">
+            <img
+              src={successIcon}
+              alt="success"
+              className="w-full h-full object-contain"
+            />
           </div>
 
           {/* Button */}
           <button
-            onClick={onClose}
-            className="flex justify-center items-center px-[40px] py-[16px] gap-[8px] bg-[#34C759] rounded-[12px] w-[164px] h-[54px]"
+            onClick={handleContinue}
+            className="flex justify-center items-center px-8 sm:px-10 py-3 sm:py-4 bg-[#34C759] hover:bg-[#2DB14C] rounded-[12px] min-w-[164px] transition-colors"
           >
-            <span className="text-white text-[18px] font-medium leading-[120%] font-[Poppins]" onClick={()=>navigate('/supports')}>
+            <span className="text-white text-base sm:text-lg font-medium">
               Continue
             </span>
           </button>

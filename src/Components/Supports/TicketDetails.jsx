@@ -1,49 +1,113 @@
 import React, { useState } from 'react';
-import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { BsEnvelopeOpen, BsCheckCircle } from 'react-icons/bs';
+
+import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import SuccessPopupModal from './SuccessPopupModal';
 
-const StatusDropdown = ({ status, setStatus }) => {
+import { useAppDispatch, useAppSelector } from '../../Store/hooks';
+import {
+  setUpdating,
+  patchTicketStatus,
+  setSupportTicketsError,
+} from '../../Store/Features/supportTickets/supportTicketsSlice';
+import { supportTicketService } from '../../Services/apiService';
+
+// ---------------------------------------------------------------------------
+// ✅ Backend <-> Frontend status mapping
+// Backend valid: Pending | Open | Process | Solve | Close
+// ---------------------------------------------------------------------------
+const UI_TO_BACKEND = {
+  New: 'Open',
+  'On-Going': 'Process',
+  Resolved: 'Solve',
+  Pending: 'Pending',
+  Closed: 'Close',
+};
+
+const BACKEND_TO_UI = {
+  Pending: 'Pending',
+  Open: 'New',
+  Process: 'On-Going',
+  Solve: 'Resolved',
+  Close: 'Closed',
+};
+
+const toBackendStatus = (uiLabel) => UI_TO_BACKEND[uiLabel] || 'Open';
+const toUiStatus = (backendStatus) => {
+  if (!backendStatus) return 'New';
+  if (BACKEND_TO_UI[backendStatus]) return BACKEND_TO_UI[backendStatus];
+  const key = Object.keys(BACKEND_TO_UI).find(
+    (k) => k.toLowerCase() === String(backendStatus).toLowerCase()
+  );
+  return key ? BACKEND_TO_UI[key] : 'New';
+};
+
+// ---------------------------------------------------------------------------
+// Status dropdown
+// ---------------------------------------------------------------------------
+const StatusDropdown = ({ status, setStatus, onStatusChange, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const statusOptions = ['New', 'On-Going', 'Resolved'];
+  const statusOptions = ['New', 'On-Going', 'Resolved', 'Pending', 'Closed'];
 
   const statusColors = {
-    New: 'bg-blue-500 text-white',
-    'On-Going': 'bg-yellow-500 text-white',
-    Resolved: 'bg-green-500 text-white',
+    New: 'bg-[#2D7FF9] text-white',
+    'On-Going': 'bg-[#F5A623] text-white',
+    Resolved: 'bg-[#34C759] text-white',
+    Pending: 'bg-[#FF955A] text-white',
+    Closed: 'bg-gray-500 text-white',
   };
 
   const statusIcons = {
-    New: <BsEnvelopeOpen className="w-3 h-3 sm:w-4 sm:h-4" />,
-    'On-Going': <BsEnvelopeOpen className="w-3 h-3 sm:w-4 sm:h-4" />,
-    Resolved: <BsCheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />,
+    New: <BsEnvelopeOpen className="w-3.5 h-3.5" />,
+    'On-Going': <BsEnvelopeOpen className="w-3.5 h-3.5" />,
+    Resolved: <BsCheckCircle className="w-3.5 h-3.5" />,
+    Pending: <BsEnvelopeOpen className="w-3.5 h-3.5" />,
+    Closed: <BsCheckCircle className="w-3.5 h-3.5" />,
+  };
+
+  const currentColor = statusColors[status] || statusColors.New;
+  const currentIcon = statusIcons[status] || statusIcons.New;
+
+  const handleSelect = async (option) => {
+    setIsOpen(false);
+    setStatus(option);
+    if (onStatusChange) {
+      const backendValue = toBackendStatus(option);
+      await onStatusChange(backendValue, option);
+    }
   };
 
   return (
     <div className="relative inline-block text-left">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`inline-flex items-center gap-1 sm:gap-2 px-3 py-2 sm:px-4 rounded-lg ${statusColors[status]} transition text-sm sm:text-base`}
+        disabled={disabled}
+        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${currentColor} transition text-sm font-medium disabled:opacity-60`}
       >
-        {statusIcons[status]}
-        <span className="font-medium">{status}</span>
-        <ChevronDownIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+        {currentIcon}
+        <span>{status}</span>
+        <ChevronDownIcon className="w-4 h-4" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-36 sm:w-40 bg-white border border-gray-300 rounded-md shadow-lg z-10">
+        <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
           {statusOptions.map((option) => (
             <div
               key={option}
-              onClick={() => {
-                setStatus(option);
-                setIsOpen(false);
-              }}
-              className="px-3 py-2 sm:px-4 cursor-pointer hover:bg-gray-100 flex items-center gap-2 text-xs sm:text-sm"
+              onClick={() => handleSelect(option)}
+              className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 text-sm ${
+                option === status ? 'bg-gray-50 font-semibold' : 'text-gray-700'
+              }`}
             >
-              {statusIcons[option]}
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  statusColors[option].split(' ')[0]
+                }`}
+              ></span>
               {option}
             </div>
           ))}
@@ -53,139 +117,336 @@ const StatusDropdown = ({ status, setStatus }) => {
   );
 };
 
+// ---------------------------------------------------------------------------
+// Assign Agent dropdown
+// ---------------------------------------------------------------------------
+const AssignAgentDropdown = ({ value, onChange, agents = [], disabled }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const selectedAgent = agents.find((a) => a.id === value);
+  const label = selectedAgent ? selectedAgent.name : 'Select...';
+
+  return (
+    <div className="relative w-full max-w-[280px]">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        disabled={disabled}
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+      >
+        <span className={selectedAgent ? 'text-gray-900' : 'text-gray-400'}>
+          {label}
+        </span>
+        <ChevronDownIcon className="w-4 h-4 text-gray-500" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-20 max-h-60 overflow-y-auto">
+          <div
+            onClick={() => {
+              onChange(null);
+              setIsOpen(false);
+            }}
+            className="px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 cursor-pointer"
+          >
+            Unassigned
+          </div>
+          {agents.length === 0 ? (
+            <div className="px-4 py-2.5 text-sm text-gray-400">
+              No agents available
+            </div>
+          ) : (
+            agents.map((agent) => (
+              <div
+                key={agent.id}
+                onClick={() => {
+                  onChange(agent.id);
+                  setIsOpen(false);
+                }}
+                className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer ${
+                  agent.id === value ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                }`}
+              >
+                {agent.name}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Main
+// ---------------------------------------------------------------------------
 const TicketDetails = () => {
-  const [email, setEmail] = useState('AOHBars@gmail.com');
-  const [businessName, setBusinessName] = useState('AOH BARS');
-  const [subject, setSubject] = useState('Money Deposit not working');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const updating = useAppSelector((state) => state.supportTickets.updating);
+
+  const initial = location.state?.ticket || {};
+
+  const [ticketId] = useState(initial.id || '2023-CS123');
+  const [ticketDbId] = useState(initial.dbId || 1);
+  const [email, setEmail] = useState(initial.email || 'AOHBars@gmail.com');
+  const [businessName, setBusinessName] = useState(
+    initial.userName || 'AOH BARS'
+  );
+  const [subject, setSubject] = useState(
+    initial.title || 'Money Deposit not working'
+  );
+  const [assignedAgent, setAssignedAgent] = useState(null);
   const [reply, setReply] = useState('');
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
-  const [status, setStatus] = useState('New');
+  const [status, setStatus] = useState(initial.status || 'New');
   const [showModal, setShowModal] = useState(false);
 
+  // Mock agents list — replace with API when available
+  const AGENTS = [
+    { id: 10, name: 'Sarah Johnson' },
+    { id: 11, name: 'Michael Chen' },
+    { id: 12, name: 'Emily Martinez' },
+  ];
+
+  // ✅ Update status
+  const handleStatusChange = async (backendStatus, frontendLabel) => {
+    dispatch(setUpdating(true));
+    try {
+      const res = await supportTicketService.updateTicketStatus(
+        ticketDbId,
+        backendStatus
+      );
+      const newBackendStatus = res?.Ticket_status || backendStatus;
+      const newUiStatus = toUiStatus(newBackendStatus);
+
+      setStatus(newUiStatus);
+      dispatch(patchTicketStatus({ id: ticketDbId, status: newUiStatus }));
+      toast.success(`Status updated to ${newUiStatus}`);
+    } catch (err) {
+      console.error('Update status error:', err);
+      dispatch(setSupportTicketsError(err?.message || 'Failed to update status'));
+      toast.error('Failed to update status', {
+        description:
+          err?.response?.data?.errors?.[0]?.msg ||
+          err?.response?.data?.message ||
+          err?.message ||
+          'Please try again.',
+      });
+    } finally {
+      dispatch(setUpdating(false));
+    }
+  };
+
+  // ✅ Submit reply
+  const handleSubmitReply = async () => {
+    if (!reply.trim()) {
+      toast.error('Please write a reply before submitting');
+      return;
+    }
+
+    dispatch(setUpdating(true));
+    const toastId = toast.loading('Submitting reply...');
+    try {
+      await supportTicketService.createReply({
+        support_ticket_id: ticketDbId,
+        reply: reply.trim(),
+        employee_id: assignedAgent || 10,
+        Ticket_status: 'Process', // reply moves ticket to Process
+        Status: true,
+      });
+
+      toast.success('Reply submitted', { id: toastId, duration: 2000 });
+      setShowModal(true);
+    } catch (err) {
+      console.error('Reply error:', err);
+      toast.error('Failed to submit reply', {
+        id: toastId,
+        description:
+          err?.response?.data?.errors?.[0]?.msg ||
+          err?.response?.data?.message ||
+          err?.message ||
+          'Please try again.',
+      });
+    } finally {
+      dispatch(setUpdating(false));
+    }
+  };
+
   return (
-    <div className="w-full flex justify-center px-2 sm:px-4">
-      <div className="flex flex-col items-end p-4 sm:p-6 gap-4 w-full bg-gradient-to-b from-purple-700/10 to-red-600/10 rounded-xl sm:rounded-2xl">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full gap-3 sm:gap-0">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-blue-500 rounded-full"></div>
-            <p className="font-poppins font-medium text-sm sm:text-base text-black">Ticket# 2023-CS123</p>
+    <div className="w-full flex justify-center px-4 py-6">
+      {/* ==================== Card ==================== */}
+      <div className="w-full max-w-[1100px] bg-white rounded-xl border border-gray-200 shadow-sm">
+        {/* -------- Header (inside card, top) -------- */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 py-4 border-b border-gray-100 gap-3">
+          <div className="flex items-center gap-3">
+            <span className="w-3 h-3 rounded-full bg-[#F5A623]"></span>
+            <p className="font-poppins font-semibold text-sm sm:text-base text-gray-900">
+              Ticket# {ticketId}
+            </p>
           </div>
-          <div className="flex flex-col items-start sm:items-end gap-2 w-full sm:w-auto">
-            <p className="font-poppins font-medium text-xs sm:text-sm text-black">Posted at 12:45 AM</p>
-            <StatusDropdown status={status} setStatus={setStatus} />
+
+          <div className="flex items-center gap-3">
+            <p className="font-poppins text-xs text-gray-500">
+              Posted at {new Date(initial.createdDate || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+            <StatusDropdown
+              status={status}
+              setStatus={setStatus}
+              onStatusChange={handleStatusChange}
+              disabled={updating}
+            />
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col items-end w-full gap-6 sm:gap-10">
-          <div className="flex flex-col items-start w-full gap-16 sm:gap-[120px]">
-            <div className="flex flex-col items-start w-full gap-6 sm:gap-8">
-              {/* Editable Fields */}
-              <div className="flex flex-col lg:flex-row lg:flex-wrap items-start w-full gap-4 sm:gap-6 lg:gap-7">
-                <div className="flex flex-col items-start gap-2 w-full lg:flex-1 lg:min-w-[280px]">
-                  <p className="font-poppins font-medium text-base sm:text-lg text-[#2E2A40]">Email</p>
-                  <input
-                    type="email"
-                    className="box-border p-3 sm:p-4 w-full h-[45px] sm:h-[50px] border border-black/50 rounded font-poppins text-sm sm:text-base text-black"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-col items-start gap-2 w-full lg:flex-1 lg:min-w-[280px]">
-                  <p className="font-poppins font-medium text-base sm:text-lg text-[#2E2A40]">Business Name</p>
-                  <input
-                    type="text"
-                    className="box-border p-3 sm:p-4 w-full h-[45px] sm:h-[50px] border border-black/50 rounded font-poppins text-sm sm:text-base text-black"
-                    value={businessName}
-                    onChange={(e) => setBusinessName(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex flex-col items-start gap-2 w-full lg:flex-1 lg:min-w-[280px]">
-                  <p className="font-poppins font-medium text-base sm:text-lg text-[#2E2A40]">Ticket Subject</p>
-                  <input
-                    type="text"
-                    className="box-border p-3 sm:p-4 w-full h-[45px] sm:h-[50px] border border-black/50 rounded font-poppins text-sm sm:text-base text-black"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="font-poppins font-medium text-base sm:text-lg text-black w-full">How to deposit money to my portal?</p>
-              <p className="font-poppins font-normal text-sm sm:text-base leading-[170%] text-black w-full">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur
-                adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              </p>
-
-              {/* Image Upload Section */}
-              <div className="flex flex-col items-start gap-2 w-full max-w-full sm:max-w-[366px]">
-                <p className="font-poppins font-medium text-base sm:text-lg text-[#2E2A40]">Images Uploaded</p>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 border border-black/50 rounded p-3 sm:p-4 w-full">
-                  {/* Image 01 */}
-                  <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <div className="flex justify-center items-center px-3 py-2 sm:px-2 sm:py-1 bg-gradient-to-b from-purple-700 to-red-600 rounded-lg">
-                        <p className="font-poppins font-semibold text-xs sm:text-sm text-white">Image 01</p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) setImage1(URL.createObjectURL(file));
-                        }}
-                      />
-                    </label>
-                    {image1 && <img src={image1} alt="Preview 1" className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded" />}
-                  </div>
-
-                  {/* Image 02 */}
-                  <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <div className="flex justify-center items-center px-3 py-2 sm:px-2 sm:py-1 bg-gradient-to-b from-purple-700 to-red-600 rounded-lg">
-                        <p className="font-poppins font-semibold text-xs sm:text-sm text-white">Image 02</p>
-                      </div>
-                      <input
-                        type="file"
-                        className="hidden"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) setImage2(URL.createObjectURL(file));
-                        }}
-                      />
-                    </label>
-                    {image2 && <img src={image2} alt="Preview 2" className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded" />}
-                  </div>
-                </div>
-              </div>
+        {/* -------- Body -------- */}
+        <div className="px-6 py-6 space-y-6">
+          {/* Row: Email / Business Name / Ticket Subject */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="flex flex-col gap-2">
+              <label className="font-poppins text-sm font-medium text-gray-800">
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
             </div>
 
-            {/* Reply Section */}
-            <div className="flex flex-col items-end w-full gap-6 sm:gap-10">
-              <div className="flex flex-col items-start w-full gap-2">
-                <p className="font-poppins font-medium text-base sm:text-lg text-[#2E2A40] w-full">Reply Ticket</p>
-                <textarea
-                  value={reply}
-                  onChange={(e) => setReply(e.target.value)}
-                  placeholder="Explain here..."
-                  className="box-border p-3 sm:p-4 w-full h-[140px] sm:h-[182px] border border-black/50 rounded font-poppins text-sm sm:text-base text-black resize-none"
-                />
-              </div>
-              <button
-                onClick={() => setShowModal(true)}
-                className="flex justify-center items-center px-6 py-3 sm:px-10 sm:py-4 bg-gradient-to-b from-purple-700 to-red-600 rounded-lg w-full sm:w-auto"
-              >
-                <p className="font-poppins font-medium text-base sm:text-lg text-white">Submit Reply</p>
-              </button>
+            <div className="flex flex-col gap-2">
+              <label className="font-poppins text-sm font-medium text-gray-800">
+                Business Name
+              </label>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="font-poppins text-sm font-medium text-gray-800">
+                Ticket Subject
+              </label>
+              <input
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
             </div>
           </div>
+
+          {/* Assign Agent */}
+          <div className="flex flex-col gap-2">
+            <label className="font-poppins text-sm font-medium text-gray-800">
+              Assign Agent
+            </label>
+            <AssignAgentDropdown
+              value={assignedAgent}
+              onChange={setAssignedAgent}
+              agents={AGENTS}
+              disabled={updating}
+            />
+          </div>
+
+          {/* Question + Description */}
+          <div className="space-y-3">
+            <h3 className="font-poppins font-semibold text-base text-gray-900">
+              {subject}
+            </h3>
+            <p className="font-poppins text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+              {initial.description ||
+                `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`}
+            </p>
+            <p className="font-poppins text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+              {initial.description ||
+                `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`}
+            </p>
+          </div>
+
+          {/* Images Uploaded */}
+          <div className="space-y-3">
+            <label className="font-poppins text-sm font-medium text-gray-800">
+              Images Uploaded
+            </label>
+            <div className="flex flex-wrap gap-3">
+              <label className="cursor-pointer">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] rounded-md text-white text-xs font-semibold hover:opacity-90 transition-opacity">
+                  Image 02
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) setImage2(URL.createObjectURL(file));
+                  }}
+                />
+              </label>
+
+              <label className="cursor-pointer">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] rounded-md text-white text-xs font-semibold hover:opacity-90 transition-opacity">
+                  Image 01
+                </div>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) setImage1(URL.createObjectURL(file));
+                  }}
+                />
+              </label>
+
+              {image1 && (
+                <img
+                  src={image1}
+                  alt="Preview 1"
+                  className="w-10 h-10 object-cover rounded"
+                />
+              )}
+              {image2 && (
+                <img
+                  src={image2}
+                  alt="Preview 2"
+                  className="w-10 h-10 object-cover rounded"
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Reply Ticket */}
+          <div className="space-y-2">
+            <label className="font-poppins text-sm font-medium text-gray-800">
+              Reply Ticket
+            </label>
+            <textarea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Explain here..."
+              className="w-full px-3 py-3 border border-gray-300 rounded-md text-sm text-gray-800 h-[140px] resize-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        {/* -------- Footer -------- */}
+        <div className="flex justify-end px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={handleSubmitReply}
+            disabled={updating}
+            className="px-8 py-3 bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
+          >
+            {updating ? 'Submitting...' : 'Submit Reply'}
+          </button>
         </div>
       </div>
 
