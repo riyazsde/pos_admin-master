@@ -516,3 +516,21 @@ export const auditService = {
     return payload?.data || null;
   },
 };
+
+/**
+ * ✅ NEW: POS Hardware Services
+ */
+export const posHardwareService = {
+  getDashboard: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.POS_HARDWARE.DASHBOARD
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load POS hardware dashboard');
+    }
+
+    return payload?.data || null;
+  },
+};

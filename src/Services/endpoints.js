@@ -66,6 +66,9 @@ export const ENDPOINTS = {
     GET_BY_ID: (id) => `/api/v1/admin/audits/getbyid/${id}`,
     EXPORT_SUMMARY: '/api/v1/admin/audits/report/export-summary',
   },
+  POS_HARDWARE: {
+    DASHBOARD: '/api/v1/admin/pos-hardware-devices/dashboard',
+  },
   },
 
 

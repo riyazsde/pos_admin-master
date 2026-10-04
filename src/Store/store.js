@@ -8,6 +8,7 @@ import subscriptionsReducer from '../Store/Features/subscriptions/subscriptionsS
 import reportsReducer from '../Store/Features/reports/reportsSlice';
 import languageReducer from '../Store/Features/language/languageSlice';
 import auditsReducer from '../Store/Features/audits/auditsSlice';
+import posHardwareReducer from '../Store/Features/posHardware/posHardwareSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -17,6 +18,7 @@ export const store = configureStore({
     reports: reportsReducer,
      language: languageReducer, 
      audits: auditsReducer,
+     posHardware: posHardwareReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
