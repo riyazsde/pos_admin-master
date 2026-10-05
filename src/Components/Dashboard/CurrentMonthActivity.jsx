@@ -1,3 +1,5 @@
+// src/Components/Dashboard/CurrentMonthActivity.jsx
+
 import React from 'react';
 import {
   BarChart,
@@ -8,12 +10,12 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
-// ✅ NEW: Accept `data` prop from Redux via Dashboard.jsx
 const CurrentMonthActivity = ({ data }) => {
+  const { t } = useTranslation();
+
   // ✅ Transform API shape → chart shape
-  // API:    { day: 'Sun', newClients: 0, existingClientsRenewal: 0 }
-  // Chart:  { name: 'Sun', newClients: 0, renewals: 0 }
   const chartData =
     data?.data?.map((item) => ({
       name: item.day,
@@ -26,32 +28,35 @@ const CurrentMonthActivity = ({ data }) => {
       return (
         <div className="bg-black text-white p-2 rounded shadow-md text-xs">
           <p className="font-semibold">{payload[0].payload.name}</p>
-          <p>{`New Clients: ${payload[0].payload.newClients}`}</p>
-          <p>{`Client Renewals: ${payload[0].payload.renewals}`}</p>
+          <p>{`${t('dashboard.newClients')}: ${payload[0].payload.newClients}`}</p>
+          <p>{`${t('dashboard.clientRenewals')}: ${payload[0].payload.renewals}`}</p>
         </div>
       );
     }
     return null;
   };
 
-  // Optional: compute a nice Y-axis tick array based on max value
   const maxValue = Math.max(
-    100, // minimum for aesthetics
+    100,
     ...chartData.map((d) => Math.max(d.newClients, d.renewals))
   );
-  const yTicks = [0, Math.round(maxValue / 4), Math.round(maxValue / 2), maxValue];
+  const yTicks = [
+    0,
+    Math.round(maxValue / 4),
+    Math.round(maxValue / 2),
+    maxValue,
+  ];
 
   return (
     <div className="w-full">
-      {/* Main Card Container */}
       <div
         className="bg-white rounded-3xl p-6 h-full shadow-sm border border-gray-100"
         style={{ boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)' }}
       >
-        {/* Header: Title + Legend */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <h2 className="text-xl font-bold text-black font-[Poppins]">
-            {data?.title || 'Daily Activity'}
+            {data?.title || t('dashboard.dailyActivity')}
           </h2>
 
           {/* Legend */}
@@ -60,11 +65,12 @@ const CurrentMonthActivity = ({ data }) => {
               <div
                 className="w-4 h-4 rounded-full"
                 style={{
-                  background: 'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
+                  background:
+                    'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
                 }}
               ></div>
               <span className="text-xs font-medium text-black font-[Poppins]">
-                New Clients
+                {t('dashboard.newClients')}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -76,7 +82,7 @@ const CurrentMonthActivity = ({ data }) => {
                 }}
               ></div>
               <span className="text-xs font-medium text-black font-[Poppins]">
-                Clients Renewals
+                {t('dashboard.clientRenewals')}
               </span>
             </div>
           </div>
@@ -85,14 +91,14 @@ const CurrentMonthActivity = ({ data }) => {
         {/* Empty state */}
         {chartData.length === 0 ? (
           <div className="h-80 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
-            No activity data available
+            {t('dashboard.noActivityData')}
           </div>
         ) : (
           <div className="relative h-80">
-            {/* Y-axis Label */}
+            {/* Y-axis label */}
             <div className="absolute -left-2 top-0 -translate-y-6">
               <span className="text-[10px] font-semibold text-gray-500 font-[Poppins]">
-                Orders
+                {t('dashboard.orders')}
               </span>
             </div>
 
@@ -127,9 +133,12 @@ const CurrentMonthActivity = ({ data }) => {
                   interval={0}
                   tickLine={false}
                   axisLine={false}
-                  ticks={yTicks} // ✅ dynamic ticks
+                  ticks={yTicks}
                 />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: 'transparent' }}
+                />
                 <Bar
                   dataKey="newClients"
                   fill="url(#newClients)"

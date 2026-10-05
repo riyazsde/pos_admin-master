@@ -57,14 +57,11 @@ const Topbar = ({ onMenuClick }) => {
   // ---------- Redux state ----------
   const reduxUser = useAppSelector((state) => state.auth?.user);
   const languages = useAppSelector((state) => state.language?.languages || []);
-  const currentCode = useAppSelector(
-    (state) => state.language?.currentCode || 'en'
-  );
   const currentName = useAppSelector(
     (state) => state.language?.currentName || 'English'
   );
 
-  // ✅ Handle language selection — dispatch only, no override effect
+  // ✅ Handle language selection
   const handleLanguageChange = (lang) => {
     const code = getCodeForLanguage(lang.Language_name);
     dispatch(
@@ -147,7 +144,7 @@ const Topbar = ({ onMenuClick }) => {
     <>
       <div className="w-full bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center justify-between px-4 md:px-6 py-4">
-          {/* Left Section */}
+          {/* ==================== Left Section ==================== */}
           <div className="flex items-center space-x-4">
             <button
               onClick={onMenuClick}
@@ -173,9 +170,9 @@ const Topbar = ({ onMenuClick }) => {
             </div>
           </div>
 
-          {/* Right Section */}
+          {/* ==================== Right Section ==================== */}
           <div className="flex items-center space-x-4">
-            {/* ✅ Language Selector */}
+            {/* ---------- Language Selector ---------- */}
             <div className="relative">
               <button
                 type="button"
@@ -237,7 +234,7 @@ const Topbar = ({ onMenuClick }) => {
               )}
             </div>
 
-            {/* Notifications */}
+            {/* ---------- Notifications Bell ---------- */}
             <div className="relative">
               <button
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -250,7 +247,7 @@ const Topbar = ({ onMenuClick }) => {
               </button>
             </div>
 
-            {/* Profile Dropdown */}
+            {/* ---------- Profile Dropdown ---------- */}
             <div className="relative">
               <button
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -281,6 +278,7 @@ const Topbar = ({ onMenuClick }) => {
                   />
 
                   <div className="absolute right-0 mt-3 w-72 bg-white border border-gray-200 rounded-2xl shadow-xl z-50 overflow-hidden">
+                    {/* Profile Header */}
                     <div className="p-4 bg-gradient-to-r from-purple-50 to-red-50 border-b border-gray-100">
                       <div className="flex items-center gap-3">
                         <div className="relative">
@@ -307,6 +305,7 @@ const Topbar = ({ onMenuClick }) => {
                       </div>
                     </div>
 
+                    {/* Menu Items */}
                     <div className="p-2">
                       <button
                         onClick={() => {
@@ -372,6 +371,225 @@ const Topbar = ({ onMenuClick }) => {
           </div>
         </div>
       </div>
+
+      {/* ==================== Notification Slide-Over ==================== */}
+      {isNotificationOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setIsNotificationOpen(false)}
+          />
+
+          {/* Panel */}
+          <div className="relative w-full max-w-md h-full bg-white shadow-2xl flex flex-col animate-slide-in-right">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+              <h2 className="text-xl font-semibold text-gray-800">
+                {t('common.notifications') || 'All Notifications'}
+              </h2>
+              <div className="flex items-center gap-3">
+                <div className="relative hidden sm:block">
+                  <input
+                    type="text"
+                    placeholder={
+                      t('notifications.searchPlaceholder') ||
+                      'Search notifications...'
+                    }
+                    className="bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-sm text-gray-700 placeholder-gray-400 outline-none focus:border-purple-300 focus:ring-2 focus:ring-purple-100 w-48"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                </div>
+                <button
+                  onClick={() => setIsNotificationOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {notifications.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+                  <Bell className="w-8 h-8 text-gray-300" />
+                  <p className="text-sm">No notifications</p>
+                </div>
+              ) : (
+                notifications.map((notif) => {
+                  const IconComponent = notif.icon;
+                  return (
+                    <div
+                      key={notif.id}
+                      className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md transition-shadow cursor-pointer group"
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${notif.color}`}
+                      >
+                        <IconComponent className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="text-sm font-semibold text-gray-800 leading-tight">
+                            {notif.title}
+                          </h3>
+                          <span className="text-[10px] text-gray-400 whitespace-nowrap mt-0.5">
+                            {notif.time}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1 leading-relaxed line-clamp-2">
+                          {notif.desc}
+                        </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getTagStyle(
+                              notif.tag
+                            )}`}
+                          >
+                            {notif.tag}
+                          </span>
+                          <button className="text-xs font-medium text-purple-600 hover:text-purple-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== Profile Modal ==================== */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setIsProfileModalOpen(false)}
+          />
+
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+            {/* Cover */}
+            <div className="relative h-32 bg-gradient-to-r from-purple-500 via-purple-400 to-red-400">
+              <button
+                onClick={() => setIsProfileModalOpen(false)}
+                className="absolute top-3 right-3 p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <button className="absolute top-3 right-14 p-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors">
+                <Camera className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 pb-6">
+              <div className="flex items-end justify-between -mt-12 mb-4">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden ring-4 ring-white shadow-lg">
+                    <img
+                      src={user.avatar}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
+                  {user.name}
+                </h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {user.role}
+                  {user.responsibility && ` • ${user.responsibility}`}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Email
+                    </p>
+                    <p className="text-sm text-gray-700 truncate">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Phone
+                    </p>
+                    <p className="text-sm text-gray-700 truncate">
+                      {user.phone}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-lg bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Location
+                    </p>
+                    <p className="text-sm text-gray-700 truncate">
+                      {user.location}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wide text-gray-400 font-semibold">
+                      Joined
+                    </p>
+                    <p className="text-sm text-gray-700 truncate">
+                      {user.joined}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => setIsProfileModalOpen(false)}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  {t('common.close') || 'Close'}
+                </button>
+                <button
+                  onClick={() => {
+                    setIsProfileModalOpen(false);
+                    navigate('/change-password');
+                  }}
+                  className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-red-500 rounded-xl hover:shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  {t('common.changePassword') || 'Change Password'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

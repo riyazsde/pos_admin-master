@@ -1,3 +1,5 @@
+// src/Components/Dashboard/ProfitAfterTax.jsx
+
 import React, { useEffect } from 'react';
 import {
   LineChart,
@@ -8,6 +10,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setProfitData,
@@ -17,6 +21,8 @@ import { dashboardService } from '../../Services/apiService';
 
 const ProfitAfterTax = () => {
   const dispatch = useAppDispatch();
+  const { t, i18n } = useTranslation();
+
   const { profit, profitLoading } = useAppSelector((state) => state.dashboard);
 
   // ✅ Fetch on mount if not already loaded
@@ -37,8 +43,7 @@ const ProfitAfterTax = () => {
     fetchProfit();
   }, [dispatch, profit]);
 
-  // ⚠️ API doesn't return monthly chart data — using placeholder
-  // If backend adds `monthlyTrend` array later, use profit.monthlyTrend
+  // ⚠️ Placeholder monthly trend until backend provides it
   const chartData =
     profit?.monthlyTrend ||
     [
@@ -68,13 +73,16 @@ const ProfitAfterTax = () => {
 
   const formatNumber = (n) => {
     if (n === null || n === undefined) return '0';
-    return Number(n).toLocaleString('en-US');
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return Number(n).toLocaleString(locale);
   };
 
   if (profitLoading && !profit) {
     return (
       <div className="h-full flex flex-col gap-4 min-w-0">
-        <h2 className="text-2xl font-bold text-black">Profit After Tax</h2>
+        <h2 className="text-2xl font-bold text-black">
+          {t('profitAfterTax.title')}
+        </h2>
         <div className="flex-1 bg-white rounded-3xl shadow-md border border-gray-100 px-6 py-5 animate-pulse">
           <div className="h-6 w-32 bg-gray-200 rounded mb-4"></div>
           <div className="h-40 bg-gray-100 rounded"></div>
@@ -86,14 +94,14 @@ const ProfitAfterTax = () => {
   return (
     <div className="h-full flex flex-col gap-4 min-w-0">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap">
         <h2 className="text-2xl font-bold text-black whitespace-nowrap">
-          Profit After Tax
+          {t('profitAfterTax.title')}
         </h2>
         <select className="text-sm border border-gray-400 rounded-md px-3 py-1.5 bg-white text-black focus:outline-none">
-          <option>This Month</option>
-          <option>Last Month</option>
-          <option>This Year</option>
+          <option>{t('period.thisMonth')}</option>
+          <option>{t('period.lastMonth')}</option>
+          <option>{t('period.thisYear')}</option>
         </select>
       </div>
 
@@ -103,17 +111,21 @@ const ProfitAfterTax = () => {
         <div className="flex items-start justify-between mb-3 gap-4">
           <div>
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
-              Net Profit
+              {t('profitAfterTax.netProfit')}
             </div>
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-black">
                 {formatNumber(netProfit)}
               </span>
-              <span className="text-sm font-medium text-gray-500">{currency}</span>
+              <span className="text-sm font-medium text-gray-500">
+                {currency}
+              </span>
             </div>
 
             {comparison?.message && (
-              <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${trendColor}`}>
+              <div
+                className={`flex items-center gap-1 mt-1 text-xs font-medium ${trendColor}`}
+              >
                 <TrendIcon className="w-3.5 h-3.5" />
                 <span>{comparison.message}</span>
               </div>
@@ -150,7 +162,9 @@ const ProfitAfterTax = () => {
               </defs>
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-bold text-gray-800">{gaugePercentage}%</span>
+              <span className="text-xs font-bold text-gray-800">
+                {gaugePercentage}%
+              </span>
             </div>
           </div>
         </div>
@@ -160,13 +174,17 @@ const ProfitAfterTax = () => {
           <div className="flex items-center gap-4 mb-3 text-xs">
             <div className="flex items-center gap-1.5">
               <Wallet className="w-3.5 h-3.5 text-purple-600" />
-              <span className="text-gray-500">This month:</span>
+              <span className="text-gray-500">
+                {t('profitAfterTax.thisMonth')}:
+              </span>
               <span className="font-semibold text-gray-800">
                 {formatNumber(revenue.currentMonth)} {currency}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-gray-500">Last month:</span>
+              <span className="text-gray-500">
+                {t('profitAfterTax.lastMonth')}:
+              </span>
               <span className="font-semibold text-gray-800">
                 {formatNumber(revenue.lastMonth)} {currency}
               </span>
@@ -196,7 +214,10 @@ const ProfitAfterTax = () => {
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                   fontSize: 12,
                 }}
-                formatter={(value) => [`${formatNumber(value)} ${currency}`, 'Value']}
+                formatter={(value) => [
+                  `${formatNumber(value)} ${currency}`,
+                  t('profitAfterTax.value'),
+                ]}
               />
               <Line
                 type="linear"

@@ -1,4 +1,8 @@
+// src/Components/Dashboard/HeatMapCities.jsx
+
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setHeatmapData,
@@ -10,6 +14,7 @@ import { getCityName, SLICE_COLORS } from '../../utils/dashboardMaps';
 const HeatMapCities = () => {
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const { heatmap, heatmapLoading } = useAppSelector((state) => state.dashboard);
 
@@ -31,9 +36,12 @@ const HeatMapCities = () => {
     fetchHeatmap();
   }, [dispatch, heatmap]);
 
-  // ✅ Transform API data → pie slices with angles + colors + percentages
+  // ✅ Transform API data → pie slices
   const rawData = heatmap?.data || [];
-  const total = rawData.reduce((sum, item) => sum + (item.restaurant_count || 0), 0);
+  const total = rawData.reduce(
+    (sum, item) => sum + (item.restaurant_count || 0),
+    0
+  );
 
   let currentAngle = 0;
   const data = rawData.map((item, idx) => {
@@ -59,7 +67,7 @@ const HeatMapCities = () => {
     return (
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
         <h2 className="text-lg font-bold mb-4 self-start text-black">
-          Heat Map(<span className="font-bold">Cities</span>)
+          {t('heatMap.title')}
         </h2>
         <div className="w-full aspect-square max-w-[280px] mt-2 rounded-full bg-gray-100 animate-pulse" />
       </div>
@@ -71,10 +79,10 @@ const HeatMapCities = () => {
     return (
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
         <h2 className="text-lg font-bold mb-4 self-start text-black">
-          Heat Map(<span className="font-bold">Cities</span>)
+          {t('heatMap.title')}
         </h2>
         <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
-          No city data available
+          {t('heatMap.noData')}
         </div>
       </div>
     );
@@ -106,8 +114,9 @@ const HeatMapCities = () => {
 
   return (
     <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+      {/* ✅ Always translated title */}
       <h2 className="text-lg font-bold mb-4 self-start text-black">
-        {heatmap?.title || 'Heat Map (Cities)'}
+        {t('heatMap.title')}
       </h2>
 
       <div className="relative w-full aspect-square max-w-[280px] mt-2">
@@ -117,16 +126,28 @@ const HeatMapCities = () => {
             const cy = 160;
             const r = 120;
             const isHovered = hoveredIndex === i;
-            const textPos = getTextPosition(cx, cy, r, slice.startAngle, slice.endAngle);
+            const textPos = getTextPosition(
+              cx,
+              cy,
+              r,
+              slice.startAngle,
+              slice.endAngle
+            );
 
-            // Only render text if the slice is big enough to fit it
             const sliceAngle = slice.endAngle - slice.startAngle;
             const showText = sliceAngle > 15;
 
             return (
               <g key={i}>
                 <path
-                  d={createPath(cx, cy, r, slice.startAngle, slice.endAngle, isHovered)}
+                  d={createPath(
+                    cx,
+                    cy,
+                    r,
+                    slice.startAngle,
+                    slice.endAngle,
+                    isHovered
+                  )}
                   fill={slice.color}
                   stroke="#fff"
                   strokeWidth="4"
@@ -166,12 +187,13 @@ const HeatMapCities = () => {
         {/* Hover tooltip */}
         {hoveredIndex !== null && data[hoveredIndex] && (
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] px-2 py-1 rounded">
-            {data[hoveredIndex].name}: {data[hoveredIndex].rawCount} ({data[hoveredIndex].value}%)
+            {data[hoveredIndex].name}: {data[hoveredIndex].rawCount} (
+            {data[hoveredIndex].value}%)
           </div>
         )}
       </div>
 
-      {/* Legend below chart */}
+      {/* Legend */}
       <div className="mt-4 w-full flex flex-wrap gap-x-4 gap-y-2 justify-center">
         {data.map((slice, i) => (
           <div key={i} className="flex items-center gap-1.5">

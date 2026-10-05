@@ -1,3 +1,5 @@
+// src/Components/Dashboard/MonthlyGrowthChart.jsx
+
 import React from 'react';
 import {
   LineChart,
@@ -8,8 +10,8 @@ import {
   CartesianGrid,
   Dot,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
-// White dot with colored border (matches Figma exactly)
 const CustomDot = (props) => {
   const { cx, cy, stroke } = props;
   return (
@@ -17,11 +19,10 @@ const CustomDot = (props) => {
   );
 };
 
-// ✅ NEW: Accept `data` prop from Redux via Dashboard.jsx
 export default function MonthlyGrowthChart({ data }) {
+  const { t } = useTranslation();
+
   // ✅ Transform API shape → chart shape
-  // API:   { month: 'Aug', newClients: 4, existingClientsRenewal: 0 }
-  // Chart: { month: 'Aug', newClients: 4, renewals: 0 }
   const chartData =
     data?.data?.map((item) => ({
       month: item.month,
@@ -29,9 +30,11 @@ export default function MonthlyGrowthChart({ data }) {
       renewals: item.existingClientsRenewal,
     })) || [];
 
-  // Dynamic Y-axis domain based on data
-  const maxValue = Math.max(100, ...chartData.flatMap((d) => [d.newClients, d.renewals]));
-  const yMax = Math.ceil(maxValue / 100) * 100; // round up to nearest 100
+  const maxValue = Math.max(
+    100,
+    ...chartData.flatMap((d) => [d.newClients, d.renewals])
+  );
+  const yMax = Math.ceil(maxValue / 100) * 100;
   const yTicks = [0, Math.round(yMax / 4), Math.round(yMax / 2), yMax];
 
   return (
@@ -43,10 +46,10 @@ export default function MonthlyGrowthChart({ data }) {
             '0px 4px 20px rgba(0, 0, 0, 0.05), inset 0px 0px 1px rgba(0, 0, 0, 0.15)',
         }}
       >
-        {/* Header: Title on left, Legend on right */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <h2 className="text-xl font-bold text-black font-[Poppins]">
-            {data?.title || 'Monthly Growth'}
+            {data?.title || t('dashboard.monthlyGrowth')}
           </h2>
 
           {/* Legend */}
@@ -60,18 +63,19 @@ export default function MonthlyGrowthChart({ data }) {
                 }}
               ></div>
               <span className="text-[11px] font-medium text-black font-[Poppins]">
-                New Clients
+                {t('dashboard.newClients')}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="w-4 h-4 rounded-full"
                 style={{
-                  background: 'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
+                  background:
+                    'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
                 }}
               ></div>
               <span className="text-[11px] font-medium text-black font-[Poppins]">
-                Clients Renewals
+                {t('dashboard.clientRenewals')}
               </span>
             </div>
           </div>
@@ -87,7 +91,7 @@ export default function MonthlyGrowthChart({ data }) {
         {/* Empty state */}
         {chartData.length === 0 ? (
           <div className="h-72 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
-            No growth data available
+            {t('dashboard.noGrowthData')}
           </div>
         ) : (
           <div className="h-72">
@@ -97,12 +101,24 @@ export default function MonthlyGrowthChart({ data }) {
                 margin={{ top: 15, right: 15, left: -25, bottom: 0 }}
               >
                 <defs>
-                  <linearGradient id="newClientsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="newClientsGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor="rgba(106, 27, 154, 0.45)" />
                     <stop offset="100%" stopColor="rgba(211, 47, 47, 0.45)" />
                   </linearGradient>
 
-                  <linearGradient id="renewalsGradient" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient
+                    id="renewalsGradient"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
                     <stop offset="0%" stopColor="#6A1B9A" />
                     <stop offset="100%" stopColor="#D32F2F" />
                   </linearGradient>
@@ -129,8 +145,8 @@ export default function MonthlyGrowthChart({ data }) {
                 />
 
                 <YAxis
-                  domain={[0, yMax]} // ✅ dynamic
-                  ticks={yTicks} // ✅ dynamic
+                  domain={[0, yMax]}
+                  ticks={yTicks}
                   axisLine={false}
                   tickLine={false}
                   tick={{

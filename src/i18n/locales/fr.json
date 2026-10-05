@@ -4,7 +4,7 @@
     "settings": "Paramètres",
     "myProfile": "Mon Profil",
     "helpSupport": "Aide & Support",
-    "signOut": "Déconnexion",
+    "signOut": "Se déconnecter",
     "close": "Fermer",
     "changePassword": "Changer le mot de passe",
     "notifications": "Toutes les Notifications",
@@ -19,8 +19,10 @@
     "back": "Retour",
     "submit": "Soumettre",
     "noData": "Aucune donnée disponible",
-    "error": "Une erreur s'est produite"
+    "error": "Une erreur s'est produite",
+    "total": "Total"
   },
+
   "nav": {
     "dashboard": "Tableau de bord",
     "clients": "Clients",
@@ -34,6 +36,7 @@
     "settings": "Paramètres",
     "signOut": "Se déconnecter"
   },
+
   "dashboard": {
     "title": "Tableau de bord",
     "mrr": "MRR",
@@ -44,9 +47,68 @@
     "criticalTickets": "Tickets critiques",
     "offlineDevices": "Appareils hors ligne",
     "lastUpdated": "Dernière mise à jour",
+    "loadFailed": "Échec du chargement du tableau de bord",
     "dailyActivity": "Activité quotidienne",
-    "monthlyGrowth": "Croissance mensuelle"
+    "monthlyGrowth": "Croissance mensuelle",
+    "newClients": "Nouveaux clients",
+    "clientRenewals": "Renouvellements",
+    "orders": "Commandes",
+    "noActivityData": "Aucune donnée d'activité",
+    "noGrowthData": "Aucune donnée de croissance",
+    "growthSubtitle": "Nouveaux clients vs renouvellements — vous avez fait {{percent}}% mieux de {{period1}} à {{period2}}"
   },
+
+  "period": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "thisWeek": "Cette semaine",
+    "threeMonth": "3 mois",
+    "sixMonth": "6 mois",
+    "thisMonth": "Ce mois",
+    "lastMonth": "Le mois dernier",
+    "thisYear": "Cette année"
+  },
+
+  "profitAfterTax": {
+    "title": "Bénéfice après impôt",
+    "netProfit": "Bénéfice net",
+    "thisMonth": "Ce mois",
+    "lastMonth": "Le mois dernier",
+    "value": "Valeur"
+  },
+
+  "topPerformers": {
+    "title": "Meilleurs performeurs",
+    "noData": "Aucun performeur pour le moment",
+    "unnamedCompany": "Entreprise sans nom",
+    "unranked": "Non classé",
+    "table": {
+      "companyName": "Nom de l'entreprise",
+      "subscription": "Abonnement",
+      "deviceCount": "Nombre d'appareils",
+      "totalSales": "Ventes totales",
+      "rank": "Rang",
+      "renewalDate": "Date de renouvellement"
+    }
+  },
+
+  "heatMap": {
+    "title": "Carte thermique (Villes)",
+    "noData": "Aucune donnée de ville disponible"
+  },
+
+  "subscriptions": {
+    "activeTitle": "Abonnements actifs",
+    "noData": "Aucun abonnement trouvé",
+    "planLabel": "Forfait",
+    "table": {
+      "businessName": "Nom de l'entreprise",
+      "planPurchased": "Forfait acheté",
+      "purchasedDate": "Date d'achat",
+      "amount": "Montant"
+    }
+  },
+
   "supports": {
     "title": "Support & Tickets",
     "allTickets": "Tous les Tickets",
@@ -58,6 +120,7 @@
     "totalActiveTickets": "Tickets actifs",
     "totalResolvedTickets": "Tickets résolus"
   },
+
   "ticketDetails": {
     "ticket": "Ticket#",
     "postedAt": "Publié à",
@@ -76,6 +139,7 @@
     "resolved": "Résolu",
     "closed": "Fermé"
   },
+
   "notifications": {
     "searchPlaceholder": "Rechercher des notifications..."
   }

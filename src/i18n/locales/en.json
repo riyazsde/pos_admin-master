@@ -19,8 +19,10 @@
     "back": "Back",
     "submit": "Submit",
     "noData": "No data available",
-    "error": "Something went wrong"
+    "error": "Something went wrong",
+    "total": "Total"
   },
+
   "nav": {
     "dashboard": "Dashboard",
     "clients": "Clients",
@@ -34,6 +36,7 @@
     "settings": "Settings",
     "signOut": "Sign out"
   },
+
   "dashboard": {
     "title": "Dashboard",
     "mrr": "MRR",
@@ -44,9 +47,68 @@
     "criticalTickets": "Critical Tickets",
     "offlineDevices": "Offline Devices",
     "lastUpdated": "Last updated",
+    "loadFailed": "Failed to load dashboard",
     "dailyActivity": "Daily Activity",
-    "monthlyGrowth": "Monthly Growth"
+    "monthlyGrowth": "Monthly Growth",
+    "newClients": "New Clients",
+    "clientRenewals": "Client Renewals",
+    "orders": "Orders",
+    "noActivityData": "No activity data available",
+    "noGrowthData": "No growth data available",
+    "growthSubtitle": "New Clients vs Client Renewals — you've done {{percent}}% better from {{period1}} to {{period2}}"
   },
+
+  "period": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This Week",
+    "threeMonth": "Three Month",
+    "sixMonth": "Six Month",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "thisYear": "This Year"
+  },
+
+  "profitAfterTax": {
+    "title": "Profit After Tax",
+    "netProfit": "Net Profit",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "value": "Value"
+  },
+
+  "topPerformers": {
+    "title": "Top Performers",
+    "noData": "No top performers yet",
+    "unnamedCompany": "Unnamed Company",
+    "unranked": "Unranked",
+    "table": {
+      "companyName": "Company Name",
+      "subscription": "Subscription",
+      "deviceCount": "Device Count",
+      "totalSales": "Total Sales",
+      "rank": "Rank",
+      "renewalDate": "Renewal Date"
+    }
+  },
+
+  "heatMap": {
+    "title": "Heat Map (Cities)",
+    "noData": "No city data available"
+  },
+
+  "subscriptions": {
+    "activeTitle": "Active Subscriptions",
+    "noData": "No subscriptions found",
+    "planLabel": "Plan",
+    "table": {
+      "businessName": "Business Name",
+      "planPurchased": "Plan Purchased",
+      "purchasedDate": "Purchased Date",
+      "amount": "Amount"
+    }
+  },
+
   "supports": {
     "title": "Supports & Tickets",
     "allTickets": "All Tickets",
@@ -58,6 +120,7 @@
     "totalActiveTickets": "Total Active Tickets",
     "totalResolvedTickets": "Total Resolved Tickets"
   },
+
   "ticketDetails": {
     "ticket": "Ticket#",
     "postedAt": "Posted at",
@@ -76,6 +139,7 @@
     "resolved": "Resolved",
     "closed": "Closed"
   },
+
   "notifications": {
     "searchPlaceholder": "Search notifications..."
   }

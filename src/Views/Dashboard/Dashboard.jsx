@@ -1,3 +1,5 @@
+// src/Views/Dashboard/Dashboard.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronDown,
@@ -10,6 +12,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import withAdminLayout from '../AdminPanel/withAdminLayout';
 import CurrentMonthActivity from '../../Components/Dashboard/CurrentMonthActivity';
@@ -37,6 +40,8 @@ import { dashboardService } from '../../Services/apiService';
 
 const Dashboard = () => {
   const dispatch = useAppDispatch();
+  const { t, i18n } = useTranslation();  // ✅ translation hook
+
   const [selectedPeriod, setSelectedPeriod] = useState('Today');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -51,13 +56,10 @@ const Dashboard = () => {
     completeDashboardLoaded,
   } = useAppSelector((state) => state.dashboard);
 
-  // ✅ Refs to prevent double-fetch in React StrictMode
   const fetchedMain = useRef(false);
   const fetchedComplete = useRef(false);
 
-  // ---------------------------------------------------------------------
-  // ✅ Fetch main dashboard (KPIs + charts)
-  // ---------------------------------------------------------------------
+  // ✅ Fetch main dashboard
   useEffect(() => {
     if (hasLoaded || fetchedMain.current) return;
     fetchedMain.current = true;
@@ -70,21 +72,20 @@ const Dashboard = () => {
       } catch (err) {
         console.error('Dashboard fetch error:', err);
         dispatch(setDashboardError(err?.message || 'Failed to load dashboard'));
-        toast.error('Failed to load dashboard', {
+        toast.error(t('dashboard.loadFailed') || 'Failed to load dashboard', {
           description:
             err?.response?.data?.message ||
             err?.message ||
+            t('common.error') ||
             'Please try again later.',
         });
       }
     };
 
     fetchDashboard();
-  }, [dispatch, hasLoaded]);
+  }, [dispatch, hasLoaded, t]);
 
-  // ---------------------------------------------------------------------
-  // ✅ Fetch complete dashboard (subscriptions, heatmap, tickets, renewals)
-  // ---------------------------------------------------------------------
+  // ✅ Fetch complete dashboard
   useEffect(() => {
     if (completeDashboardLoaded || fetchedComplete.current) return;
     fetchedComplete.current = true;
@@ -112,14 +113,17 @@ const Dashboard = () => {
   // ---------------------------------------------------------------------
   const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
-    return Number(num).toLocaleString('en-US');
+    // ✅ Locale-aware number formatting based on current language
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return Number(num).toLocaleString(locale);
   };
 
   const formatLastUpdated = (iso) => {
     if (!iso) return '';
     try {
       const d = new Date(iso);
-      return d.toLocaleString('en-US', {
+      const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+      return d.toLocaleString(locale, {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
@@ -131,57 +135,69 @@ const Dashboard = () => {
   };
 
   // ---------------------------------------------------------------------
-  // KPIs (from main dashboard)
+  // Period options (translated)
+  // ---------------------------------------------------------------------
+  const periodOptions = [
+    { value: 'Today', key: 'period.today' },
+    { value: 'Yesterday', key: 'period.yesterday' },
+    { value: 'This Week', key: 'period.thisWeek' },
+    { value: 'Three Month', key: 'period.threeMonth' },
+    { value: 'Six Month', key: 'period.sixMonth' },
+    { value: 'This Month', key: 'period.thisMonth' },
+  ];
+
+  // ---------------------------------------------------------------------
+  // KPI metrics (translated)
   // ---------------------------------------------------------------------
   const metrics = [
     {
-      title: 'MRR',
+      title: t('dashboard.mrr'),
       value: `${formatNumber(kpis?.monthlySecurity)} XOF`,
       icon: Wallet,
       bgColor: 'bg-yellow-100',
       iconColor: 'text-yellow-600',
       badge: kpis?.totalRevenue
-        ? `Total: ${formatNumber(kpis.totalRevenue)} XOF`
+        ? `${t('common.total')}: ${formatNumber(kpis.totalRevenue)} XOF`
         : null,
       badgeColor: 'text-green-500',
     },
     {
-      title: 'Monthly Recurring Revenue',
+      title: t('dashboard.monthlyRecurringRevenue'),
       value: `${formatNumber(kpis?.monthlySecurity)} XOF`,
       icon: TrendingUp,
       bgColor: 'bg-pink-100',
       iconColor: 'text-pink-500',
     },
     {
-      title: 'Total POS Clients',
+      title: t('dashboard.totalPosClients'),
       value: formatNumber(kpis?.totalPOSClients),
       icon: Users,
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
     },
     {
-      title: 'Active Restaurants',
+      title: t('dashboard.activeRestaurants'),
       value: '—',
       icon: Utensils,
       bgColor: 'bg-purple-100',
       iconColor: 'text-purple-500',
     },
     {
-      title: 'Active Subscriptions',
+      title: t('dashboard.activeSubscriptions'),
       value: '—',
       icon: UserCheck,
       bgColor: 'bg-pink-100',
       iconColor: 'text-pink-500',
     },
     {
-      title: 'Critical Tickets',
+      title: t('dashboard.criticalTickets'),
       value: '—',
       icon: AlertCircle,
       bgColor: 'bg-orange-100',
       iconColor: 'text-orange-500',
     },
     {
-      title: 'Offline Devices',
+      title: t('dashboard.offlineDevices'),
       value: '—',
       icon: WifiOff,
       bgColor: 'bg-gray-100',
@@ -195,54 +211,48 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-            Dashboard
+            {t('dashboard.title')}
           </h1>
           {lastUpdated && (
             <p className="text-xs text-gray-500 mt-1">
-              Last updated: {formatLastUpdated(lastUpdated)}
+              {t('dashboard.lastUpdated')}: {formatLastUpdated(lastUpdated)}
             </p>
           )}
         </div>
 
-        {/* Dropdown */}
+        {/* Period Dropdown */}
         <div className="relative z-20">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center gap-2 w-[129px] h-[35px] px-4 py-2 bg-white border border-black rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
           >
             <span className="text-gray-700 text-sm font-medium">
-              {selectedPeriod}
+              {t(periodOptions.find((p) => p.value === selectedPeriod)?.key) ||
+                selectedPeriod}
             </span>
             <ChevronDown className="w-4 h-4 text-gray-500" />
           </button>
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-[246px] bg-white shadow rounded-lg flex flex-col px-3 py-5 gap-2 border">
-              {[
-                'Today',
-                'Yesterday',
-                'This Week',
-                'Three Month',
-                'Six Month',
-                'This Month',
-              ].map((period) => (
+              {periodOptions.map((period) => (
                 <button
-                  key={period}
+                  key={period.value}
                   onClick={() => {
-                    setSelectedPeriod(period);
+                    setSelectedPeriod(period.value);
                     setDropdownOpen(false);
                   }}
                   className={`
                     w-full text-left px-2 py-2 rounded 
                     text-sm font-medium font-[Manrope] 
                     ${
-                      selectedPeriod === period
+                      selectedPeriod === period.value
                         ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white'
                         : 'hover:bg-gray-100 text-black'
                     }
                   `}
                 >
-                  {period}
+                  {t(period.key) || period.value}
                 </button>
               ))}
             </div>
