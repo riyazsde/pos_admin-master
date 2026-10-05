@@ -43,11 +43,8 @@ export const authService = {
     }
   },
 };
-
-/**
- * Forgot Password Services
- */
 export const forgotPasswordService = {
+  // Send OTP
   sendOtp: async (email) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.SEND_OTP,
@@ -56,22 +53,39 @@ export const forgotPasswordService = {
     return response.data;
   },
 
-  verifyOtp: async (email, otp) => {
+  // ✅ NEW: Resend OTP
+  resendOtp: async (email) => {
     const response = await apiClient.post(
-      ENDPOINTS.AUTH.FORGOT_PASSWORD.VERIFY_OTP,
-      { email, otp }
+      ENDPOINTS.AUTH.FORGOT_PASSWORD.RESEND_OTP,
+      { email }
     );
     return response.data;
   },
 
-  resetPassword: async (payload) => {
+  // ✅ Verify OTP + set new password (combined in backend)
+  verifyOtp: async (email, otp, newPassword) => {
     const response = await apiClient.post(
-      ENDPOINTS.AUTH.FORGOT_PASSWORD.RESET_PASSWORD,
-      payload
+      ENDPOINTS.AUTH.FORGOT_PASSWORD.VERIFY_OTP,
+      { email, otp, newPassword }
     );
     return response.data;
   },
 };
+
+
+export const changePasswordService = {
+  change: async (currentPassword, newPassword, reEnterPassword) => {
+    const response = await apiClient.post(
+      ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      { currentPassword, newPassword, reEnterPassword }
+    );
+    return response.data;
+  },
+};
+/**
+ * Forgot Password Services
+ */
+
 
 
 /**

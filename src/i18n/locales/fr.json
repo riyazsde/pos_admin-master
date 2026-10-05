@@ -68,6 +68,76 @@
     "accountCreatedDesc": "Veuillez vous connecter pour continuer."
   },
 
+  "auth": {
+    "serverUnavailable": "Serveur indisponible. Veuillez réessayer.",
+
+    "forgot": {
+      "signInHeader": "Connexion",
+      "title": "Mot de passe oublié",
+      "subtitle": "Nous vous enverrons les instructions pour réinitialiser votre mot de passe à votre adresse email enregistrée.",
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "Entrez votre adresse email",
+      "submit": "Réinitialiser le mot de passe",
+      "sendingOtp": "Envoi du code OTP...",
+      "otpSent": "Code OTP envoyé avec succès !",
+      "otpSentDesc": "Vérifiez votre boîte de réception à {{email}}",
+      "sendOtpFailed": "Échec de l'envoi du code",
+      "checkEmail": "Veuillez vérifier l'adresse email et réessayer."
+    },
+
+    "verify": {
+      "signInHeader": "Connexion",
+      "title": "Vérifier le code OTP",
+      "subtitle": "Veuillez entrer le code d'authentification reçu sur votre email enregistré.",
+      "otpLabel": "Entrer le code OTP",
+      "otpPlaceholder": "Entrez le code OTP",
+      "newPasswordLabel": "Nouveau mot de passe",
+      "newPasswordPlaceholder": "Entrez le nouveau mot de passe",
+      "confirmPasswordLabel": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Retapez le nouveau mot de passe",
+      "submit": "Vérifier et réinitialiser",
+      "verifying": "Vérification...",
+      "success": "Mot de passe réinitialisé avec succès !",
+      "successDesc": "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+      "failed": "Échec de la vérification",
+      "invalidOtp": "Code OTP invalide",
+      "otpIncorrect": "Le code OTP est incorrect ou expiré.",
+      "enterOtp": "Veuillez entrer le code OTP",
+      "otpMinLength": "Le code OTP doit comporter au moins 4 chiffres",
+      "enterPassword": "Veuillez entrer un nouveau mot de passe",
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas",
+      "noCode": "Vous n'avez pas reçu le code ?",
+      "resend": "Renvoyer",
+      "resending": "Renvoi...",
+      "resent": "Code OTP renvoyé !",
+      "resendFailed": "Échec du renvoi du code",
+      "sessionExpired": "Session expirée",
+      "sessionExpiredDesc": "Veuillez à nouveau saisir votre email."
+    },
+
+    "success": {
+      "title": "Terminé !",
+      "subtitle": "Votre mot de passe a été réinitialisé. Vous pouvez vous connecter à votre compte."
+    },
+
+    "changePassword": {
+      "title": "Changer le mot de passe",
+      "subtitle": "Mettez à jour le mot de passe de votre compte",
+      "currentLabel": "Mot de passe actuel",
+      "newLabel": "Nouveau mot de passe",
+      "confirmLabel": "Confirmer le nouveau mot de passe",
+      "submit": "Mettre à jour le mot de passe",
+      "updating": "Mise à jour...",
+      "success": "Mot de passe mis à jour avec succès !",
+      "successDesc": "Votre mot de passe a été modifié.",
+      "failed": "Échec de la mise à jour du mot de passe",
+      "currentRequired": "Le mot de passe actuel est requis",
+      "newRequired": "Le nouveau mot de passe est requis",
+      "newMinLength": "Le mot de passe doit comporter au moins 6 caractères",
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas"
+    }
+  },
+
   "dashboard": {
     "title": "Tableau de bord",
     "mrr": "MRR",

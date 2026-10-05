@@ -68,6 +68,76 @@
     "accountCreatedDesc": "Please sign in to continue."
   },
 
+  "auth": {
+    "serverUnavailable": "Server unavailable. Please try again.",
+
+    "forgot": {
+      "signInHeader": "Sign in",
+      "title": "Forgot Password",
+      "subtitle": "We will send you instructions to reset your password in your registered email.",
+      "emailLabel": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "submit": "Reset Password",
+      "sendingOtp": "Sending OTP...",
+      "otpSent": "OTP sent successfully!",
+      "otpSentDesc": "Check your inbox at {{email}}",
+      "sendOtpFailed": "Failed to send OTP",
+      "checkEmail": "Please check the email address and try again."
+    },
+
+    "verify": {
+      "signInHeader": "Sign in",
+      "title": "Verify OTP",
+      "subtitle": "Please enter the authentication code received on your registered email.",
+      "otpLabel": "Enter OTP",
+      "otpPlaceholder": "Enter the OTP",
+      "newPasswordLabel": "New Password",
+      "newPasswordPlaceholder": "Enter new password",
+      "confirmPasswordLabel": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-type new password",
+      "submit": "Verify & Reset Password",
+      "verifying": "Verifying...",
+      "success": "Password reset successfully!",
+      "successDesc": "You can now sign in with your new password.",
+      "failed": "Verification failed",
+      "invalidOtp": "Invalid OTP",
+      "otpIncorrect": "The OTP is incorrect or expired.",
+      "enterOtp": "Please enter the OTP",
+      "otpMinLength": "OTP must be at least 4 digits",
+      "enterPassword": "Please enter a new password",
+      "passwordsDontMatch": "Passwords do not match",
+      "noCode": "Didn't receive the code?",
+      "resend": "Resend",
+      "resending": "Resending...",
+      "resent": "OTP resent!",
+      "resendFailed": "Failed to resend OTP",
+      "sessionExpired": "Session expired",
+      "sessionExpiredDesc": "Please enter your email again."
+    },
+
+    "success": {
+      "title": "All done!",
+      "subtitle": "Your Password has been reset. You can sign in to your account."
+    },
+
+    "changePassword": {
+      "title": "Change Password",
+      "subtitle": "Update your account password",
+      "currentLabel": "Current Password",
+      "newLabel": "New Password",
+      "confirmLabel": "Confirm New Password",
+      "submit": "Update Password",
+      "updating": "Updating...",
+      "success": "Password updated successfully!",
+      "successDesc": "Your password has been changed.",
+      "failed": "Failed to update password",
+      "currentRequired": "Current password is required",
+      "newRequired": "New password is required",
+      "newMinLength": "Password must be at least 6 characters",
+      "passwordsDontMatch": "Passwords do not match"
+    }
+  },
+
   "dashboard": {
     "title": "Dashboard",
     "mrr": "MRR",

@@ -1,11 +1,15 @@
+// src/Components/SignIn/PasswordSuccess.jsx
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logo from '../../assets/Images/Home/logo.png';
 import Gradient from '../../assets/Images/Home/Gradient.png';
 import tickImg from '../../assets/Images/Home/tick.png';
 
 export default function PasswordSuccess() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,7 +21,6 @@ export default function PasswordSuccess() {
   return (
     <div className="relative w-screen h-screen bg-white overflow-hidden">
       <div className="relative z-10 flex h-screen w-full">
-        {/* Left Side */}
         <div
           className="flex-1 flex flex-col justify-center px-16 lg:px-32"
           style={{
@@ -30,10 +33,10 @@ export default function PasswordSuccess() {
         >
           <div className="max-w-2xl">
             <h1 className="text-[42px] font-extrabold text-blue-900 mb-6 leading-tight">
-              POS that works as hard as you. and Faster than you.
+              {t('signIn.heroTitle1')} {t('signIn.heroTitle2')}
             </h1>
             <p className="text-gray-600 text-xl mb-12 leading-relaxed max-w-xl">
-              Grow without limit with Triaxx and Make timely and accurate decisions with real-time reports.
+              {t('signIn.heroSubtitle')}
             </p>
             <div className="flex items-center gap-4 bg-white rounded-xl px-8 py-5 shadow-lg w-[208px] h-[58.8px]">
               <div className="flex items-center gap-10">
@@ -50,18 +53,23 @@ export default function PasswordSuccess() {
           </div>
         </div>
 
-        {/* Right Side */}
         <div className="w-full max-w-2xl flex items-center justify-center bg-white">
           <div className="text-center px-4">
-            <img src={logo} alt="Triaxx Logo" className="h-[40px] mx-auto mb-4" />
+            <img
+              src={logo}
+              alt="Triaxx Logo"
+              className="h-[40px] mx-auto mb-4"
+            />
 
             <div className="flex justify-center items-center gap-2 mb-3">
               <img src={tickImg} alt="Success" />
-              <h2 className="text-3xl font-bold text-black">All done !</h2>
+              <h2 className="text-3xl font-bold text-black">
+                {t('auth.success.title')}
+              </h2>
             </div>
 
             <p className="text-gray-500 text-[16px] max-w-sm mx-auto leading-relaxed">
-              Your Password has been reset. you can sign in with to your account
+              {t('auth.success.subtitle')}
             </p>
           </div>
         </div>

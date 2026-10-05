@@ -1,26 +1,24 @@
 // src/Services/endpoints.js
 
 export const ENDPOINTS = {
-  AUTH: {
+ AUTH: {
     LOGIN: (userType) => {
       switch (userType) {
-        case 'Admin':
-          return '/api/v1/user/login-admin';
-        case 'Restaurant':
-          return '/api/v1/user/login-restaurant';
-        case 'Employee':
-          return '/api/v1/user/login-employee';
-        default:
-          return '/api/v1/user/login-admin';
+        case 'Admin': return '/api/v1/user/login-admin';
+        case 'Restaurant': return '/api/v1/user/login-restaurant';
+        case 'Employee': return '/api/v1/user/login-employee';
+        default: return '/api/v1/user/login-admin';
       }
     },
     LOGOUT: '/api/v1/user/logout',
+    CHANGE_PASSWORD: '/api/v1/user/change-password',
+
     FORGOT_PASSWORD: {
       SEND_OTP: '/api/v1/user/forget-password/send-otp',
-      VERIFY_OTP: '/api/v1/user/forget-password/verify-otp',
-      RESET_PASSWORD: '/api/v1/user/forget-password/reset-password',
-    },
-  },
+      RESEND_OTP: '/api/v1/user/forget-password/resend-otp',   
+      VERIFY_OTP: '/api/v1/user/forget-password/verify-otp', 
+  }
+},
 
   // ADMIN section
   ADMIN: {
