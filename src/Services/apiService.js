@@ -244,10 +244,14 @@ export const clientService = {
 
 // --------------------subscription service------------------
 
+// src/Services/apiService.js
+
 export const subscriptionService = {
-  // Dashboard (aggregate counts)
+  // ---------- Dashboard (plan counts) ----------
   getSubscriptionDashboard: async () => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.SUBSCRIPTION.DASHBOARD);
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.DASHBOARD
+    );
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load subscription dashboard');
@@ -255,7 +259,7 @@ export const subscriptionService = {
     return payload?.data || null;
   },
 
-  // ✅ NEW: List all plans (optionally filter by Subscription_Type)
+  // ---------- List plans (optionally filter by type) ----------
   getAllPlans: async (subscriptionType) => {
     const params = {};
     if (subscriptionType) params.Subscription_Type = subscriptionType;
@@ -265,33 +269,43 @@ export const subscriptionService = {
       { params }
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load plans');
     }
-
     return {
       data: payload?.data || [],
       count: payload?.count ?? (payload?.data?.length || 0),
     };
   },
-  getSubscriptionHistory: async (page = 1, limit = 10, status = 'all') => {
+
+  // ---------- Get a single plan by id ----------
+  getPlanById: async (id) => {
     const response = await apiClient.get(
-      ENDPOINTS.ADMIN.SUBSCRIPTION.HISTORY,
-      { params: { page, limit, status } }
+      ENDPOINTS.ADMIN.SUBSCRIPTION.GET_BY_ID(id)
     );
     const payload = response.data;
-
     if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load subscription history');
+      throw new Error(payload?.message || 'Plan not found');
     }
+    return payload?.data || null;
+  },
 
+  // ---------- Get plans for the authenticated user ----------
+  getPlansByAuth: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.GET_BY_AUTH
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load plans');
+    }
     return {
       data: payload?.data || [],
-      pagination: payload?.pagination || null,
+      count: payload?.count ?? (payload?.data?.length || 0),
     };
   },
-  // Create a new plan
+
+  // ---------- Create ----------
   createPlan: async (payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.SUBSCRIPTION.CREATE,
@@ -302,6 +316,35 @@ export const subscriptionService = {
       throw new Error(data?.message || 'Failed to create plan');
     }
     return data?.data || null;
+  },
+
+  // ---------- Update ----------
+  updatePlan: async (payload) => {
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.UPDATE,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to update plan');
+    }
+    return data?.data || null;
+  },
+
+  // ---------- Purchased subscriptions (history) ----------
+  getSubscriptionHistory: async (page = 1, limit = 10, status = 'all') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.HISTORY,
+      { params: { page, limit, status } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscription history');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
   },
 };
 // -----------------reports services api------------------

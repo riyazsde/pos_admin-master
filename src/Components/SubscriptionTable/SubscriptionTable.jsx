@@ -1,14 +1,15 @@
+// src/Components/SubscriptionTable/SubscriptionTable.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Loader2, Package } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
-// Sibling components
 import SubscriptionPlans from '../SubscriptionTable/SubscriptionPlans';
 import CreateSubscriptionForm from '../SubscriptionTable/CreateSubscriptionForm';
 
-// Redux
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setSubscriptionHistoryData,
@@ -17,27 +18,25 @@ import {
 import { subscriptionService } from '../../Services/apiService';
 
 // ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-const formatDate = (iso) => {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-    });
-  } catch {
-    return '—';
-  }
-};
-
-// ---------------------------------------------------------------------------
 // Table Row
 // ---------------------------------------------------------------------------
-const TableRow = ({ sub, index, navigate }) => {
+const TableRow = ({ sub, index, navigate, t, i18n }) => {
   const id = String(index + 1).padStart(2, '0');
   const plan = sub.Plan || {};
+
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    try {
+      const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+      return new Date(iso).toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+      });
+    } catch {
+      return '—';
+    }
+  };
 
   const goToDetails = () => {
     navigate(`/client-details?id=${sub.Restaurant_User_id}`);
@@ -70,7 +69,7 @@ const TableRow = ({ sub, index, navigate }) => {
             {formatDate(sub.Renewal_Date)}
           </span>
           <span className="text-[10px] text-gray-400">
-            Purchased {formatDate(sub.Purchase_Date)}
+            {t('subscriptions.purchasedOn')} {formatDate(sub.Purchase_Date)}
           </span>
         </div>
       </div>
@@ -88,7 +87,7 @@ const TableRow = ({ sub, index, navigate }) => {
           onClick={goToDetails}
           className="w-full max-w-[100px] h-[35px] bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-md text-white font-poppins text-xs font-medium hover:opacity-90 transition-opacity"
         >
-          View more
+          {t('subscriptions.viewMore')}
         </button>
       </div>
     </div>
@@ -99,11 +98,14 @@ const TableRow = ({ sub, index, navigate }) => {
 // Main Component
 // ---------------------------------------------------------------------------
 const SubscriptionTable = () => {
-  const [currentView, setCurrentView] = useState('list'); // 'list' | 'plans' | 'form'
+  const [currentView, setCurrentView] = useState('list');
   const [selectedPeriod, setSelectedPeriod] = useState('All');
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState(null);
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t, i18n } = useTranslation();
 
   const {
     subscriptionHistory,
@@ -111,7 +113,6 @@ const SubscriptionTable = () => {
     historyLoading,
   } = useAppSelector((state) => state.subscriptions);
 
-  // ✅ Fetch subscription history on mount
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -129,17 +130,15 @@ const SubscriptionTable = () => {
       } catch (err) {
         console.error('Subscription history fetch error:', err);
         dispatch(setSubscriptionHistoryLoading(false));
-        toast.error('Failed to load subscriptions', {
+        toast.error(t('subscriptions.loadFailed'), {
           description:
-            err?.response?.data?.message ||
-            err?.message ||
-            'Please try again later.',
+            err?.response?.data?.message || err?.message || t('common.error'),
         });
       }
     };
 
     fetchHistory();
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   // ---------------------------------------------------------------------
   // View: PLANS
@@ -147,38 +146,61 @@ const SubscriptionTable = () => {
   if (currentView === 'plans') {
     return (
       <SubscriptionPlans
-        onBack={() => setCurrentView('list')}
-        onGetStarted={() => setCurrentView('form')}
-        onCreateNew={() => setCurrentView('form')}
+        onBack={() => {
+          setEditingPlan(null);
+          setCurrentView('list');
+        }}
+        onGetStarted={() => {
+          setEditingPlan(null);
+          setCurrentView('form');
+        }}
+        onCreateNew={() => {
+          setEditingPlan(null);
+          setCurrentView('form');
+        }}
+        onEditPlan={(plan) => {
+          setEditingPlan(plan);
+          setCurrentView('form');
+        }}
+        onViewPlan={(plan) => {
+          // Optional: log or navigate to a details page
+          console.log('View plan:', plan);
+        }}
       />
     );
   }
 
   // ---------------------------------------------------------------------
-  // View: FORM
+  // View: FORM (create or edit)
   // ---------------------------------------------------------------------
   if (currentView === 'form') {
     return (
       <CreateSubscriptionForm
-        onBack={() => setCurrentView('plans')}
-        onComplete={() => setCurrentView('plans')}
+        editingPlan={editingPlan}
+        onBack={() => {
+          setEditingPlan(null);
+          setCurrentView('plans');
+        }}
+        onComplete={() => {
+          setEditingPlan(null);
+          setCurrentView('plans');
+        }}
       />
     );
   }
 
   // ---------------------------------------------------------------------
-  // View: LIST (default)
+  // View: LIST
   // ---------------------------------------------------------------------
   const isEmpty = subscriptionHistory.length === 0;
   const totalCount = subscriptionHistoryPagination?.total || 0;
 
   return (
     <div className="p-4 lg:p-6 bg-gray-50 min-h-screen">
-      {/* ================== Header ================== */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <div className="flex items-center gap-4 flex-wrap">
           <h1 className="text-xl lg:text-3xl font-bold text-black font-poppins">
-            Subscriptions
+            {t('subscriptions.title')}
           </h1>
 
           <div className="bg-gray-200 p-1 rounded-lg flex gap-1">
@@ -190,7 +212,7 @@ const SubscriptionTable = () => {
                   : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
-              Purchased
+              {t('subscriptions.purchased')}
             </button>
             <button
               onClick={() => setCurrentView('plans')}
@@ -200,18 +222,17 @@ const SubscriptionTable = () => {
                   : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
-              Create
+              {t('subscriptions.create')}
             </button>
           </div>
         </div>
 
-        {/* Period dropdown */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="flex items-center justify-between w-[110px] h-9 px-3 bg-white border border-gray-300 rounded-md shadow-sm text-black text-sm"
           >
-            <span>{selectedPeriod}</span>
+            <span>{t(`period.${selectedPeriod.toLowerCase()}`) || selectedPeriod}</span>
             <svg
               className="w-4 h-4 ml-1"
               fill="none"
@@ -245,29 +266,25 @@ const SubscriptionTable = () => {
         </div>
       </div>
 
-      {/* Subtitle */}
       <p className="text-xs text-gray-500 mb-4">
-        {totalCount} subscription{totalCount !== 1 ? 's' : ''}
+        {totalCount} {totalCount === 1 ? 'subscription' : 'subscriptions'}
       </p>
 
-      {/* ================== Table ================== */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {/* Desktop Header */}
         <div className="hidden lg:grid grid-cols-12 items-center bg-[#F9FAFB] border-b border-gray-200 px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
           <div className="col-span-1">#</div>
-          <div className="col-span-3">Business Name</div>
-          <div className="col-span-2">Plan Purchased</div>
-          <div className="col-span-2">Renewal Date</div>
-          <div className="col-span-2">Transaction Id</div>
-          <div className="col-span-1">Payment</div>
-          <div className="col-span-1 text-right">Action</div>
+          <div className="col-span-3">{t('subscriptions.table.businessName')}</div>
+          <div className="col-span-2">{t('subscriptions.table.planPurchased')}</div>
+          <div className="col-span-2">{t('subscriptions.table.renewalDate')}</div>
+          <div className="col-span-2">{t('subscriptions.table.transactionId')}</div>
+          <div className="col-span-1">{t('subscriptions.table.payment')}</div>
+          <div className="col-span-1 text-right">{t('subscriptions.table.action')}</div>
         </div>
 
-        {/* Body */}
         {historyLoading && isEmpty ? (
           <div className="p-10 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading subscriptions…</span>
+            <span className="text-sm">{t('subscriptions.loadingHistory')}</span>
           </div>
         ) : isEmpty ? (
           <div className="p-10 flex flex-col items-center justify-center text-gray-400 gap-3">
@@ -275,10 +292,10 @@ const SubscriptionTable = () => {
               <Package className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No subscriptions found
+              {t('subscriptions.noSubscriptions')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              Purchased subscriptions will appear here.
+              {t('subscriptions.noSubscriptionsDesc')}
             </p>
           </div>
         ) : (
@@ -289,6 +306,8 @@ const SubscriptionTable = () => {
                 sub={sub}
                 index={index}
                 navigate={navigate}
+                t={t}
+                i18n={i18n}
               />
             ))}
           </div>

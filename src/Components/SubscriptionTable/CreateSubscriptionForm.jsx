@@ -1,27 +1,37 @@
+// src/Components/SubscriptionTable/CreateSubscriptionForm.jsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowLeft, Plus, X, Save, Loader2, Info } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { useAppDispatch } from '../../Store/hooks';
-import { addSubscriptionPlan } from '../../Store/Features/subscriptions/subscriptionsSlice';
+import {
+  addSubscriptionPlan,
+  updateSubscriptionPlan,
+} from '../../Store/Features/subscriptions/subscriptionsSlice';
 import { subscriptionService } from '../../Services/apiService';
 
 // ---------------------------------------------------------------------------
-// Initial state
+// Initial form
 // ---------------------------------------------------------------------------
-const initialForm = {
-  PlanName: '',
-  Description: '',
-  Subscription_Type: 'SaaS Only',
-  Price: '',
-  fesility: [],
-};
+const buildInitialForm = (plan) => ({
+  PlanName: plan?.PlanName || '',
+  Description: plan?.Description || '',
+  Subscription_Type: plan?.Subscription_Type || 'SaaS Only',
+  Price: plan?.Price ?? '',
+  fesility: (plan?.fesility || []).map((f) => ({
+    fesilityLine: f.fesilityLine,
+    statue: f.statue,
+  })),
+  Status: plan?.Status ?? true,
+});
 
 const SUBSCRIPTION_TYPES = ['SaaS Only', 'SaaS + Hardware'];
 
 // ---------------------------------------------------------------------------
-// Small UI helpers
+// UI helpers
 // ---------------------------------------------------------------------------
 const Label = ({ children, required }) => (
   <label className="block text-sm font-semibold text-[#2E2A40] mb-2">
@@ -58,32 +68,40 @@ const Select = ({ children, ...props }) => (
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
-const CreateSubscriptionForm = ({ onBack, onComplete }) => {
+const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
-  const [form, setForm] = useState(initialForm);
+  const isEditMode = Boolean(editingPlan?.Admin_Plan_id);
+
+  const [form, setForm] = useState(() => buildInitialForm(editingPlan));
   const [featureInput, setFeatureInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preselectedPlan, setPreselectedPlan] = useState(null);
 
-  // ✅ Read the plan chosen on the previous screen (if any)
+  // ✅ Preselected plan from plans view (only in create mode)
   useEffect(() => {
+    if (isEditMode) return;
     const raw = sessionStorage.getItem('selectedPlan');
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         setPreselectedPlan(parsed);
-        // Optionally pre-fill some fields based on the selected plan
         setForm((prev) => ({
           ...prev,
           Subscription_Type: parsed.Subscription_Type || prev.Subscription_Type,
         }));
       } catch {
-        // ignore bad JSON
+        // ignore
       }
     }
-  }, []);
+  }, [isEditMode]);
+
+  // ✅ If editingPlan changes (e.g. user clicks edit on another plan), rebuild form
+  useEffect(() => {
+    if (editingPlan) setForm(buildInitialForm(editingPlan));
+  }, [editingPlan]);
 
   const update = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -93,7 +111,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
     const line = featureInput.trim();
     if (!line) return;
     if (form.fesility.some((f) => f.fesilityLine === line)) {
-      toast.error('Feature already added');
+      toast.error(t('subscriptions.featureAlreadyAdded'));
       return;
     }
     update('fesility', [
@@ -119,10 +137,11 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
 
   // ---- Validation ----
   const validate = () => {
-    if (!form.PlanName.trim()) return 'Plan Name is required';
+    if (!form.PlanName.trim()) return t('subscriptions.validation.planNameRequired');
     if (!form.Price || Number(form.Price) <= 0)
-      return 'Price must be greater than 0';
-    if (form.fesility.length === 0) return 'Add at least one feature';
+      return t('subscriptions.validation.priceRequired');
+    if (form.fesility.length === 0)
+      return t('subscriptions.validation.featureRequired');
     return null;
   };
 
@@ -137,10 +156,12 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
     }
 
     setIsSubmitting(true);
-    const toastId = toast.loading('Creating plan...');
+    const toastId = toast.loading(
+      isEditMode ? t('subscriptions.updatingPlan') : t('subscriptions.creatingPlan')
+    );
 
     try {
-      const payload = {
+      const basePayload = {
         PlanName: form.PlanName.trim(),
         Subscription_Type: form.Subscription_Type,
         Description: form.Description.trim(),
@@ -149,18 +170,37 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
           fesilityLine: f.fesilityLine,
           statue: f.statue,
         })),
+        Status: form.Status,
       };
 
-      const created = await subscriptionService.createPlan(payload);
+      let result;
 
-      // ✅ Add to Redux so it appears in the plans list without refetch
-      dispatch(addSubscriptionPlan(created));
+      if (isEditMode) {
+        // ✅ Update existing plan
+        const payload = { id: editingPlan.Admin_Plan_id, ...basePayload };
+        result = await subscriptionService.updatePlan(payload);
+        dispatch(updateSubscriptionPlan(result));
 
-      toast.success('Plan created successfully!', {
-        id: toastId,
-        description: `"${created?.PlanName || form.PlanName}" is now available.`,
-        duration: 3000,
-      });
+        toast.success(t('subscriptions.updateSuccess'), {
+          id: toastId,
+          description: t('subscriptions.updateSuccessDesc', {
+            name: result?.PlanName || form.PlanName,
+          }),
+          duration: 3000,
+        });
+      } else {
+        // ✅ Create new plan
+        result = await subscriptionService.createPlan(basePayload);
+        dispatch(addSubscriptionPlan(result));
+
+        toast.success(t('subscriptions.createSuccess'), {
+          id: toastId,
+          description: t('subscriptions.createSuccessDesc', {
+            name: result?.PlanName || form.PlanName,
+          }),
+          duration: 3000,
+        });
+      }
 
       sessionStorage.removeItem('selectedPlan');
 
@@ -169,14 +209,20 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
         else navigate('/subscription-list');
       }, 1200);
     } catch (error) {
-      console.error('Create plan error:', error);
-      toast.error('Failed to create plan', {
-        id: toastId,
-        description:
-          error?.response?.data?.message ||
-          error?.message ||
-          'Please check the form and try again.',
-      });
+      console.error('Plan save error:', error);
+      toast.error(
+        isEditMode
+          ? t('subscriptions.updateFailed')
+          : t('subscriptions.createFailed'),
+        {
+          id: toastId,
+          description:
+            error?.response?.data?.errors?.[0]?.msg ||
+            error?.response?.data?.message ||
+            error?.message ||
+            t('common.error'),
+        }
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -184,7 +230,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
 
   return (
     <div className="min-h-screen w-full bg-gray-50 poppins-text p-4 sm:p-6">
-      {/* ================== Header ================== */}
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6 max-w-4xl mx-auto">
         <button
           onClick={onBack || (() => navigate(-1))}
@@ -194,85 +240,89 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
         </button>
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2A40]">
-            Create Subscription Plan
+            {isEditMode
+              ? t('subscriptions.editPlanTitle')
+              : t('subscriptions.createPlanTitle')}
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
-            Configure pricing, features, and availability
+            {isEditMode
+              ? t('subscriptions.editPlanSubtitle', {
+                  name: editingPlan.PlanName,
+                })
+              : t('subscriptions.createPlanSubtitle')}
           </p>
         </div>
       </div>
 
-      {/* ================== Pre-selected plan banner ================== */}
-      {preselectedPlan && (
+      {/* Preselected banner (create only) */}
+      {!isEditMode && preselectedPlan && (
         <div className="max-w-4xl mx-auto mb-4 flex items-start gap-3 px-4 py-3 rounded-xl bg-purple-50 border border-purple-100">
           <Info className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
           <div className="text-xs text-purple-800">
             <p className="font-semibold mb-0.5">
-              You selected: {preselectedPlan.PlanName} — $
-              {Number(preselectedPlan.Price).toFixed(2)}/mo
+              {t('subscriptions.preselectedPlan', {
+                name: preselectedPlan.PlanName,
+                price: Number(preselectedPlan.Price).toFixed(2),
+              })}
             </p>
             <p className="text-purple-600">
-              Fill out the form below to create a <strong>new</strong> plan
-              based on your choice.
+              {t('subscriptions.preselectedHint')}
             </p>
           </div>
         </div>
       )}
 
-      {/* ================== Form ================== */}
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
         className="max-w-4xl mx-auto bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-100 p-6 sm:p-8 space-y-6"
       >
-        {/* Row: Plan name + Type */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label required>Plan Name</Label>
+            <Label required>{t('subscriptions.form.planName')}</Label>
             <Input
               type="text"
               value={form.PlanName}
               onChange={(e) => update('PlanName', e.target.value)}
-              placeholder="e.g. Business India"
+              placeholder={t('subscriptions.form.planNamePlaceholder')}
               disabled={isSubmitting}
             />
           </div>
           <div>
-            <Label required>Subscription Type</Label>
+            <Label required>{t('subscriptions.form.subscriptionType')}</Label>
             <Select
               value={form.Subscription_Type}
               onChange={(e) => update('Subscription_Type', e.target.value)}
               disabled={isSubmitting}
             >
-              {SUBSCRIPTION_TYPES.map((t) => (
-                <option key={t}>{t}</option>
+              {SUBSCRIPTION_TYPES.map((tp) => (
+                <option key={tp}>{tp}</option>
               ))}
             </Select>
           </div>
         </div>
 
-        {/* Description */}
         <div>
-          <Label>Description</Label>
+          <Label>{t('subscriptions.form.description')}</Label>
           <Textarea
             rows={3}
             value={form.Description}
             onChange={(e) => update('Description', e.target.value)}
-            placeholder="Short description about the plan…"
+            placeholder={t('subscriptions.form.descriptionPlaceholder')}
             disabled={isSubmitting}
           />
         </div>
 
-        {/* Price */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <Label required>Price (XOF)</Label>
+            <Label required>{t('subscriptions.form.price')}</Label>
             <Input
               type="number"
               min="0"
               step="0.01"
               value={form.Price}
               onChange={(e) => update('Price', e.target.value)}
-              placeholder="e.g. 429"
+              placeholder={t('subscriptions.form.pricePlaceholder')}
               disabled={isSubmitting}
             />
           </div>
@@ -280,7 +330,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
 
         {/* Features */}
         <div>
-          <Label required>Features</Label>
+          <Label required>{t('subscriptions.form.features')}</Label>
           <div className="flex gap-2">
             <Input
               type="text"
@@ -289,7 +339,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
               onKeyDown={(e) =>
                 e.key === 'Enter' && (e.preventDefault(), addFeature())
               }
-              placeholder="e.g. POS and order management"
+              placeholder={t('subscriptions.form.featurePlaceholder')}
               disabled={isSubmitting}
             />
             <button
@@ -298,7 +348,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
               disabled={isSubmitting}
               className="px-4 py-3 bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5 text-sm font-medium shrink-0 disabled:opacity-50"
             >
-              <Plus className="w-4 h-4" /> Add
+              <Plus className="w-4 h-4" /> {t('common.save')}
             </button>
           </div>
 
@@ -340,6 +390,23 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
           )}
         </div>
 
+        {/* Status toggle */}
+        <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <input
+            id="status"
+            type="checkbox"
+            checked={form.Status}
+            onChange={(e) => update('Status', e.target.checked)}
+            className="w-5 h-5 accent-purple-600"
+            disabled={isSubmitting}
+          />
+          <label htmlFor="status" className="text-sm text-gray-700">
+            {isEditMode
+              ? t('subscriptions.form.keepActive')
+              : t('subscriptions.form.activateNow')}
+          </label>
+        </div>
+
         {/* Submit */}
         <div className="flex justify-end gap-3 pt-2">
           <button
@@ -348,7 +415,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
             disabled={isSubmitting}
             className="px-6 py-3 text-sm font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -357,11 +424,17 @@ const CreateSubscriptionForm = ({ onBack, onComplete }) => {
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Creating…
+                <Loader2 className="w-4 h-4 animate-spin" />
+                {isEditMode
+                  ? t('subscriptions.updating')
+                  : t('subscriptions.creating')}
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" /> Create Plan
+                <Save className="w-4 h-4" />
+                {isEditMode
+                  ? t('subscriptions.updatePlan')
+                  : t('subscriptions.createPlan')}
               </>
             )}
           </button>

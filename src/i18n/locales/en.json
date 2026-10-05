@@ -38,6 +38,36 @@
     "signOut": "Sign out"
   },
 
+  "signIn": {
+    "title": "Sign In",
+    "welcomeTitle": "Welcome Back!",
+    "welcomeSubtitle": "Login to access your Triaxx Account",
+    "tabRestaurant": "Restaurant",
+    "tabEmployee": "Employee",
+    "tabAdmin": "Admin",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email or username",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forget Password?",
+    "rememberMe": "Remember me",
+    "submit": "Submit",
+    "signingIn": "Signing in...",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "orLoginWith": "Or login with",
+    "heroTitle1": "POS that works as hard as you.",
+    "heroTitle2": "and Faster than you.",
+    "heroSubtitle": "Grow without limit with Triaxx and make timely and accurate decisions with real-time reports",
+    "loginSuccess": "Login successful!",
+    "welcomeBack": "Welcome back, {{name}}.",
+    "loginFailed": "Login failed",
+    "serverUnavailable": "Server is unavailable. Please try again later.",
+    "checkCredentials": "Please check your credentials.",
+    "accountCreated": "Account created successfully!",
+    "accountCreatedDesc": "Please sign in to continue."
+  },
+
   "dashboard": {
     "title": "Dashboard",
     "mrr": "MRR",
@@ -95,7 +125,8 @@
     "sixMonth": "Six Month",
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
-    "thisYear": "This Year"
+    "thisYear": "This Year",
+    "all": "All"
   },
 
   "profitAfterTax": {
@@ -127,14 +158,78 @@
   },
 
   "subscriptions": {
-    "activeTitle": "Active Subscriptions",
-    "noData": "No subscriptions found",
-    "planLabel": "Plan",
+    "title": "Subscriptions",
+    "purchased": "Purchased",
+    "create": "Create",
+    "createSubscription": "Create Subscription",
+    "saasOnly": "SaaS Only - no contract",
+    "bundle": "Bundle - 2 year contract",
+    "popular": "POPULAR",
+    "getStarted": "Get Started",
+    "noPlansInTier": "No plans in this tier",
+    "tryOtherTier": "Try the other tier or create a new plan.",
+    "createPlan": "Create Plan",
+    "noFeatures": "No features listed",
+    "viewPlan": "View plan",
+    "editPlan": "Edit plan",
+    "loadFailed": "Failed to load subscriptions",
+    "loadingHistory": "Loading subscriptions…",
+    "noSubscriptions": "No subscriptions found",
+    "noSubscriptionsDesc": "Purchased subscriptions will appear here.",
+
+    "createPlanTitle": "Create Subscription Plan",
+    "createPlanSubtitle": "Configure pricing, features, and availability",
+    "editPlanTitle": "Edit Subscription Plan",
+    "editPlanSubtitle": "Editing \"{{name}}\"",
+
+    "creatingPlan": "Creating plan...",
+    "updatingPlan": "Updating plan...",
+    "creating": "Creating…",
+    "updating": "Updating…",
+    "updatePlan": "Update Plan",
+
+    "createSuccess": "Plan created successfully!",
+    "createSuccessDesc": "\"{{name}}\" is now available.",
+    "createFailed": "Failed to create plan",
+    "updateSuccess": "Plan updated successfully!",
+    "updateSuccessDesc": "\"{{name}}\" has been updated.",
+    "updateFailed": "Failed to update plan",
+
+    "featureAlreadyAdded": "Feature already added",
+    "preselectedPlan": "You selected: {{name}} — ${{price}}/mo",
+    "preselectedHint": "Fill out the form below to create a new plan based on your choice.",
+    "purchasedOn": "Purchased",
+    "viewMore": "View more",
+
     "table": {
       "businessName": "Business Name",
       "planPurchased": "Plan Purchased",
-      "purchasedDate": "Purchased Date",
-      "amount": "Amount"
+      "renewalDate": "Renewal Date",
+      "transactionId": "Transaction Id",
+      "payment": "Payment",
+      "action": "Action",
+      "amount": "Amount",
+      "purchasedDate": "Purchased Date"
+    },
+
+    "form": {
+      "planName": "Plan Name",
+      "planNamePlaceholder": "e.g. Business India",
+      "subscriptionType": "Subscription Type",
+      "description": "Description",
+      "descriptionPlaceholder": "Short description about the plan…",
+      "price": "Price (XOF)",
+      "pricePlaceholder": "e.g. 429",
+      "features": "Features",
+      "featurePlaceholder": "e.g. POS and order management",
+      "keepActive": "Keep this plan active",
+      "activateNow": "Activate this plan immediately"
+    },
+
+    "validation": {
+      "planNameRequired": "Plan Name is required",
+      "priceRequired": "Price must be greater than 0",
+      "featureRequired": "Add at least one feature"
     }
   },
 

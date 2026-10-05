@@ -1,13 +1,17 @@
+// src/Components/SubscriptionTable/SubscriptionPlans.jsx
+
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   Check,
   Pencil,
+  Eye,
   Loader2,
   Package,
   Plus,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
@@ -28,7 +32,6 @@ const formatPrice = (price) => {
   });
 };
 
-// Detect tier from PlanName
 const getTier = (planName = '') => {
   const name = String(planName).toLowerCase();
   const hasHW =
@@ -42,19 +45,16 @@ const getTier = (planName = '') => {
   return { tier: 'starter', hasHW, order: 1 };
 };
 
-// Popular = Pro tier
 const isPopular = (plan) => {
   const name = String(plan?.PlanName || '').toLowerCase();
   return name.includes('pro') && !name.includes('enterprise');
 };
 
-// Badge label
 const getBadgeLabel = (plan) => {
   const { tier, hasHW } = getTier(plan.PlanName);
   return `${tier.toUpperCase()}${hasHW ? ' BUNDLE' : ' PLAN'}`;
 };
 
-// Deposit note
 const getDepositText = (price) => {
   if (!price) return '';
   const deposit = (Number(price) * 0.05).toFixed(2);
@@ -62,10 +62,17 @@ const getDepositText = (price) => {
 };
 
 // ---------------------------------------------------------------------------
-// Main Component
+// Main
 // ---------------------------------------------------------------------------
-const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
+const SubscriptionPlans = ({
+  onBack,
+  onGetStarted,
+  onCreateNew,
+  onEditPlan,
+  onViewPlan,
+}) => {
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const { plans, loading, hasLoaded } = useAppSelector(
     (state) => state.subscriptions
@@ -73,7 +80,6 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
 
   const [activeTier, setActiveTier] = useState('bundle');
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasLoaded || hasFetched.current) return;
@@ -87,17 +93,17 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
       } catch (err) {
         console.error('Fetch plans error:', err);
         dispatch(setSubscriptionsError(err?.message || 'Failed to load plans'));
-        toast.error('Failed to load plans', {
+        toast.error(t('subscriptions.loadFailed'), {
           description:
             err?.response?.data?.message ||
             err?.message ||
-            'Please try again later.',
+            t('common.error'),
         });
       }
     };
 
     fetchPlans();
-  }, [dispatch, hasLoaded]);
+  }, [dispatch, hasLoaded, t]);
 
   // ✅ Filter by tier
   const filteredPlans = plans.filter((plan) => {
@@ -108,7 +114,6 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
     return activeTier === 'bundle' ? isBundle : !isBundle;
   });
 
-  // Sort: starter → pro → enterprise
   const sortedPlans = [...filteredPlans].sort(
     (a, b) => getTier(a.PlanName).order - getTier(b.PlanName).order
   );
@@ -131,7 +136,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
           </button>
 
           <h1 className="text-2xl lg:text-3xl font-bold text-black font-poppins">
-            Subscriptions
+            {t('subscriptions.title')}
           </h1>
 
           {/* Purchased / Create toggle */}
@@ -140,20 +145,19 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
               onClick={onBack}
               className="px-4 py-1.5 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition-colors"
             >
-              Purchased
+              {t('subscriptions.purchased')}
             </button>
             <button className="px-4 py-1.5 bg-[#8E24AA] text-white rounded-md text-sm font-medium shadow-sm">
-              Create
+              {t('subscriptions.create')}
             </button>
           </div>
         </div>
 
-        {/* Create Subscription button */}
         <button
           onClick={onCreateNew}
           className="flex items-center gap-2 px-4 py-2.5 bg-[#8E24AA] text-white font-semibold text-sm rounded-lg hover:bg-[#7B1FA2] transition-colors shadow-sm"
         >
-          Create Subscription
+          {t('subscriptions.createSubscription')}
           <Plus className="w-4 h-4" />
         </button>
       </div>
@@ -169,7 +173,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
             }`}
           >
-            SaaS Only - no contract
+            {t('subscriptions.saasOnly')}
           </button>
           <button
             onClick={() => setActiveTier('bundle')}
@@ -179,7 +183,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
             }`}
           >
-            Bundle - 2 year contract
+            {t('subscriptions.bundle')}
           </button>
         </div>
       </div>
@@ -209,16 +213,16 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
             <Package className="w-6 h-6 text-purple-400" />
           </div>
           <p className="text-sm font-medium text-gray-500">
-            No plans in this tier
+            {t('subscriptions.noPlansInTier')}
           </p>
           <p className="text-xs text-gray-400 text-center max-w-xs mb-2">
-            Try the other tier or create a new plan.
+            {t('subscriptions.tryOtherTier')}
           </p>
           <button
             onClick={onCreateNew}
             className="mt-2 px-4 py-2 bg-[#8E24AA] text-white text-xs font-semibold rounded-lg"
           >
-            Create Plan
+            {t('subscriptions.createPlan')}
           </button>
         </div>
       ) : (
@@ -236,14 +240,13 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                     : 'bg-white border border-gray-200 shadow-sm hover:shadow-md'
                 }`}
               >
-                {/* POPULAR badge */}
                 {popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-white text-[10px] font-bold text-[#8E24AA] rounded-full shadow-md border border-purple-200 whitespace-nowrap">
-                    POPULAR
+                    {t('subscriptions.popular')}
                   </div>
                 )}
 
-                {/* Header row */}
+                {/* Header row: badge + edit + view */}
                 <div className="flex items-center justify-between mb-4">
                   <span
                     className={`text-[10px] font-bold tracking-wider uppercase ${
@@ -252,16 +255,39 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                   >
                     {getBadgeLabel(plan)}
                   </span>
-                  <button
-                    className={`p-1.5 rounded-md transition-colors ${
-                      popular
-                        ? 'hover:bg-white/20 text-white'
-                        : 'hover:bg-gray-100 text-gray-400'
-                    }`}
-                    title="Edit plan"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewPlan?.(plan);
+                      }}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        popular
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-gray-100 text-gray-400'
+                      }`}
+                      title={t('subscriptions.viewPlan')}
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditPlan?.(plan);
+                      }}
+                      className={`p-1.5 rounded-md transition-colors ${
+                        popular
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-gray-100 text-gray-400'
+                      }`}
+                      title={t('subscriptions.editPlan')}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Plan name */}
@@ -309,7 +335,6 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                   </div>
                 )}
 
-                {/* Divider */}
                 <div
                   className={`h-px mb-4 ${
                     popular ? 'bg-white/20' : 'bg-gray-100'
@@ -324,7 +349,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                         popular ? 'text-white/60' : 'text-gray-400'
                       }`}
                     >
-                      No features listed
+                      {t('subscriptions.noFeatures')}
                     </li>
                   ) : (
                     features.map((f, idx) => (
@@ -347,7 +372,6 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                   )}
                 </ul>
 
-                {/* Get Started button */}
                 <button
                   onClick={() => handleSelectPlan(plan)}
                   disabled={!plan.Status}
@@ -357,7 +381,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew }) => {
                       : 'bg-transparent border-2 border-[#8E24AA] text-[#8E24AA] hover:bg-purple-50'
                   }`}
                 >
-                  Get Started
+                  {t('subscriptions.getStarted')}
                 </button>
               </div>
             );

@@ -44,12 +44,15 @@ export const ENDPOINTS = {
       // UPDATE: (id) => `/api/v1/admin/clients/${id}`,
       // DELETE: (id) => `/api/v1/admin/clients/${id}`,
     },
-     SUBSCRIPTION: {
-    DASHBOARD: '/api/v1/admin/admin_plan/subscription-dashboard',  
-     CREATE: '/api/v1/admin/admin_plan/create', 
-      GET_ALL: '/api/v1/admin/admin_plan/getall',  
-      HISTORY: '/api/v1/admin/subscription-history/listing', 
-  },
+    SUBSCRIPTION: {
+      DASHBOARD: '/api/v1/admin/admin_plan/subscription-dashboard',
+      GET_ALL: '/api/v1/admin/admin_plan/getall',
+      GET_BY_ID: (id) => `/api/v1/admin/admin_plan/getbyid/${id}`,
+      GET_BY_AUTH: '/api/v1/admin/admin_plan/getbyauth',
+      CREATE: '/api/v1/admin/admin_plan/create',
+      UPDATE: '/api/v1/admin/admin_plan/update',
+      HISTORY: '/api/v1/admin/subscription-history/listing',
+    },
     REPORTS: {
       KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
       ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',

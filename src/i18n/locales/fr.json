@@ -38,6 +38,36 @@
     "signOut": "Se déconnecter"
   },
 
+  "signIn": {
+    "title": "Connexion",
+    "welcomeTitle": "Bon retour !",
+    "welcomeSubtitle": "Connectez-vous pour accéder à votre compte Triaxx",
+    "tabRestaurant": "Restaurant",
+    "tabEmployee": "Employé",
+    "tabAdmin": "Admin",
+    "email": "Email",
+    "emailPlaceholder": "Entrez votre email ou nom d'utilisateur",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "forgotPassword": "Mot de passe oublié ?",
+    "rememberMe": "Se souvenir de moi",
+    "submit": "Se connecter",
+    "signingIn": "Connexion en cours...",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signUp": "S'inscrire",
+    "orLoginWith": "Ou se connecter avec",
+    "heroTitle1": "Un POS qui travaille aussi dur que vous.",
+    "heroTitle2": "et plus rapide que vous.",
+    "heroSubtitle": "Développez-vous sans limite avec Triaxx et prenez des décisions précises en temps réel grâce aux rapports",
+    "loginSuccess": "Connexion réussie !",
+    "welcomeBack": "Bon retour, {{name}}.",
+    "loginFailed": "Échec de la connexion",
+    "serverUnavailable": "Le serveur est indisponible. Veuillez réessayer plus tard.",
+    "checkCredentials": "Veuillez vérifier vos identifiants.",
+    "accountCreated": "Compte créé avec succès !",
+    "accountCreatedDesc": "Veuillez vous connecter pour continuer."
+  },
+
   "dashboard": {
     "title": "Tableau de bord",
     "mrr": "MRR",
@@ -95,7 +125,8 @@
     "sixMonth": "6 mois",
     "thisMonth": "Ce mois",
     "lastMonth": "Le mois dernier",
-    "thisYear": "Cette année"
+    "thisYear": "Cette année",
+    "all": "Tous"
   },
 
   "profitAfterTax": {
@@ -127,14 +158,78 @@
   },
 
   "subscriptions": {
-    "activeTitle": "Abonnements actifs",
-    "noData": "Aucun abonnement trouvé",
-    "planLabel": "Forfait",
+    "title": "Abonnements",
+    "purchased": "Achetés",
+    "create": "Créer",
+    "createSubscription": "Créer un abonnement",
+    "saasOnly": "SaaS uniquement - sans contrat",
+    "bundle": "Forfait - contrat de 2 ans",
+    "popular": "POPULAIRE",
+    "getStarted": "Commencer",
+    "noPlansInTier": "Aucun forfait dans ce niveau",
+    "tryOtherTier": "Essayez l'autre niveau ou créez un nouveau forfait.",
+    "createPlan": "Créer un forfait",
+    "noFeatures": "Aucune fonctionnalité listée",
+    "viewPlan": "Voir le forfait",
+    "editPlan": "Modifier le forfait",
+    "loadFailed": "Échec du chargement des abonnements",
+    "loadingHistory": "Chargement des abonnements…",
+    "noSubscriptions": "Aucun abonnement trouvé",
+    "noSubscriptionsDesc": "Les abonnements achetés apparaîtront ici.",
+
+    "createPlanTitle": "Créer un forfait d'abonnement",
+    "createPlanSubtitle": "Configurez le prix, les fonctionnalités et la disponibilité",
+    "editPlanTitle": "Modifier le forfait d'abonnement",
+    "editPlanSubtitle": "Modification de \"{{name}}\"",
+
+    "creatingPlan": "Création du forfait...",
+    "updatingPlan": "Mise à jour du forfait...",
+    "creating": "Création…",
+    "updating": "Mise à jour…",
+    "updatePlan": "Mettre à jour le forfait",
+
+    "createSuccess": "Forfait créé avec succès !",
+    "createSuccessDesc": "\"{{name}}\" est maintenant disponible.",
+    "createFailed": "Échec de la création du forfait",
+    "updateSuccess": "Forfait mis à jour avec succès !",
+    "updateSuccessDesc": "\"{{name}}\" a été mis à jour.",
+    "updateFailed": "Échec de la mise à jour du forfait",
+
+    "featureAlreadyAdded": "Fonctionnalité déjà ajoutée",
+    "preselectedPlan": "Vous avez sélectionné : {{name}} — ${{price}}/mois",
+    "preselectedHint": "Remplissez le formulaire ci-dessous pour créer un nouveau forfait basé sur votre choix.",
+    "purchasedOn": "Acheté le",
+    "viewMore": "Voir plus",
+
     "table": {
       "businessName": "Nom de l'entreprise",
       "planPurchased": "Forfait acheté",
-      "purchasedDate": "Date d'achat",
-      "amount": "Montant"
+      "renewalDate": "Date de renouvellement",
+      "transactionId": "ID de transaction",
+      "payment": "Paiement",
+      "action": "Action",
+      "amount": "Montant",
+      "purchasedDate": "Date d'achat"
+    },
+
+    "form": {
+      "planName": "Nom du forfait",
+      "planNamePlaceholder": "ex. Business India",
+      "subscriptionType": "Type d'abonnement",
+      "description": "Description",
+      "descriptionPlaceholder": "Brève description du forfait…",
+      "price": "Prix (XOF)",
+      "pricePlaceholder": "ex. 429",
+      "features": "Fonctionnalités",
+      "featurePlaceholder": "ex. Gestion POS et commandes",
+      "keepActive": "Garder ce forfait actif",
+      "activateNow": "Activer ce forfait immédiatement"
+    },
+
+    "validation": {
+      "planNameRequired": "Le nom du forfait est requis",
+      "priceRequired": "Le prix doit être supérieur à 0",
+      "featureRequired": "Ajoutez au moins une fonctionnalité"
     }
   },
 
