@@ -21,7 +21,7 @@ i18n
       escapeValue: false,
     },
     detection: {
-      // where to look for saved language, in order:
+      // Priority: localStorage → browser
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'admin_language',
       caches: ['localStorage'],

@@ -357,7 +357,7 @@ const TicketDetails = () => {
           </div>
 
           {/* Question + Description */}
-          <div className="space-y-3">
+          {/* <div className="space-y-3">
             <h3 className="font-poppins font-semibold text-base text-gray-900">
               {subject}
             </h3>
@@ -369,7 +369,7 @@ const TicketDetails = () => {
               {initial.description ||
                 `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`}
             </p>
-          </div>
+          </div> */}
 
           {/* Images Uploaded */}
           <div className="space-y-3">

@@ -435,15 +435,18 @@ export const languageService = {
   getAllLanguages: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.LANGUAGE.GET_ALL);
     const payload = response.data;
+
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load languages');
     }
+
     return {
       data: payload?.data || [],
       count: payload?.count ?? (payload?.data?.length || 0),
     };
   },
 };
+
 /**
  * ✅ NEW: Audit Services
  */
