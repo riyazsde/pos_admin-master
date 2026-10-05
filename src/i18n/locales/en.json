@@ -70,7 +70,6 @@
 
   "auth": {
     "serverUnavailable": "Server unavailable. Please try again.",
-
     "forgot": {
       "signInHeader": "Sign in",
       "title": "Forgot Password",
@@ -84,7 +83,6 @@
       "sendOtpFailed": "Failed to send OTP",
       "checkEmail": "Please check the email address and try again."
     },
-
     "verify": {
       "signInHeader": "Sign in",
       "title": "Verify OTP",
@@ -114,12 +112,10 @@
       "sessionExpired": "Session expired",
       "sessionExpiredDesc": "Please enter your email again."
     },
-
     "success": {
       "title": "All done!",
       "subtitle": "Your Password has been reset. You can sign in to your account."
     },
-
     "changePassword": {
       "title": "Change Password",
       "subtitle": "Update your account password",
@@ -149,7 +145,6 @@
     "offlineDevices": "Offline Devices",
     "lastUpdated": "Last updated",
     "loadFailed": "Failed to load dashboard",
-
     "dailyActivity": "Daily Activity",
     "monthlyGrowth": "Monthly Growth",
     "newClients": "New Clients",
@@ -158,12 +153,10 @@
     "noActivityData": "No activity data available",
     "noGrowthData": "No growth data available",
     "growthSubtitle": "New Clients vs Client Renewals — you've done {{percent}}% better from {{period1}} to {{period2}}",
-
     "openTicket": "Open Ticket",
     "resolve": "Resolve",
     "noOpenTickets": "No open tickets",
     "noOpenTicketsDesc": "You're all caught up! New tickets will appear here.",
-
     "subscriptionRenewalAlert": "Subscription Renewal Alert",
     "noUpcomingRenewals": "No upcoming renewals",
     "noUpcomingRenewalsDesc": "All subscriptions are up to date. Renewal alerts will show here.",
@@ -171,13 +164,11 @@
     "alertSent": "Alert sent!",
     "alertSentDesc": "Notification sent to {{business}}",
     "businessLabel": "Business",
-
     "table": {
       "businessName": "Business Name",
       "renewalDate": "Renewal Date",
       "notifyClient": "Notify Client"
     },
-
     "priority": {
       "high": "High",
       "critical": "Critical",
@@ -246,31 +237,29 @@
     "loadingHistory": "Loading subscriptions…",
     "noSubscriptions": "No subscriptions found",
     "noSubscriptionsDesc": "Purchased subscriptions will appear here.",
-
+    "activeTitle": "Active Subscriptions",
+    "noData": "No subscriptions found",
+    "planLabel": "Plan",
     "createPlanTitle": "Create Subscription Plan",
     "createPlanSubtitle": "Configure pricing, features, and availability",
     "editPlanTitle": "Edit Subscription Plan",
     "editPlanSubtitle": "Editing \"{{name}}\"",
-
     "creatingPlan": "Creating plan...",
     "updatingPlan": "Updating plan...",
     "creating": "Creating…",
     "updating": "Updating…",
     "updatePlan": "Update Plan",
-
     "createSuccess": "Plan created successfully!",
     "createSuccessDesc": "\"{{name}}\" is now available.",
     "createFailed": "Failed to create plan",
     "updateSuccess": "Plan updated successfully!",
     "updateSuccessDesc": "\"{{name}}\" has been updated.",
     "updateFailed": "Failed to update plan",
-
     "featureAlreadyAdded": "Feature already added",
     "preselectedPlan": "You selected: {{name}} — ${{price}}/mo",
     "preselectedHint": "Fill out the form below to create a new plan based on your choice.",
     "purchasedOn": "Purchased",
     "viewMore": "View more",
-
     "table": {
       "businessName": "Business Name",
       "planPurchased": "Plan Purchased",
@@ -281,7 +270,6 @@
       "amount": "Amount",
       "purchasedDate": "Purchased Date"
     },
-
     "form": {
       "planName": "Plan Name",
       "planNamePlaceholder": "e.g. Business India",
@@ -295,7 +283,6 @@
       "keepActive": "Keep this plan active",
       "activateNow": "Activate this plan immediately"
     },
-
     "validation": {
       "planNameRequired": "Plan Name is required",
       "priceRequired": "Price must be greater than 0",
@@ -343,14 +330,12 @@
     "createSuccess": "Sub-admin created successfully!",
     "createSuccessDesc": "\"{{name}}\" has been added.",
     "createFailed": "Failed to create sub-admin",
-
     "searchPlaceholder": "Search by name, email or ID...",
     "loading": "Loading sub-admins…",
     "loadFailed": "Failed to load sub-admins",
     "noData": "No sub-admins found",
     "noDataDesc": "Sub-admins you add will appear here.",
     "noPermissions": "No permissions",
-
     "active": "Active",
     "inactive": "Inactive",
     "activate": "Activate",
@@ -361,22 +346,18 @@
     "deactivateSuccess": "Sub-admin deactivated",
     "activateFailed": "Failed to activate",
     "deactivateFailed": "Failed to deactivate",
-
     "editTitle": "Edit Sub-Admin",
     "saving": "Saving…",
     "updating": "Updating…",
     "updateSuccess": "Sub-admin updated successfully!",
     "updateFailed": "Failed to update sub-admin",
-
     "deleteTitle": "Delete Sub-Admin?",
     "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
     "deleting": "Deleting…",
     "deleteSuccess": "Sub-admin deleted",
     "deleteFailed": "Failed to delete sub-admin",
-
     "showing": "Showing {{count}} of {{total}} sub-admins",
     "page": "Page {{page}} of {{pages}}",
-
     "table": {
       "sno": "S no",
       "name": "Name",
@@ -385,7 +366,6 @@
       "status": "Status",
       "action": "Actions"
     },
-
     "form": {
       "firstName": "First Name",
       "firstNamePlaceholder": "Enter first name",
@@ -403,7 +383,6 @@
       "status": "Status",
       "permissions": "Permissions"
     },
-
     "validation": {
       "nameRequired": "Name is required",
       "emailRequired": "Email is required",
@@ -474,6 +453,91 @@
     "form": {
       "name": "Currency Name",
       "icon": "Icon / Symbol"
+    }
+  },
+
+  "clients": {
+    "title": "Clients",
+    "clientSingular": "client",
+    "clientPlural": "clients",
+    "createClient": "Create Client",
+    "loading": "Loading clients...",
+    "loadFailed": "Failed to load clients",
+    "noClients": "No clients found",
+    "tryFilter": "Try changing the filter above.",
+    "createFirst": "Create your first client to get started.",
+    "createdLabel": "Created",
+    "loadingDetails": "Loading details...",
+    "viewMore": "View More",
+    "viewDetails": "View Details",
+    "filter": {
+      "all": "All Clients",
+      "active": "Active Clients",
+      "inactive": "Inactive Clients"
+    },
+    "table": {
+      "companyName": "Company Name",
+      "createdDate": "Created Date",
+      "plan": "Plan"
+    },
+    "emptyPanel": {
+      "title": "No client selected",
+      "subtitle": "Select a client to view their details here"
+    },
+    "mobileSheet": {
+      "title": "Company Details"
+    },
+    "stats": {
+      "lastYearSales": "Last Year Sales",
+      "totalOrders": "Total Orders Last Year",
+      "employees": "Employees"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}-{{end}} of {{total}}",
+      "prev": "Previous page",
+      "next": "Next page"
+    }
+  },
+
+  "clientDetails": {
+    "title": "Client Details",
+    "breadcrumb": "Subscriptions Purchased",
+    "loading": "Loading client details…",
+    "loadFailed": "Failed to load client",
+    "notFound": "Client not found",
+    "missingId": "No client ID provided",
+    "about": "About",
+    "performance": "Performance",
+    "activeUser": "Active user",
+    "inactiveUser": "Inactive user",
+    "noPlan": "No Plan",
+    "lessThanYear": "< 1 year",
+    "oneYear": "1 year",
+    "yearsCount": "{{count}} years",
+    "accountSection": "Account & Subscription Details",
+    "sendRenewal": "Send Renewal Message",
+    "sendRenewalShort": "Send Renewal",
+    "resetPassword": "Reset Account Password",
+    "resetPasswordShort": "Reset Password",
+    "employeeDetails": "Employee Details",
+    "viewMore": "View more",
+    "fields": {
+      "currentPlan": "Current Plan",
+      "email": "Email",
+      "phone": "Phone",
+      "language": "Language",
+      "currency": "Currency",
+      "onboardingDate": "Onboarding Date",
+      "totalOrders": "Total Orders Last Year",
+      "lastYearSales": "Last Year Sales",
+      "type": "Type",
+      "location": "Location"
+    },
+    "roles": {
+      "managers": "Managers",
+      "waiters": "Waiters",
+      "cashiers": "Cashiers",
+      "kitchenStaff": "Kitchen Staff"
     }
   },
 

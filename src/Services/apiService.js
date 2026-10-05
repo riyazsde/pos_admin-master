@@ -243,15 +243,14 @@ export const clientService = {
     };
   },
 
-  // ✅ NEW: Get single client by ID
   getClientById: async (id) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.CLIENTS.GET_BY_ID(id));
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.CLIENTS.GET_BY_ID(id)
+    );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load client details');
     }
-
     return payload?.data || null;
   },
 };

@@ -70,7 +70,6 @@
 
   "auth": {
     "serverUnavailable": "Serveur indisponible. Veuillez réessayer.",
-
     "forgot": {
       "signInHeader": "Connexion",
       "title": "Mot de passe oublié",
@@ -84,7 +83,6 @@
       "sendOtpFailed": "Échec de l'envoi du code",
       "checkEmail": "Veuillez vérifier l'adresse email et réessayer."
     },
-
     "verify": {
       "signInHeader": "Connexion",
       "title": "Vérifier le code OTP",
@@ -114,12 +112,10 @@
       "sessionExpired": "Session expirée",
       "sessionExpiredDesc": "Veuillez à nouveau saisir votre email."
     },
-
     "success": {
       "title": "Terminé !",
       "subtitle": "Votre mot de passe a été réinitialisé. Vous pouvez vous connecter à votre compte."
     },
-
     "changePassword": {
       "title": "Changer le mot de passe",
       "subtitle": "Mettez à jour le mot de passe de votre compte",
@@ -149,7 +145,6 @@
     "offlineDevices": "Appareils hors ligne",
     "lastUpdated": "Dernière mise à jour",
     "loadFailed": "Échec du chargement du tableau de bord",
-
     "dailyActivity": "Activité quotidienne",
     "monthlyGrowth": "Croissance mensuelle",
     "newClients": "Nouveaux clients",
@@ -158,12 +153,10 @@
     "noActivityData": "Aucune donnée d'activité",
     "noGrowthData": "Aucune donnée de croissance",
     "growthSubtitle": "Nouveaux clients vs renouvellements — vous avez fait {{percent}}% mieux de {{period1}} à {{period2}}",
-
     "openTicket": "Ticket ouvert",
     "resolve": "Résoudre",
     "noOpenTickets": "Aucun ticket ouvert",
     "noOpenTicketsDesc": "Vous êtes à jour ! Les nouveaux tickets apparaîtront ici.",
-
     "subscriptionRenewalAlert": "Alerte de renouvellement d'abonnement",
     "noUpcomingRenewals": "Aucun renouvellement à venir",
     "noUpcomingRenewalsDesc": "Tous les abonnements sont à jour. Les alertes de renouvellement apparaîtront ici.",
@@ -171,13 +164,11 @@
     "alertSent": "Alerte envoyée !",
     "alertSentDesc": "Notification envoyée à {{business}}",
     "businessLabel": "Entreprise",
-
     "table": {
       "businessName": "Nom de l'entreprise",
       "renewalDate": "Date de renouvellement",
       "notifyClient": "Notifier le client"
     },
-
     "priority": {
       "high": "Élevée",
       "critical": "Critique",
@@ -246,31 +237,29 @@
     "loadingHistory": "Chargement des abonnements…",
     "noSubscriptions": "Aucun abonnement trouvé",
     "noSubscriptionsDesc": "Les abonnements achetés apparaîtront ici.",
-
+    "activeTitle": "Abonnements actifs",
+    "noData": "Aucun abonnement trouvé",
+    "planLabel": "Forfait",
     "createPlanTitle": "Créer un forfait d'abonnement",
     "createPlanSubtitle": "Configurez le prix, les fonctionnalités et la disponibilité",
     "editPlanTitle": "Modifier le forfait d'abonnement",
     "editPlanSubtitle": "Modification de \"{{name}}\"",
-
     "creatingPlan": "Création du forfait...",
     "updatingPlan": "Mise à jour du forfait...",
     "creating": "Création…",
     "updating": "Mise à jour…",
     "updatePlan": "Mettre à jour le forfait",
-
     "createSuccess": "Forfait créé avec succès !",
     "createSuccessDesc": "\"{{name}}\" est maintenant disponible.",
     "createFailed": "Échec de la création du forfait",
     "updateSuccess": "Forfait mis à jour avec succès !",
     "updateSuccessDesc": "\"{{name}}\" a été mis à jour.",
     "updateFailed": "Échec de la mise à jour du forfait",
-
     "featureAlreadyAdded": "Fonctionnalité déjà ajoutée",
     "preselectedPlan": "Vous avez sélectionné : {{name}} — ${{price}}/mois",
     "preselectedHint": "Remplissez le formulaire ci-dessous pour créer un nouveau forfait basé sur votre choix.",
     "purchasedOn": "Acheté le",
     "viewMore": "Voir plus",
-
     "table": {
       "businessName": "Nom de l'entreprise",
       "planPurchased": "Forfait acheté",
@@ -281,7 +270,6 @@
       "amount": "Montant",
       "purchasedDate": "Date d'achat"
     },
-
     "form": {
       "planName": "Nom du forfait",
       "planNamePlaceholder": "ex. Business India",
@@ -295,7 +283,6 @@
       "keepActive": "Garder ce forfait actif",
       "activateNow": "Activer ce forfait immédiatement"
     },
-
     "validation": {
       "planNameRequired": "Le nom du forfait est requis",
       "priceRequired": "Le prix doit être supérieur à 0",
@@ -343,14 +330,12 @@
     "createSuccess": "Sous-admin créé avec succès !",
     "createSuccessDesc": "\"{{name}}\" a été ajouté.",
     "createFailed": "Échec de la création du sous-admin",
-
     "searchPlaceholder": "Rechercher par nom, email ou ID...",
     "loading": "Chargement des sous-admins…",
     "loadFailed": "Échec du chargement des sous-admins",
     "noData": "Aucun sous-admin trouvé",
     "noDataDesc": "Les sous-admins que vous ajoutez apparaîtront ici.",
     "noPermissions": "Aucune permission",
-
     "active": "Actif",
     "inactive": "Inactif",
     "activate": "Activer",
@@ -361,22 +346,18 @@
     "deactivateSuccess": "Sous-admin désactivé",
     "activateFailed": "Échec de l'activation",
     "deactivateFailed": "Échec de la désactivation",
-
     "editTitle": "Modifier le sous-admin",
     "saving": "Enregistrement…",
     "updating": "Mise à jour…",
     "updateSuccess": "Sous-admin mis à jour avec succès !",
     "updateFailed": "Échec de la mise à jour du sous-admin",
-
     "deleteTitle": "Supprimer le sous-admin ?",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action est irréversible.",
     "deleting": "Suppression…",
     "deleteSuccess": "Sous-admin supprimé",
     "deleteFailed": "Échec de la suppression du sous-admin",
-
     "showing": "Affichage de {{count}} sur {{total}} sous-admins",
     "page": "Page {{page}} sur {{pages}}",
-
     "table": {
       "sno": "N°",
       "name": "Nom",
@@ -385,7 +366,6 @@
       "status": "Statut",
       "action": "Actions"
     },
-
     "form": {
       "firstName": "Prénom",
       "firstNamePlaceholder": "Entrez le prénom",
@@ -403,7 +383,6 @@
       "status": "Statut",
       "permissions": "Permissions"
     },
-
     "validation": {
       "nameRequired": "Le nom est requis",
       "emailRequired": "L'email est requis",
@@ -474,6 +453,91 @@
     "form": {
       "name": "Nom de la devise",
       "icon": "Icône / Symbole"
+    }
+  },
+
+  "clients": {
+    "title": "Clients",
+    "clientSingular": "client",
+    "clientPlural": "clients",
+    "createClient": "Créer un client",
+    "loading": "Chargement des clients...",
+    "loadFailed": "Échec du chargement des clients",
+    "noClients": "Aucun client trouvé",
+    "tryFilter": "Essayez de modifier le filtre ci-dessus.",
+    "createFirst": "Créez votre premier client pour commencer.",
+    "createdLabel": "Créé le",
+    "loadingDetails": "Chargement des détails...",
+    "viewMore": "Voir plus",
+    "viewDetails": "Voir les détails",
+    "filter": {
+      "all": "Tous les clients",
+      "active": "Clients actifs",
+      "inactive": "Clients inactifs"
+    },
+    "table": {
+      "companyName": "Nom de l'entreprise",
+      "createdDate": "Date de création",
+      "plan": "Forfait"
+    },
+    "emptyPanel": {
+      "title": "Aucun client sélectionné",
+      "subtitle": "Sélectionnez un client pour voir ses détails ici"
+    },
+    "mobileSheet": {
+      "title": "Détails de l'entreprise"
+    },
+    "stats": {
+      "lastYearSales": "Ventes de l'année dernière",
+      "totalOrders": "Commandes totales l'année dernière",
+      "employees": "Employés"
+    },
+    "pagination": {
+      "showing": "Affichage de {{start}}-{{end}} sur {{total}}",
+      "prev": "Page précédente",
+      "next": "Page suivante"
+    }
+  },
+
+  "clientDetails": {
+    "title": "Détails du client",
+    "breadcrumb": "Abonnements achetés",
+    "loading": "Chargement des détails du client…",
+    "loadFailed": "Échec du chargement du client",
+    "notFound": "Client introuvable",
+    "missingId": "Aucun identifiant client fourni",
+    "about": "À propos",
+    "performance": "Performance",
+    "activeUser": "Utilisateur actif",
+    "inactiveUser": "Utilisateur inactif",
+    "noPlan": "Aucun forfait",
+    "lessThanYear": "< 1 an",
+    "oneYear": "1 an",
+    "yearsCount": "{{count}} ans",
+    "accountSection": "Détails du compte et de l'abonnement",
+    "sendRenewal": "Envoyer un message de renouvellement",
+    "sendRenewalShort": "Envoyer un renouvellement",
+    "resetPassword": "Réinitialiser le mot de passe du compte",
+    "resetPasswordShort": "Réinitialiser le mot de passe",
+    "employeeDetails": "Détails des employés",
+    "viewMore": "Voir plus",
+    "fields": {
+      "currentPlan": "Forfait actuel",
+      "email": "Email",
+      "phone": "Téléphone",
+      "language": "Langue",
+      "currency": "Devise",
+      "onboardingDate": "Date d'intégration",
+      "totalOrders": "Commandes totales l'année dernière",
+      "lastYearSales": "Ventes de l'année dernière",
+      "type": "Type",
+      "location": "Emplacement"
+    },
+    "roles": {
+      "managers": "Gérants",
+      "waiters": "Serveurs",
+      "cashiers": "Caissiers",
+      "kitchenStaff": "Personnel de cuisine"
     }
   },
 

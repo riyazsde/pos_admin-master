@@ -40,7 +40,7 @@ const SubscriptionsPurchased = () => {
     fetchSubscriptions();
   }, [dispatch, subscriptions]);
 
-  // ✅ Locale-aware date formatting
+  // ✅ Locale-aware date
   const formatDate = (iso) => {
     if (!iso) return '—';
     try {
