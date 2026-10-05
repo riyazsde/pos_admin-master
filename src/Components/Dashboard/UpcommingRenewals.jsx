@@ -1,16 +1,21 @@
+// src/Components/Dashboard/UpcommingRenewals.jsx
+
 import React from 'react';
 import { useAppSelector } from '../../Store/hooks';
 import { CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const UpcommingRenewals = () => {
   const { renewalAlerts, completeDashboardLoading } = useAppSelector(
     (state) => state.dashboard
   );
+  const { t, i18n } = useTranslation();
 
   const formatDate = (iso) => {
     if (!iso) return '—';
     try {
-      return new Date(iso).toLocaleDateString('en-US', {
+      const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+      return new Date(iso).toLocaleDateString(locale, {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -22,7 +27,8 @@ const UpcommingRenewals = () => {
 
   const formatAmount = (amount, currency = 'XOF') => {
     if (amount === null || amount === undefined) return '—';
-    return `${Number(amount).toLocaleString('en-US')} ${currency}`;
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return `${Number(amount).toLocaleString(locale)} ${currency}`;
   };
 
   // Normalize incoming data (flexible field names)
@@ -33,9 +39,11 @@ const UpcommingRenewals = () => {
       item.restaurantName ||
       item.CompanyName ||
       item.companyName ||
-      `Client #${index + 1}`,
+      `${t('upcomingRenewals.clientLabel')} #${index + 1}`,
     plan: item.Plan || item.plan || '—',
-    date: formatDate(item.renewalDate || item.RenewalDate || item.nextRenewalDate),
+    date: formatDate(
+      item.renewalDate || item.RenewalDate || item.nextRenewalDate
+    ),
     amount: item.amount
       ? formatAmount(item.amount, item.currency)
       : item.Amount || '—',
@@ -46,7 +54,7 @@ const UpcommingRenewals = () => {
   return (
     <div className="w-full h-full flex flex-col">
       <h2 className="text-xl font-bold text-gray-900 mb-4 shrink-0">
-        Upcoming Renewals
+        {t('upcomingRenewals.title')}
       </h2>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-grow flex flex-col">
@@ -62,10 +70,10 @@ const UpcommingRenewals = () => {
               <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No upcoming renewals
+              {t('upcomingRenewals.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              All subscriptions are up to date. Renewal alerts will appear here.
+              {t('upcomingRenewals.noDataDesc')}
             </p>
           </div>
         ) : (
@@ -73,11 +81,21 @@ const UpcommingRenewals = () => {
             <table className="w-full text-left border-collapse h-full">
               <thead>
                 <tr className="bg-[#FDF5F5] text-gray-600 text-sm">
-                  <th className="py-3 px-4 font-medium">#</th>
-                  <th className="py-3 px-4 font-medium">Restaurant</th>
-                  <th className="py-3 px-4 font-medium">Plan</th>
-                  <th className="py-3 px-4 font-medium">Date</th>
-                  <th className="py-3 px-4 font-medium text-right">Amount</th>
+                  <th className="py-3 px-4 font-medium">
+                    {t('upcomingRenewals.table.hash')}
+                  </th>
+                  <th className="py-3 px-4 font-medium">
+                    {t('upcomingRenewals.table.restaurant')}
+                  </th>
+                  <th className="py-3 px-4 font-medium">
+                    {t('upcomingRenewals.table.plan')}
+                  </th>
+                  <th className="py-3 px-4 font-medium">
+                    {t('upcomingRenewals.table.date')}
+                  </th>
+                  <th className="py-3 px-4 font-medium text-right">
+                    {t('upcomingRenewals.table.amount')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -89,7 +107,9 @@ const UpcommingRenewals = () => {
                     }`}
                   >
                     <td className="py-4 px-4 text-gray-500">{row.id}</td>
-                    <td className="py-4 px-4 text-gray-800">{row.restaurant}</td>
+                    <td className="py-4 px-4 text-gray-800">
+                      {row.restaurant}
+                    </td>
                     <td className="py-4 px-4 text-green-500">{row.plan}</td>
                     <td className="py-4 px-4 text-green-500">{row.date}</td>
                     <td className="py-4 px-4 text-gray-900 font-medium text-right">

@@ -20,7 +20,8 @@
     "submit": "Soumettre",
     "noData": "Aucune donnée disponible",
     "error": "Une erreur s'est produite",
-    "total": "Total"
+    "total": "Total",
+    "unknown": "Inconnu"
   },
 
   "nav": {
@@ -48,6 +49,7 @@
     "offlineDevices": "Appareils hors ligne",
     "lastUpdated": "Dernière mise à jour",
     "loadFailed": "Échec du chargement du tableau de bord",
+
     "dailyActivity": "Activité quotidienne",
     "monthlyGrowth": "Croissance mensuelle",
     "newClients": "Nouveaux clients",
@@ -55,7 +57,34 @@
     "orders": "Commandes",
     "noActivityData": "Aucune donnée d'activité",
     "noGrowthData": "Aucune donnée de croissance",
-    "growthSubtitle": "Nouveaux clients vs renouvellements — vous avez fait {{percent}}% mieux de {{period1}} à {{period2}}"
+    "growthSubtitle": "Nouveaux clients vs renouvellements — vous avez fait {{percent}}% mieux de {{period1}} à {{period2}}",
+
+    "openTicket": "Ticket ouvert",
+    "resolve": "Résoudre",
+    "noOpenTickets": "Aucun ticket ouvert",
+    "noOpenTicketsDesc": "Vous êtes à jour ! Les nouveaux tickets apparaîtront ici.",
+
+    "subscriptionRenewalAlert": "Alerte de renouvellement d'abonnement",
+    "noUpcomingRenewals": "Aucun renouvellement à venir",
+    "noUpcomingRenewalsDesc": "Tous les abonnements sont à jour. Les alertes de renouvellement apparaîtront ici.",
+    "sendAlert": "Envoyer l'alerte",
+    "alertSent": "Alerte envoyée !",
+    "alertSentDesc": "Notification envoyée à {{business}}",
+    "businessLabel": "Entreprise",
+
+    "table": {
+      "businessName": "Nom de l'entreprise",
+      "renewalDate": "Date de renouvellement",
+      "notifyClient": "Notifier le client"
+    },
+
+    "priority": {
+      "high": "Élevée",
+      "critical": "Critique",
+      "low": "Faible",
+      "normal": "Normale",
+      "medium": "Moyenne"
+    }
   },
 
   "period": {
@@ -106,6 +135,35 @@
       "planPurchased": "Forfait acheté",
       "purchasedDate": "Date d'achat",
       "amount": "Montant"
+    }
+  },
+
+  "upcomingRenewals": {
+    "title": "Renouvellements à venir",
+    "noData": "Aucun renouvellement à venir",
+    "noDataDesc": "Tous les abonnements sont à jour. Les alertes de renouvellement apparaîtront ici.",
+    "clientLabel": "Client",
+    "table": {
+      "hash": "#",
+      "restaurant": "Restaurant",
+      "plan": "Forfait",
+      "date": "Date",
+      "amount": "Montant"
+    }
+  },
+
+  "activeAlerts": {
+    "title": "Alertes actives",
+    "deviceOffline": "Appareil hors ligne",
+    "lowStock": "Stock faible",
+    "activeCount": "{{count}} actif(s)",
+    "mock": {
+      "deviceItem1": "Restaurant #42 - Caisse principale",
+      "deviceItem2": "Restaurant #78 - Écran cuisine",
+      "deviceItem3": "Restaurant #91 - Borne 2",
+      "stockItem1": "Restaurant #15 - Papier de caisse",
+      "stockItem2": "Restaurant #33 - Grains de café",
+      "stockItem3": "Restaurant #54 - Serviettes"
     }
   },
 

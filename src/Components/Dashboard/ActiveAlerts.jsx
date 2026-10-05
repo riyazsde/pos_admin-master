@@ -1,5 +1,8 @@
+// src/Components/Dashboard/ActiveAlerts.jsx
+
 import React from 'react';
 import { useAppSelector } from '../../Store/hooks';
+import { useTranslation } from 'react-i18next';
 
 const WarningIcon = () => (
   <svg
@@ -20,44 +23,46 @@ const WarningIcon = () => (
   </svg>
 );
 
-// ⚠️ Placeholder — replace with real data when API provides it
-const MOCK_ALERTS = [
-  {
-    id: 'device-offline',
-    title: 'Device Offline',
-    badgeText: '12 active',
-    badgeColor: 'bg-[#FFEBEB] text-[#E53935]',
-    items: [
-      'Restaurant #42 - Main POS',
-      'Restaurant #78 - Kitchen Display',
-      'Restaurant #91 - Kiosk 2',
-    ],
-  },
-  {
-    id: 'low-stock',
-    title: 'Low Stock',
-    badgeText: '8 active',
-    badgeColor: 'bg-[#FFF8E1] text-[#F57F17]',
-    items: [
-      'Restaurant #15 - Receipt Paper',
-      'Restaurant #33 - Coffee Beans',
-      'Restaurant #54 - Napkins',
-    ],
-  },
-];
-
 function ActiveAlerts() {
-  const { completeDashboardLoading } = useAppSelector((state) => state.dashboard);
+  const { completeDashboardLoading } = useAppSelector(
+    (state) => state.dashboard
+  );
+  const { t } = useTranslation();
 
-  // If your API later adds `activeAlerts`, use it here.
-  // For now, fall back to mock.
+  // ⚠️ Placeholder — replace with real data when API provides it.
+  // The translation keys are fetched lazily so they stay dynamic.
+  const MOCK_ALERTS = [
+    {
+      id: 'device-offline',
+      title: t('activeAlerts.deviceOffline'),
+      badgeText: t('activeAlerts.activeCount', { count: 12 }),
+      badgeColor: 'bg-[#FFEBEB] text-[#E53935]',
+      items: [
+        t('activeAlerts.mock.deviceItem1'),
+        t('activeAlerts.mock.deviceItem2'),
+        t('activeAlerts.mock.deviceItem3'),
+      ],
+    },
+    {
+      id: 'low-stock',
+      title: t('activeAlerts.lowStock'),
+      badgeText: t('activeAlerts.activeCount', { count: 8 }),
+      badgeColor: 'bg-[#FFF8E1] text-[#F57F17]',
+      items: [
+        t('activeAlerts.mock.stockItem1'),
+        t('activeAlerts.mock.stockItem2'),
+        t('activeAlerts.mock.stockItem3'),
+      ],
+    },
+  ];
+
   const alerts = MOCK_ALERTS;
 
   if (completeDashboardLoading && alerts.length === 0) {
     return (
       <div className="w-full h-full flex flex-col">
         <h2 className="text-xl font-bold text-gray-900 mb-4 shrink-0">
-          Active Alerts
+          {t('activeAlerts.title')}
         </h2>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-6 flex-grow animate-pulse">
           <div className="h-24 bg-gray-50 rounded"></div>
@@ -70,7 +75,7 @@ function ActiveAlerts() {
   return (
     <div className="w-full h-full flex flex-col">
       <h2 className="text-xl font-bold text-gray-900 mb-4 shrink-0">
-        Active Alerts
+        {t('activeAlerts.title')}
       </h2>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-6 flex-grow">

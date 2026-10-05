@@ -1,7 +1,11 @@
+// src/Components/Dashboard/SubscriptionRenewalAlert.jsx
+
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
+
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setRenewalAlertsData,
@@ -9,35 +13,37 @@ import {
 } from '../../Store/Features/dashboard/dashboardSlice';
 import { dashboardService } from '../../Services/apiService';
 
-// Format date from ISO string
-const formatDate = (iso) => {
-  if (!iso) return '—';
-  try {
-    return new Date(iso).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  } catch {
-    return '—';
-  }
-};
-
-// Check if a renewal date is within the next 7 days
-const isUrgent = (iso) => {
-  if (!iso) return false;
-  const diff = new Date(iso).getTime() - Date.now();
-  return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000;
-};
-
 const SubscriptionRenewalAlert = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const hasFetched = useRef(false); // ✅ prevents infinite loop
+  const { t, i18n } = useTranslation();
+  const hasFetched = useRef(false);
 
   const { renewalAlerts, renewalAlertsLoading } = useAppSelector(
     (state) => state.dashboard
   );
+
+  // ✅ Locale-aware date formatting
+  const formatDate = (iso) => {
+    if (!iso) return '—';
+    try {
+      const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+      return new Date(iso).toLocaleDateString(locale, {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return '—';
+    }
+  };
+
+  // Check if a renewal date is within the next 7 days
+  const isUrgent = (iso) => {
+    if (!iso) return false;
+    const diff = new Date(iso).getTime() - Date.now();
+    return diff > 0 && diff < 7 * 24 * 60 * 60 * 1000;
+  };
 
   // ✅ Fetch only ONCE per mount
   useEffect(() => {
@@ -60,19 +66,21 @@ const SubscriptionRenewalAlert = () => {
 
   // ✅ Handle "Send Alert" click
   const handleSendAlert = (subscription) => {
-    toast.success('Alert sent!', {
-      description: `Notification sent to ${subscription.businessName}`,
+    toast.success(t('dashboard.alertSent'), {
+      description: t('dashboard.alertSentDesc', {
+        business: subscription.businessName,
+      }),
       duration: 2500,
     });
   };
 
-  // ✅ Loading skeleton — only when loading AND we truly have nothing yet
+  // ✅ Loading skeleton
   if (renewalAlertsLoading && renewalAlerts.length === 0) {
     return (
       <div className="w-full h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-            Subscription Renewal Alert
+            {t('dashboard.subscriptionRenewalAlert')}
           </h2>
         </div>
         <div className="bg-white rounded-[30px] border border-gray-200 shadow-sm overflow-hidden h-[400px] flex flex-col animate-pulse">
@@ -94,13 +102,13 @@ const SubscriptionRenewalAlert = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-          Subscription Renewal Alert
+          {t('dashboard.subscriptionRenewalAlert')}
         </h2>
         <button
           className="text-xs sm:text-sm font-semibold text-black font-['Poppins'] hover:underline"
           onClick={() => navigate('/subscription-list')}
         >
-          See all
+          {t('common.seeAll')}
         </button>
       </div>
 
@@ -113,13 +121,13 @@ const SubscriptionRenewalAlert = () => {
               #
             </span>
             <span className="col-span-4 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins']">
-              Business Name
+              {t('dashboard.table.businessName')}
             </span>
             <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins'] text-center">
-              Renewal Date
+              {t('dashboard.table.renewalDate')}
             </span>
             <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins'] text-center">
-              Notify Client
+              {t('dashboard.table.notifyClient')}
             </span>
           </div>
         </div>
@@ -131,10 +139,10 @@ const SubscriptionRenewalAlert = () => {
               <CheckCircle2 className="w-6 h-6 text-emerald-500" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No upcoming renewals
+              {t('dashboard.noUpcomingRenewals')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              All subscriptions are up to date. Renewal alerts will show here.
+              {t('dashboard.noUpcomingRenewalsDesc')}
             </p>
           </div>
         ) : (
@@ -145,7 +153,7 @@ const SubscriptionRenewalAlert = () => {
                 item.businessName ||
                 item.CompanyName ||
                 item.companyName ||
-                `Business #${index + 1}`;
+                `${t('dashboard.businessLabel')} #${index + 1}`;
               const renewalDate =
                 item.renewalDate || item.RenewalDate || item.nextRenewalDate;
               const urgent = isUrgent(renewalDate);
@@ -171,11 +179,13 @@ const SubscriptionRenewalAlert = () => {
                     </span>
                     <div className="col-span-3 flex justify-center">
                       <button
-                        onClick={() => handleSendAlert({ ...item, businessName })}
+                        onClick={() =>
+                          handleSendAlert({ ...item, businessName })
+                        }
                         className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium font-['Poppins'] hover:opacity-90 transition-opacity w-full sm:w-auto flex items-center justify-center gap-1.5"
                       >
                         <Bell className="w-3.5 h-3.5" />
-                        Send Alert
+                        {t('dashboard.sendAlert')}
                       </button>
                     </div>
                   </div>

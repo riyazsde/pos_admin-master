@@ -1,6 +1,10 @@
+// src/Components/Dashboard/SupportTickets.jsx
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LifeBuoy, AlertCircle } from 'lucide-react';
+import { LifeBuoy } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setSupportTicketsData,
@@ -16,7 +20,7 @@ import dalchini from '../../assets/Images/admin/Dashboard/dalchini.png';
 
 const AVATARS = [image1, kfc, taco, dalchini];
 
-// Priority → badge color
+// Priority → badge color (unchanged, no i18n needed for classes)
 const getPriorityStyle = (priority) => {
   switch (priority?.toLowerCase()) {
     case 'high':
@@ -31,25 +35,37 @@ const getPriorityStyle = (priority) => {
   }
 };
 
-// Get a short issue preview from Subject or Description
+// ✅ Priority label translation
+const getPriorityLabel = (priority, t) => {
+  if (!priority) return '';
+  const key = String(priority).toLowerCase();
+  const known = ['high', 'critical', 'low', 'normal', 'medium'];
+  if (known.includes(key)) {
+    return t(`dashboard.priority.${key}`);
+  }
+  return priority;
+};
+
 const getIssuePreview = (ticket) => {
-  const text = ticket.Subject || ticket.Description || 'No subject';
+  const text = ticket.Subject || ticket.Description || '';
   const cleaned = text.replace(/\n+/g, ' ').trim();
   return cleaned.length > 30 ? `${cleaned.slice(0, 30)}...` : cleaned;
 };
 
-// Get display name from email or CreatedBy
 const getDisplayName = (ticket) => {
   if (ticket.email) {
     const localPart = ticket.email.split('@')[0];
-    return localPart.replace(/[._-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    return localPart
+      .replace(/[._-]/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
-  return ticket.CreatedBy || 'Unknown';
+  return ticket.CreatedBy || '';
 };
 
 const SupportTickets = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+  const { t } = useTranslation();
 
   const { supportTickets, supportTicketsLoading } = useAppSelector(
     (state) => state.dashboard
@@ -79,7 +95,7 @@ const SupportTickets = () => {
       <div className="w-full h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-            Open Ticket
+            {t('dashboard.openTicket')}
           </h2>
         </div>
         <div className="bg-white border border-gray-200 rounded-[30px] shadow-sm h-[400px] p-5 animate-pulse">
@@ -105,13 +121,13 @@ const SupportTickets = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-          Open Ticket
+          {t('dashboard.openTicket')}
         </h2>
         <button
           className="text-xs sm:text-sm font-semibold text-black font-['Poppins'] hover:underline"
           onClick={() => navigate('/supports')}
         >
-          See all
+          {t('common.seeAll')}
         </button>
       </div>
 
@@ -124,10 +140,10 @@ const SupportTickets = () => {
               <LifeBuoy className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No open tickets
+              {t('dashboard.noOpenTickets')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              You're all caught up! New tickets will appear here.
+              {t('dashboard.noOpenTicketsDesc')}
             </p>
           </div>
         ) : (
@@ -151,18 +167,20 @@ const SupportTickets = () => {
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-bold text-black font-['Poppins'] truncate">
-                            {getDisplayName(ticket)}
+                            {getDisplayName(ticket) || t('common.unknown')}
                           </span>
-                          <span
-                            className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${getPriorityStyle(
-                              ticket.Priority
-                            )}`}
-                          >
-                            {ticket.Priority}
-                          </span>
+                          {ticket.Priority && (
+                            <span
+                              className={`text-[10px] font-semibold px-1.5 py-0.5 rounded border ${getPriorityStyle(
+                                ticket.Priority
+                              )}`}
+                            >
+                              {getPriorityLabel(ticket.Priority, t)}
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs sm:text-sm text-gray-400 font-['Poppins'] truncate">
-                          {getIssuePreview(ticket)}
+                          {getIssuePreview(ticket) || t('common.noData')}
                         </span>
                       </div>
                     </div>
@@ -172,7 +190,7 @@ const SupportTickets = () => {
                       onClick={() => navigate('/supports')}
                       className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium font-['Poppins'] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
                     >
-                      Resolve
+                      {t('dashboard.resolve')}
                     </button>
                   </div>
 

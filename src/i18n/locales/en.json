@@ -20,7 +20,8 @@
     "submit": "Submit",
     "noData": "No data available",
     "error": "Something went wrong",
-    "total": "Total"
+    "total": "Total",
+    "unknown": "Unknown"
   },
 
   "nav": {
@@ -48,6 +49,7 @@
     "offlineDevices": "Offline Devices",
     "lastUpdated": "Last updated",
     "loadFailed": "Failed to load dashboard",
+
     "dailyActivity": "Daily Activity",
     "monthlyGrowth": "Monthly Growth",
     "newClients": "New Clients",
@@ -55,7 +57,34 @@
     "orders": "Orders",
     "noActivityData": "No activity data available",
     "noGrowthData": "No growth data available",
-    "growthSubtitle": "New Clients vs Client Renewals — you've done {{percent}}% better from {{period1}} to {{period2}}"
+    "growthSubtitle": "New Clients vs Client Renewals — you've done {{percent}}% better from {{period1}} to {{period2}}",
+
+    "openTicket": "Open Ticket",
+    "resolve": "Resolve",
+    "noOpenTickets": "No open tickets",
+    "noOpenTicketsDesc": "You're all caught up! New tickets will appear here.",
+
+    "subscriptionRenewalAlert": "Subscription Renewal Alert",
+    "noUpcomingRenewals": "No upcoming renewals",
+    "noUpcomingRenewalsDesc": "All subscriptions are up to date. Renewal alerts will show here.",
+    "sendAlert": "Send Alert",
+    "alertSent": "Alert sent!",
+    "alertSentDesc": "Notification sent to {{business}}",
+    "businessLabel": "Business",
+
+    "table": {
+      "businessName": "Business Name",
+      "renewalDate": "Renewal Date",
+      "notifyClient": "Notify Client"
+    },
+
+    "priority": {
+      "high": "High",
+      "critical": "Critical",
+      "low": "Low",
+      "normal": "Normal",
+      "medium": "Medium"
+    }
   },
 
   "period": {
@@ -106,6 +135,35 @@
       "planPurchased": "Plan Purchased",
       "purchasedDate": "Purchased Date",
       "amount": "Amount"
+    }
+  },
+
+  "upcomingRenewals": {
+    "title": "Upcoming Renewals",
+    "noData": "No upcoming renewals",
+    "noDataDesc": "All subscriptions are up to date. Renewal alerts will appear here.",
+    "clientLabel": "Client",
+    "table": {
+      "hash": "#",
+      "restaurant": "Restaurant",
+      "plan": "Plan",
+      "date": "Date",
+      "amount": "Amount"
+    }
+  },
+
+  "activeAlerts": {
+    "title": "Active Alerts",
+    "deviceOffline": "Device Offline",
+    "lowStock": "Low Stock",
+    "activeCount": "{{count}} active",
+    "mock": {
+      "deviceItem1": "Restaurant #42 - Main POS",
+      "deviceItem2": "Restaurant #78 - Kitchen Display",
+      "deviceItem3": "Restaurant #91 - Kiosk 2",
+      "stockItem1": "Restaurant #15 - Receipt Paper",
+      "stockItem2": "Restaurant #33 - Coffee Beans",
+      "stockItem3": "Restaurant #54 - Napkins"
     }
   },
 
