@@ -499,6 +499,42 @@
     }
   },
 
+  "createClient": {
+    "pageTitle": "Create Client",
+    "formTitle": "Create New Client",
+    "formSubtitle": "Fill in the details below to register a new client account.",
+    "creating": "Creating client…",
+    "createSuccess": "Client created successfully!",
+    "createSuccessDesc": "\"{{name}}\" has been added.",
+    "createFailed": "Failed to create client",
+    "createFailedDesc": "Something went wrong. Please try again.",
+    "saveButton": "Save Client",
+    "fields": {
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "Enter business name",
+      "businessLogo": "Business Logo",
+      "chooseFile": "Choose File",
+      "logoSelected": "Logo selected",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "language": "Preferred Language",
+      "languagePlaceholder": "e.g. French, English, Arabic, Spanish",
+      "currency": "Preferred Currency",
+      "currencyPlaceholder": "e.g. XOF, EUR, USD, GBP"
+    },
+    "validation": {
+      "businessNameRequired": "Business name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordsDontMatch": "Passwords do not match"
+    }
+  },
+
   "clientDetails": {
     "title": "Client Details",
     "breadcrumb": "Subscriptions Purchased",

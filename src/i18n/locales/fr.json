@@ -499,6 +499,42 @@
     }
   },
 
+  "createClient": {
+    "pageTitle": "Créer un client",
+    "formTitle": "Créer un nouveau client",
+    "formSubtitle": "Remplissez les informations ci-dessous pour enregistrer un nouveau compte client.",
+    "creating": "Création du client…",
+    "createSuccess": "Client créé avec succès !",
+    "createSuccessDesc": "\"{{name}}\" a été ajouté.",
+    "createFailed": "Échec de la création du client",
+    "createFailedDesc": "Une erreur s'est produite. Veuillez réessayer.",
+    "saveButton": "Enregistrer le client",
+    "fields": {
+      "businessName": "Nom de l'entreprise",
+      "businessNamePlaceholder": "Entrez le nom de l'entreprise",
+      "businessLogo": "Logo de l'entreprise",
+      "chooseFile": "Choisir un fichier",
+      "logoSelected": "Logo sélectionné",
+      "email": "Email",
+      "emailPlaceholder": "Entrez l'adresse email",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Retapez le mot de passe",
+      "language": "Langue préférée",
+      "languagePlaceholder": "ex. Français, Anglais, Arabe, Espagnol",
+      "currency": "Devise préférée",
+      "currencyPlaceholder": "ex. XOF, EUR, USD, GBP"
+    },
+    "validation": {
+      "businessNameRequired": "Le nom de l'entreprise est requis",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez saisir une adresse email valide",
+      "passwordMinLength": "Le mot de passe doit comporter au moins 6 caractères",
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas"
+    }
+  },
+
   "clientDetails": {
     "title": "Détails du client",
     "breadcrumb": "Abonnements achetés",
