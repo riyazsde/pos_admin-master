@@ -849,3 +849,181 @@ export const mdmService = {
     return data?.data || null;
   },
 };
+// src/Services/apiService.js
+
+/**
+ * ✅ NEW: SubAdmin Services
+ */
+export const subadminService = {
+  // List with pagination + filters
+  getAll: async ({ page = 1, limit = 10, status = true, search = '' } = {}) => {
+    const params = { page, limit };
+    if (status !== undefined && status !== null) params.Status = status;
+    if (search) params.search = search;
+
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBADMIN.GET_ALL,
+      { params }
+    );
+    const payload = response.data;
+
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subadmins');
+    }
+
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // Current authenticated user's profile
+  getByAuth: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBADMIN.GET_BY_AUTH
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load profile');
+    }
+    return payload?.data || null;
+  },
+
+  // src/Services/apiService.js
+
+update: async (id, payload) => {
+  // ✅ Exactly matching Postman: PUT /admin/subadmin/update/{id}
+  const url = ENDPOINTS.ADMIN.SUBADMIN.UPDATE(id);
+  console.log('🔄 PUT', url);
+  console.log('🔄 Payload:', JSON.stringify(payload, null, 2));
+
+  const response = await apiClient.put(url, payload);
+
+  console.log('✅ Response:', response.data);
+
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to update subadmin');
+  }
+  return data?.data || null;
+},
+ create: async (payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.SUBADMIN.CREATE,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create subadmin');
+    }
+    return data?.data || null;
+  },
+  // Delete
+  remove: async (id) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.SUBADMIN.DELETE(id)
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to delete subadmin');
+    }
+    return data?.data || null;
+  },
+
+ deactivate: async (id) => {
+    const response = await apiClient.patch(
+      ENDPOINTS.ADMIN.SUBADMIN.DEACTIVATE(id),
+      {}
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to deactivate subadmin');
+    }
+    return data?.data || null;
+  },
+
+  // ✅ FIXED: PATCH instead of PUT
+  activate: async (id) => {
+    const response = await apiClient.patch(
+      ENDPOINTS.ADMIN.SUBADMIN.ACTIVATE(id),
+      {}
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to activate subadmin');
+    }
+    return data?.data || null;
+  },
+};
+// src/Services/apiService.js
+
+/**
+ * ✅ NEW: Account Settings Services
+ */
+export const accountSettingsService = {
+  // Get date/time settings
+  getDateTime: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load date/time settings');
+    }
+    return payload?.data || null;
+  },
+
+  // ✅ POST — update
+  updateDateTime: async (payload) => {
+    const response = await apiClient.post(   // ← POST, not PUT
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to update date/time');
+    }
+    return data?.data || null;
+  },
+
+  // Get current logged-in user profile
+  getProfile: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.PROFILE
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load profile');
+    }
+    return payload?.data || null;
+  },
+};
+
+/**
+ * ✅ NEW: Currency Services
+ */
+export const currencyService = {
+  getAll: async () => {
+    const response = await apiClient.get(ENDPOINTS.MASTER.CURRENCY.GET_ALL);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load currencies');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  create: async (payload) => {
+    const response = await apiClient.post(
+      ENDPOINTS.MASTER.CURRENCY.CREATE,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create currency');
+    }
+    return data?.data || null;
+  },
+};

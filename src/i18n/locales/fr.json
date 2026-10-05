@@ -332,6 +332,151 @@
     }
   },
 
+  "subadmin": {
+    "title": "Sous-admins",
+    "subtitle": "Gérez les sous-administrateurs et leurs permissions",
+    "createButton": "Créer un sous-admin +",
+    "createButtonShort": "Créer",
+    "createTitle": "Créer un sous-admin",
+    "createSubtitle": "Ajouter un nouveau sous-administrateur à votre équipe",
+    "creating": "Création…",
+    "createSuccess": "Sous-admin créé avec succès !",
+    "createSuccessDesc": "\"{{name}}\" a été ajouté.",
+    "createFailed": "Échec de la création du sous-admin",
+
+    "searchPlaceholder": "Rechercher par nom, email ou ID...",
+    "loading": "Chargement des sous-admins…",
+    "loadFailed": "Échec du chargement des sous-admins",
+    "noData": "Aucun sous-admin trouvé",
+    "noDataDesc": "Les sous-admins que vous ajoutez apparaîtront ici.",
+    "noPermissions": "Aucune permission",
+
+    "active": "Actif",
+    "inactive": "Inactif",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "activating": "Activation…",
+    "deactivating": "Désactivation…",
+    "activateSuccess": "Sous-admin activé",
+    "deactivateSuccess": "Sous-admin désactivé",
+    "activateFailed": "Échec de l'activation",
+    "deactivateFailed": "Échec de la désactivation",
+
+    "editTitle": "Modifier le sous-admin",
+    "saving": "Enregistrement…",
+    "updating": "Mise à jour…",
+    "updateSuccess": "Sous-admin mis à jour avec succès !",
+    "updateFailed": "Échec de la mise à jour du sous-admin",
+
+    "deleteTitle": "Supprimer le sous-admin ?",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action est irréversible.",
+    "deleting": "Suppression…",
+    "deleteSuccess": "Sous-admin supprimé",
+    "deleteFailed": "Échec de la suppression du sous-admin",
+
+    "showing": "Affichage de {{count}} sur {{total}} sous-admins",
+    "page": "Page {{page}} sur {{pages}}",
+
+    "table": {
+      "sno": "N°",
+      "name": "Nom",
+      "email": "Email",
+      "permissions": "Permissions",
+      "status": "Statut",
+      "action": "Actions"
+    },
+
+    "form": {
+      "firstName": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastName": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "email": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "phone": "Téléphone",
+      "phonePlaceholder": "Entrez le téléphone",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Confirmez le mot de passe",
+      "responsibility": "Responsabilité",
+      "status": "Statut",
+      "permissions": "Permissions"
+    },
+
+    "validation": {
+      "nameRequired": "Le nom est requis",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "L'email est invalide",
+      "passwordMinLength": "Le mot de passe doit comporter au moins 6 caractères",
+      "passwordsDontMatch": "Les mots de passe ne correspondent pas",
+      "permissionRequired": "Sélectionnez au moins une permission"
+    }
+  },
+
+  "accountSettings": {
+    "title": "Paramètres du compte",
+    "accountDetails": "Détails du compte",
+    "password": "Mot de passe : **********",
+    "manageAdmin": "Gérer TRIAXX.{{role}}",
+    "regionalPreference": "Préférences régionales",
+    "languages": "Langues",
+    "dateTime": "Date et heure",
+    "currency": "Devise"
+  },
+
+  "language": {
+    "changeCard": "Changer la langue",
+    "selectLanguage": "Choisir la langue",
+    "loading": "Chargement des langues…",
+    "loadFailed": "Échec du chargement des langues",
+    "saving": "Enregistrement…",
+    "saveSuccess": "Langue mise à jour avec succès !",
+    "saveSuccessDesc": "Utilisation de {{name}}",
+    "saveFailed": "Échec de l'enregistrement de la langue",
+    "noChange": "Veuillez sélectionner une autre langue",
+    "submitButton": "Soumettre les modifications"
+  },
+
+  "dateTime": {
+    "title": "Date et heure",
+    "loading": "Chargement des paramètres…",
+    "loadFailed": "Échec du chargement des paramètres date/heure",
+    "timeCard": "Modifier l'heure",
+    "dateCard": "Modifier la date",
+    "timezoneCard": "Fuseau horaire",
+    "saving": "Enregistrement…",
+    "saveSuccess": "Paramètres date et heure enregistrés !",
+    "saveFailed": "Échec de l'enregistrement",
+    "submitButton": "Soumettre les modifications"
+  },
+
+  "currency": {
+    "title": "Devise",
+    "addCurrency": "Ajouter une devise",
+    "createTitle": "Créer une nouvelle devise",
+    "createButton": "Créer",
+    "creating": "Création…",
+    "createSuccess": "Devise créée avec succès !",
+    "createFailed": "Échec de la création de la devise",
+    "loadFailed": "Échec du chargement des devises",
+    "loading": "Chargement des devises…",
+    "noData": "Aucune devise pour l'instant",
+    "noDataDesc": "Ajoutez votre première devise pour commencer.",
+    "fillRequired": "Le nom et l'icône sont requis",
+    "changeCard": "Changer la devise",
+    "selectPlaceholder": "Sélectionnez une devise",
+    "saving": "Enregistrement…",
+    "saveSuccess": "Devise enregistrée !",
+    "saveSuccessDesc": "Définie sur {{name}}",
+    "saveFailed": "Échec de l'enregistrement",
+    "submitButton": "Soumettre les modifications",
+    "form": {
+      "name": "Nom de la devise",
+      "icon": "Icône / Symbole"
+    }
+  },
+
   "supports": {
     "title": "Support & Tickets",
     "allTickets": "Tous les Tickets",

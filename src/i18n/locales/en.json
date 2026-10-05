@@ -332,6 +332,151 @@
     }
   },
 
+  "subadmin": {
+    "title": "Sub Admins",
+    "subtitle": "Manage sub-administrators and their permissions",
+    "createButton": "Create Sub admin +",
+    "createButtonShort": "Create",
+    "createTitle": "Create Sub Admin",
+    "createSubtitle": "Add a new sub-administrator to your team",
+    "creating": "Creating…",
+    "createSuccess": "Sub-admin created successfully!",
+    "createSuccessDesc": "\"{{name}}\" has been added.",
+    "createFailed": "Failed to create sub-admin",
+
+    "searchPlaceholder": "Search by name, email or ID...",
+    "loading": "Loading sub-admins…",
+    "loadFailed": "Failed to load sub-admins",
+    "noData": "No sub-admins found",
+    "noDataDesc": "Sub-admins you add will appear here.",
+    "noPermissions": "No permissions",
+
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "activating": "Activating…",
+    "deactivating": "Deactivating…",
+    "activateSuccess": "Sub-admin activated",
+    "deactivateSuccess": "Sub-admin deactivated",
+    "activateFailed": "Failed to activate",
+    "deactivateFailed": "Failed to deactivate",
+
+    "editTitle": "Edit Sub-Admin",
+    "saving": "Saving…",
+    "updating": "Updating…",
+    "updateSuccess": "Sub-admin updated successfully!",
+    "updateFailed": "Failed to update sub-admin",
+
+    "deleteTitle": "Delete Sub-Admin?",
+    "deleteConfirm": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "deleting": "Deleting…",
+    "deleteSuccess": "Sub-admin deleted",
+    "deleteFailed": "Failed to delete sub-admin",
+
+    "showing": "Showing {{count}} of {{total}} sub-admins",
+    "page": "Page {{page}} of {{pages}}",
+
+    "table": {
+      "sno": "S no",
+      "name": "Name",
+      "email": "Email",
+      "permissions": "Permissions",
+      "status": "Status",
+      "action": "Actions"
+    },
+
+    "form": {
+      "firstName": "First Name",
+      "firstNamePlaceholder": "Enter first name",
+      "lastName": "Last Name",
+      "lastNamePlaceholder": "Enter last name",
+      "email": "Email",
+      "emailPlaceholder": "Enter Email",
+      "phone": "Phone",
+      "phonePlaceholder": "Enter Phone",
+      "password": "Password",
+      "passwordPlaceholder": "Enter Password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Confirm Password",
+      "responsibility": "Responsibility",
+      "status": "Status",
+      "permissions": "Permissions"
+    },
+
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Email is invalid",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "passwordsDontMatch": "Passwords do not match",
+      "permissionRequired": "Select at least one permission"
+    }
+  },
+
+  "accountSettings": {
+    "title": "Account Settings",
+    "accountDetails": "Account Details",
+    "password": "Password: **********",
+    "manageAdmin": "Manage TRIAXX.{{role}}",
+    "regionalPreference": "Regional Preference",
+    "languages": "Languages",
+    "dateTime": "Date & Time",
+    "currency": "Currency"
+  },
+
+  "language": {
+    "changeCard": "Change Language",
+    "selectLanguage": "Select Language",
+    "loading": "Loading languages…",
+    "loadFailed": "Failed to load languages",
+    "saving": "Saving…",
+    "saveSuccess": "Language updated successfully!",
+    "saveSuccessDesc": "Now using {{name}}",
+    "saveFailed": "Failed to save language",
+    "noChange": "Please select a different language",
+    "submitButton": "Submit Changes"
+  },
+
+  "dateTime": {
+    "title": "Date & Time",
+    "loading": "Loading settings…",
+    "loadFailed": "Failed to load date/time settings",
+    "timeCard": "Change Time",
+    "dateCard": "Change Date",
+    "timezoneCard": "Timezone",
+    "saving": "Saving…",
+    "saveSuccess": "Date & time settings saved!",
+    "saveFailed": "Failed to save settings",
+    "submitButton": "Submit Changes"
+  },
+
+  "currency": {
+    "title": "Currency",
+    "addCurrency": "Add Currency",
+    "createTitle": "Create New Currency",
+    "createButton": "Create",
+    "creating": "Creating…",
+    "createSuccess": "Currency created successfully!",
+    "createFailed": "Failed to create currency",
+    "loadFailed": "Failed to load currencies",
+    "loading": "Loading currencies…",
+    "noData": "No currencies yet",
+    "noDataDesc": "Add your first currency to get started.",
+    "fillRequired": "Name and icon are required",
+    "changeCard": "Change Currency",
+    "selectPlaceholder": "Select a currency",
+    "saving": "Saving…",
+    "saveSuccess": "Currency saved!",
+    "saveSuccessDesc": "Set to {{name}}",
+    "saveFailed": "Failed to save currency",
+    "submitButton": "Submit Changes",
+    "form": {
+      "name": "Currency Name",
+      "icon": "Icon / Symbol"
+    }
+  },
+
   "supports": {
     "title": "Supports & Tickets",
     "allTickets": "All Tickets",

@@ -12,6 +12,7 @@ import posHardwareReducer from '../Store/Features/posHardware/posHardwareSlice';
 import supportTicketsReducer from '../Store/Features/supportTickets/supportTicketsSlice';
 import hamReducer from '../Store/Features/ham/hamSlice';
 import mdmReducer from '../Store/Features/mdm/mdmSlice';
+import subadminReducer from '../Store/Features/subadmin/subadminSlice';
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -25,6 +26,7 @@ export const store = configureStore({
      supportTickets: supportTicketsReducer,
       ham: hamReducer,
       mdm: mdmReducer,
+      subadmin: subadminReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
