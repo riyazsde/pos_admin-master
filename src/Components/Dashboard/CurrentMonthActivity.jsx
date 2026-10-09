@@ -13,9 +13,14 @@ import {
 import { useTranslation } from 'react-i18next';
 
 const CurrentMonthActivity = ({ data }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  // ✅ Transform API shape → chart shape
+  const formatNumber = (n) => {
+    if (n === null || n === undefined) return '0';
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return Number(n).toLocaleString(locale);
+  };
+
   const chartData =
     data?.data?.map((item) => ({
       name: item.day,
@@ -26,10 +31,16 @@ const CurrentMonthActivity = ({ data }) => {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-black text-white p-2 rounded shadow-md text-xs">
+        <div className="bg-black text-white p-2 rounded shadow-md text-xs font-[Poppins]">
           <p className="font-semibold">{payload[0].payload.name}</p>
-          <p>{`${t('dashboard.newClients')}: ${payload[0].payload.newClients}`}</p>
-          <p>{`${t('dashboard.clientRenewals')}: ${payload[0].payload.renewals}`}</p>
+          <p>
+            {t('dashboard.newClients')}:{' '}
+            {formatNumber(payload[0].payload.newClients)}
+          </p>
+          <p>
+            {t('dashboard.clientRenewals')}:{' '}
+            {formatNumber(payload[0].payload.renewals)}
+          </p>
         </div>
       );
     }
@@ -53,10 +64,10 @@ const CurrentMonthActivity = ({ data }) => {
         className="bg-white rounded-3xl p-6 h-full shadow-sm border border-gray-100"
         style={{ boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)' }}
       >
-        {/* Header */}
+        {/* Header — ALWAYS uses i18n, never API title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
           <h2 className="text-xl font-bold text-black font-[Poppins]">
-            {data?.title || t('dashboard.dailyActivity')}
+            {t('dashboard.dailyActivity')}
           </h2>
 
           {/* Legend */}
@@ -88,25 +99,17 @@ const CurrentMonthActivity = ({ data }) => {
           </div>
         </div>
 
-        {/* Empty state */}
         {chartData.length === 0 ? (
           <div className="h-80 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
             {t('dashboard.noActivityData')}
           </div>
         ) : (
-          <div className="relative h-80">
-            {/* Y-axis label */}
-            <div className="absolute -left-2 top-0 -translate-y-6">
-              <span className="text-[10px] font-semibold text-gray-500 font-[Poppins]">
-                {t('dashboard.orders')}
-              </span>
-            </div>
-
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={chartData}
                 barCategoryGap={20}
-                margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
+                margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
               >
                 <defs>
                   <linearGradient id="newClients" x1="0" y1="0" x2="0" y2="1">
@@ -134,6 +137,18 @@ const CurrentMonthActivity = ({ data }) => {
                   tickLine={false}
                   axisLine={false}
                   ticks={yTicks}
+                  label={{
+                    value: t('dashboard.orders'),
+                    angle: -90,
+                    position: 'insideLeft',
+                    style: {
+                      fontSize: 10,
+                      fontFamily: 'Poppins',
+                      fontWeight: 600,
+                      fill: '#6B7280',
+                      textAnchor: 'middle',
+                    },
+                  }}
                 />
                 <Tooltip
                   content={<CustomTooltip />}

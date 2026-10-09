@@ -152,7 +152,7 @@
     "orders": "Orders",
     "noActivityData": "No activity data available",
     "noGrowthData": "No growth data available",
-    "growthSubtitle": "New Clients vs Client Renewals — you've done {{percent}}% better from {{period1}} to {{period2}}",
+    "growthSubtitle": "New Clients vs Client Renewals — performance changed by {{percent}}% between {{period1}} and {{period2}}",
     "openTicket": "Open Ticket",
     "resolve": "Resolve",
     "noOpenTickets": "No open tickets",
@@ -176,6 +176,14 @@
       "normal": "Normal",
       "medium": "Medium"
     }
+  },
+
+  "quickActions": {
+    "title": "Quick Actions",
+    "addClient": "Add Client",
+    "generateReport": "Generate Report",
+    "manageInventory": "Manage Inventory",
+    "viewSubscriptions": "View Subscriptions"
   },
 
   "period": {

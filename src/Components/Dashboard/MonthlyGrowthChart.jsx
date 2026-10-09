@@ -9,20 +9,33 @@ import {
   ResponsiveContainer,
   CartesianGrid,
   Dot,
+  Tooltip,
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
 
 const CustomDot = (props) => {
   const { cx, cy, stroke } = props;
   return (
-    <Dot cx={cx} cy={cy} r={5} fill="#FFFFFF" stroke={stroke} strokeWidth={2.5} />
+    <Dot
+      cx={cx}
+      cy={cy}
+      r={5}
+      fill="#FFFFFF"
+      stroke={stroke}
+      strokeWidth={2.5}
+    />
   );
 };
 
 export default function MonthlyGrowthChart({ data }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
-  // ✅ Transform API shape → chart shape
+  const formatNumber = (n) => {
+    if (n === null || n === undefined) return '0';
+    const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+    return Number(n).toLocaleString(locale);
+  };
+
   const chartData =
     data?.data?.map((item) => ({
       month: item.month,
@@ -37,6 +50,36 @@ export default function MonthlyGrowthChart({ data }) {
   const yMax = Math.ceil(maxValue / 100) * 100;
   const yTicks = [0, Math.round(yMax / 4), Math.round(yMax / 2), yMax];
 
+  // ✅ Compute % change and periods CLIENT-SIDE (so it's translated)
+  const firstVal = chartData[0]?.newClients ?? 0;
+  const lastVal = chartData[chartData.length - 1]?.newClients ?? 0;
+  const percent =
+    firstVal > 0
+      ? (((lastVal - firstVal) / firstVal) * 100).toFixed(1)
+      : '0.0';
+  const period1 = chartData[0]?.month ?? '';
+  const period2 = chartData[chartData.length - 1]?.month ?? '';
+  const hasPeriods = period1 && period2 && chartData.length > 1;
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-black text-white p-2 rounded shadow-md text-xs font-[Poppins]">
+          <p className="font-semibold mb-1">{label}</p>
+          {payload.map((entry, idx) => (
+            <p key={idx}>
+              {entry.dataKey === 'newClients'
+                ? t('dashboard.newClients')
+                : t('dashboard.clientRenewals')}
+              : {formatNumber(entry.value)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="w-full">
       <div
@@ -46,10 +89,10 @@ export default function MonthlyGrowthChart({ data }) {
             '0px 4px 20px rgba(0, 0, 0, 0.05), inset 0px 0px 1px rgba(0, 0, 0, 0.15)',
         }}
       >
-        {/* Header */}
+        {/* Header — ALWAYS uses i18n, never API title */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
           <h2 className="text-xl font-bold text-black font-[Poppins]">
-            {data?.title || t('dashboard.monthlyGrowth')}
+            {t('dashboard.monthlyGrowth')}
           </h2>
 
           {/* Legend */}
@@ -81,14 +124,17 @@ export default function MonthlyGrowthChart({ data }) {
           </div>
         </div>
 
-        {/* Subtitle from API (optional) */}
-        {data?.subtitle && (
+        {/* ✅ Subtitle — built client-side with i18n interpolation */}
+        {hasPeriods && (
           <p className="text-xs text-gray-500 font-[Poppins] mb-4 -mt-4">
-            {data.subtitle}
+            {t('dashboard.growthSubtitle', {
+              percent: Math.abs(Number(percent)),
+              period1,
+              period2,
+            })}
           </p>
         )}
 
-        {/* Empty state */}
         {chartData.length === 0 ? (
           <div className="h-72 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
             {t('dashboard.noGrowthData')}
@@ -156,6 +202,11 @@ export default function MonthlyGrowthChart({ data }) {
                     fill: '#1a1a1a',
                   }}
                   width={45}
+                />
+
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }}
                 />
 
                 <Line

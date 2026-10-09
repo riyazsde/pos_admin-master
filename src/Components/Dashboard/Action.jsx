@@ -1,35 +1,37 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Calendar, Package, ClipboardList } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 function Action() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const actions = [
     {
       id: 1,
-      label: 'Add Client',
+      labelKey: 'quickActions.addClient',
       icon: Plus,
       bg: 'bg-[#FFD1D1]', // Pastel Pink
       path: '/create-clients',
     },
     {
       id: 2,
-      label: 'Generate Report',
+      labelKey: 'quickActions.generateReport',
       icon: Calendar,
       bg: 'bg-[#E0D4FC]', // Pastel Purple
       path: '/report',
     },
     {
       id: 3,
-      label: 'Manage Inventory',
+      labelKey: 'quickActions.manageInventory',
       icon: Package,
       bg: 'bg-[#BDFCC9]', // Pastel Green
       path: '/pos-device',
     },
     {
       id: 4,
-      label: 'View Subscriptions',
+      labelKey: 'quickActions.viewSubscriptions',
       icon: ClipboardList,
       bg: 'bg-[#FFF3CD]', // Pastel Yellow
       path: '/subscription-list',
@@ -38,9 +40,11 @@ function Action() {
 
   return (
     <section className="w-full">
-      <h2 className="mb-4 text-lg font-bold text-gray-900">Quick Actions</h2>
+      <h2 className="mb-4 text-lg font-bold text-gray-900">
+        {t('quickActions.title')}
+      </h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {actions.map(({ id, label, icon: Icon, bg, path }) => (
+        {actions.map(({ id, labelKey, icon: Icon, bg, path }) => (
           <button
             key={id}
             type="button"
@@ -49,7 +53,7 @@ function Action() {
           >
             <Icon className="h-7 w-7 text-gray-800" strokeWidth={1.5} />
             <span className="text-sm font-semibold text-gray-800">
-              {label}
+              {t(labelKey)}
             </span>
           </button>
         ))}
