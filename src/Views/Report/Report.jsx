@@ -26,7 +26,277 @@ import {
 } from '../../Store/Features/reports/reportsSlice';
 import { reportService } from '../../Services/apiService';
 
-const Report = () => {
+/* ------------------------------------------------------------------ */
+/*  ICONS                                                              */
+/* ------------------------------------------------------------------ */
+const DollarIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+const UsersIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+  </svg>
+);
+const CartIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
+const CubeIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+  </svg>
+);
+const AlertIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.999L13.732 4.001c-.77-1.332-2.694-1.332-3.464 0L3.34 16.001C2.57 17.333 3.532 19 5.072 19z" />
+  </svg>
+);
+const LocationIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+const ChevronDownIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+  </svg>
+);
+const SearchIcon = () => (
+  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+  </svg>
+);
+const DownloadIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+  </svg>
+);
+const FilterIcon = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+  </svg>
+);
+
+/* ------------------------------------------------------------------ */
+/*  SHARED TOGGLE COMPONENT                                            */
+/* ------------------------------------------------------------------ */
+const ViewToggle = ({ activeTab, setActiveTab }) => (
+  <div className="flex items-center bg-gray-100 rounded-lg p-1">
+    <button
+      type="button"
+      onClick={() => setActiveTab('reports')}
+      className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+        activeTab === 'reports'
+          ? 'bg-purple-600 text-white shadow'
+          : 'text-gray-600 hover:text-gray-900'
+      }`}
+    >
+      Reports
+    </button>
+    <button
+      type="button"
+      onClick={() => setActiveTab('analytics')}
+      className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+        activeTab === 'analytics'
+          ? 'bg-purple-600 text-white shadow'
+          : 'text-gray-600 hover:text-gray-900'
+      }`}
+    >
+      Analytics
+    </button>
+  </div>
+);
+
+/* ------------------------------------------------------------------ */
+/*  ANALYTICS VIEW                                                     */
+/* ------------------------------------------------------------------ */
+const AnalyticsView = ({ activeTab, setActiveTab }) => {
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
+
+  const revenueData = [
+    { location: 'Downtown Bistro', revenue: '$89,450', orders: '1,245', avgOrder: '$71.85', growth: '+15.2%', isPositive: true },
+    { location: 'Ocean View Cafe', revenue: '$78,230', orders: '1,089', avgOrder: '$71.83', growth: '+8.5%', isPositive: true },
+    { location: 'Mountain Lodge', revenue: '$62,340', orders: '856', avgOrder: '$72.80', growth: '+22.1%', isPositive: true },
+    { location: 'City Square Diner', revenue: '$58,920', orders: '978', avgOrder: '$60.25', growth: '+6.3%', isPositive: true },
+    { location: 'Harbor Grill', revenue: '$32,450', orders: '534', avgOrder: '$60.77', growth: '-3.2%', isPositive: false },
+    { location: 'Sunset Restaurant', revenue: '$21,500', orders: '412', avgOrder: '$52.18', growth: '+18.7%', isPositive: true },
+  ];
+
+  return (
+    <div className="min-h-screen p-4 sm:p-6 w-full bg-gray-50">
+      {/* Top Bar — Title changes based on tab */}
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          {activeTab === 'analytics' ? 'Reports & Analytics' : 'Reports'}
+        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <DownloadIcon /> Export CSV
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors">
+            <DownloadIcon /> Export PDF
+          </button>
+          <ViewToggle activeTab={activeTab} setActiveTab={setActiveTab} />
+        </div>
+      </div>
+
+      {/* Quick Action Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        {[
+          { icon: <DollarIcon />, label: 'Revenue Reports', color: 'text-emerald-600 bg-emerald-50' },
+          { icon: <UsersIcon />, label: 'Subscription Reports', color: 'text-blue-600 bg-blue-50' },
+          { icon: <CartIcon />, label: 'Marketplace Sales', color: 'text-purple-600 bg-purple-50' },
+          { icon: <CubeIcon />, label: 'Inventory Reports', color: 'text-orange-600 bg-orange-50' },
+          { icon: <AlertIcon />, label: 'Low-Stock Alerts', color: 'text-red-600 bg-red-50' },
+          { icon: <LocationIcon />, label: 'Location Comparison', color: 'text-cyan-600 bg-cyan-50' },
+        ].map((item, idx) => (
+          <button
+            key={idx}
+            className="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all text-center gap-2"
+          >
+            <div className={`p-2 rounded-full ${item.color}`}>{item.icon}</div>
+            <span className="text-xs font-medium text-gray-700">{item.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+        <button
+          type="button"
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
+          className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1"
+        >
+          <FilterIcon />
+          Filters
+          <ChevronDownIcon className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+        </button>
+
+        {isFilterOpen && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Date Range</label>
+              <div className="relative">
+                <select className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option>Select one...</option>
+                  <option>Last 7 days</option>
+                  <option>Last 30 days</option>
+                  <option>Last 90 days</option>
+                </select>
+                <div className="absolute right-3 top-2.5 pointer-events-none"><ChevronDownIcon /></div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+              <div className="relative">
+                <select className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                  <option>Select one...</option>
+                  <option>Downtown Bistro</option>
+                  <option>Ocean View Cafe</option>
+                  <option>Mountain Lodge</option>
+                </select>
+                <div className="absolute right-3 top-2.5 pointer-events-none"><ChevronDownIcon /></div>
+              </div>
+            </div>
+            <div className="lg:col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
+              <div className="relative">
+                <div className="absolute left-3 top-2.5"><SearchIcon /></div>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* KPI Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="bg-emerald-500 rounded-xl p-5 text-white shadow-md">
+          <p className="text-sm font-medium opacity-90">Total Revenue</p>
+          <p className="text-3xl font-bold mt-1">$342,890</p>
+          <div className="flex items-center gap-1 mt-2 text-sm opacity-90">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+            +12.5% vs last period
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <p className="text-sm font-medium text-gray-500">Total Orders</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">5114</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <p className="text-sm font-medium text-gray-500">Average Order Value</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">$67.42</p>
+        </div>
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+          <p className="text-sm font-medium text-gray-500">Active Locations</p>
+          <p className="text-3xl font-bold text-gray-900 mt-1">6</p>
+        </div>
+      </div>
+
+      {/* Revenue by Location Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="text-base font-semibold text-gray-900">Revenue by Location</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
+              <tr>
+                <th className="px-6 py-3">Location</th>
+                <th className="px-6 py-3">Revenue</th>
+                <th className="px-6 py-3">Orders</th>
+                <th className="px-6 py-3">Avg Order</th>
+                <th className="px-6 py-3">Growth</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {revenueData.map((row, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                      {row.location}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900 font-semibold">{row.revenue}</td>
+                  <td className="px-6 py-4 text-gray-600">{row.orders}</td>
+                  <td className="px-6 py-4 text-gray-600">{row.avgOrder}</td>
+                  <td className={`px-6 py-4 font-semibold ${row.isPositive ? 'text-emerald-600' : 'text-red-500'}`}>
+                    <span className="flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {row.isPositive ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                        )}
+                      </svg>
+                      {row.growth}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  REPORTS VIEW (default)                                             */
+/* ------------------------------------------------------------------ */
+const ReportsView = ({ activeTab, setActiveTab }) => {
   const dispatch = useAppDispatch();
 
   const { kpiMetrics, loading, hasLoaded } = useAppSelector(
@@ -88,11 +358,12 @@ const Report = () => {
 
   return (
     <div className="min-h-screen p-4 sm:p-6 w-full">
-      {/* Topbar */}
+      {/* Topbar — Title changes based on tab */}
       <div className="flex justify-between items-center flex-wrap mb-8 gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          Reports
+          {activeTab === 'reports' ? 'Reports' : 'Reports & Analytics'}
         </h1>
+        <ViewToggle activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
       {/* Metrics Cards */}
@@ -152,9 +423,7 @@ const Report = () => {
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* Row 1: Active Clients (table) + Active Clients (donut chart) */}
-      {/* ============================================================ */}
+      {/* Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch lg:h-[520px]">
         <div className="h-full min-h-0">
           <ActiveClients />
@@ -164,9 +433,7 @@ const Report = () => {
         </div>
       </div>
 
-      {/* ============================================================ */}
-      {/* Row 2: Inactive Clients (chart) + Inactive Clients (table)   */}
-      {/* ============================================================ */}
+      {/* Row 2 */}
       <div className="grid grid-cols-1 mt-5 lg:grid-cols-2 gap-6 mb-8 items-stretch lg:h-[480px]">
         <div className="h-full min-h-0">
           <InactiveClientsChart />
@@ -176,7 +443,7 @@ const Report = () => {
         </div>
       </div>
 
-      {/* Remaining rows (unchanged) */}
+      {/* Remaining rows */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div><SubscriptionSalesChart /></div>
         <div><SubscriptionTable /></div>
@@ -196,6 +463,19 @@ const Report = () => {
         <CityWiseUsage />
       </div>
     </div>
+  );
+};
+
+/* ------------------------------------------------------------------ */
+/*  MAIN COMPONENT                                                     */
+/* ------------------------------------------------------------------ */
+const Report = () => {
+  const [activeTab, setActiveTab] = useState('reports');
+
+  return activeTab === 'analytics' ? (
+    <AnalyticsView activeTab={activeTab} setActiveTab={setActiveTab} />
+  ) : (
+    <ReportsView activeTab={activeTab} setActiveTab={setActiveTab} />
   );
 };
 

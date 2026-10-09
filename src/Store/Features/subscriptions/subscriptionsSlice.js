@@ -3,24 +3,16 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  // Plan catalog
   plans: [],
   totalPlans: 0,
   activePlans: 0,
-
-  // Single plan detail (cached by id)
-  planDetailsById: {}, // { [id]: planObject }
-
-  // Purchased subscriptions
+  planDetailsById: {},
   subscriptionHistory: [],
   subscriptionHistoryPagination: null,
-
-  // Loading flags
   loading: false,
   creating: false,
   updating: false,
   historyLoading: false,
-
   error: null,
   hasLoaded: false,
 };
@@ -49,7 +41,7 @@ const subscriptionsSlice = createSlice({
       state.loading = false;
     },
 
-    // ------ Single plan (for detail/edit) ------
+    // ------ Single plan ------
     setPlanDetail: (state, action) => {
       const plan = action.payload;
       if (plan?.Admin_Plan_id) {
@@ -57,7 +49,7 @@ const subscriptionsSlice = createSlice({
       }
     },
 
-    // ------ Add newly created plan ------
+    // ------ Add newly created plan (catalog only) ------
     addSubscriptionPlan: (state, action) => {
       const plan = action.payload;
       if (!plan) return;
@@ -66,7 +58,6 @@ const subscriptionsSlice = createSlice({
       if (plan.Status) state.activePlans += 1;
     },
 
-    // ------ Replace updated plan in list ------
     updateSubscriptionPlan: (state, action) => {
       const plan = action.payload;
       if (!plan) return;
@@ -76,7 +67,6 @@ const subscriptionsSlice = createSlice({
       state.planDetailsById[plan.Admin_Plan_id] = plan;
     },
 
-    // ------ Loading flags ------
     setCreating: (state, action) => {
       state.creating = action.payload;
     },
@@ -94,6 +84,17 @@ const subscriptionsSlice = createSlice({
       state.historyLoading = action.payload;
     },
 
+    // ✅ NEW: Push a freshly-created subscription into the history list
+    addSubscriptionHistoryItem: (state, action) => {
+      const sub = action.payload;
+      if (!sub) return;
+      state.subscriptionHistory = [sub, ...state.subscriptionHistory];
+      if (state.subscriptionHistoryPagination) {
+        state.subscriptionHistoryPagination.total =
+          (state.subscriptionHistoryPagination.total || 0) + 1;
+      }
+    },
+
     resetSubscriptions: () => initialState,
   },
 });
@@ -109,6 +110,7 @@ export const {
   setUpdating,
   setSubscriptionHistoryData,
   setSubscriptionHistoryLoading,
+  addSubscriptionHistoryItem, 
   resetSubscriptions,
 } = subscriptionsSlice.actions;
 

@@ -4,22 +4,23 @@ import React, { useState, useEffect, useRef } from 'react';
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Loader2, Package, ArrowLeft } from 'lucide-react';
+import { Loader2, Package, ArrowLeft, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import SubscriptionPlans from '../SubscriptionTable/SubscriptionPlans';
 import CreateSubscriptionForm from '../SubscriptionTable/CreateSubscriptionForm';
-import SubscriptionDetails from '../SubscriptionTable/SubscriptionDetails'; // NEW
+import SubscriptionDetails from '../SubscriptionTable/SubscriptionDetails';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setSubscriptionHistoryData,
   setSubscriptionHistoryLoading,
+  addSubscriptionHistoryItem, // ✅ import
 } from '../../Store/Features/subscriptions/subscriptionsSlice';
 import { subscriptionService } from '../../Services/apiService';
 
 // ---------------------------------------------------------------------------
-// Table Row
+// Table Row (unchanged)
 // ---------------------------------------------------------------------------
 const TableRow = ({ sub, index, onViewMore, t, i18n }) => {
   const id = String(index + 1).padStart(2, '0');
@@ -81,7 +82,7 @@ const TableRow = ({ sub, index, onViewMore, t, i18n }) => {
       </div>
       <div className="col-span-1 flex justify-end items-center">
         <button
-          onClick={() => onViewMore(sub)}   // ✅ pass the clicked record
+          onClick={() => onViewMore(sub)}
           className="w-full max-w-[100px] h-[35px] bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-md text-white font-poppins text-xs font-medium hover:opacity-90 transition-opacity"
         >
           {t('subscriptions.viewMore')}
@@ -92,14 +93,11 @@ const TableRow = ({ sub, index, onViewMore, t, i18n }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Main Component
+// Main
 // ---------------------------------------------------------------------------
 const SubscriptionTable = () => {
-  const [currentView, setCurrentView] = useState('list'); // 'list' | 'plans' | 'form' | 'details'
-  const [selectedPeriod, setSelectedPeriod] = useState('All');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState(null);
-  const [selectedSubscription, setSelectedSubscription] = useState(null); // NEW
+  const [currentView, setCurrentView] = useState('list');
+  const [selectedSubscription, setSelectedSubscription] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -111,10 +109,9 @@ const SubscriptionTable = () => {
     historyLoading,
   } = useAppSelector((state) => state.subscriptions);
 
-  const hasFetched = useRef(false);
+  // ✅ REMOVE the hasFetched guard so we refetch on every mount / view switch
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+    if (currentView !== 'list') return; // only fetch when we're on the list view
 
     const fetchHistory = async () => {
       dispatch(setSubscriptionHistoryLoading(true));
@@ -132,7 +129,7 @@ const SubscriptionTable = () => {
     };
 
     fetchHistory();
-  }, [dispatch, t]);
+  }, [dispatch, t, currentView]);
 
   // ---------------------------------------------------------------------
   // View: PLANS
@@ -140,30 +137,35 @@ const SubscriptionTable = () => {
   if (currentView === 'plans') {
     return (
       <SubscriptionPlans
-        onBack={() => { setEditingPlan(null); setCurrentView('list'); }}
-        onGetStarted={() => { setEditingPlan(null); setCurrentView('form'); }}
-        onCreateNew={() => { setEditingPlan(null); setCurrentView('form'); }}
-        onEditPlan={(plan) => { setEditingPlan(plan); setCurrentView('form'); }}
-        onViewPlan={(plan) => console.log('View plan:', plan)}
+        onBack={() => setCurrentView('list')}
+        onGetStarted={() => setCurrentView('form')}
+        onCreateNew={() => setCurrentView('form')}
+        onEditPlan={(plan) => console.log('Edit plan:', plan)}
       />
     );
   }
 
   // ---------------------------------------------------------------------
-  // View: FORM (create or edit)
+  // View: FORM
   // ---------------------------------------------------------------------
   if (currentView === 'form') {
     return (
       <CreateSubscriptionForm
-        editingPlan={editingPlan}
-        onBack={() => { setEditingPlan(null); setCurrentView('plans'); }}
-        onComplete={() => { setEditingPlan(null); setCurrentView('plans'); }}
+        onBack={() => setCurrentView('plans')}
+        onComplete={(newSub) => {
+          // ✅ If the form returns the new subscription object, push it into the store
+          if (newSub) {
+            dispatch(addSubscriptionHistoryItem(newSub));
+          }
+          // Then go back to list — the useEffect above will also refetch to stay in sync
+          setCurrentView('list');
+        }}
       />
     );
   }
 
   // ---------------------------------------------------------------------
-  // View: DETAILS  (NEW — shows selected subscription)
+  // View: DETAILS
   // ---------------------------------------------------------------------
   if (currentView === 'details' && selectedSubscription) {
     return (
@@ -184,15 +186,22 @@ const SubscriptionTable = () => {
   const totalCount = subscriptionHistoryPagination?.total || 0;
 
   return (
-    <div className="p-4 lg:p-6 bg-gray-50 min-h-screen">
-      {/* ... header unchanged ... */}
+    <div className="p-4 lg:p-6 bg-gray-50 min-h-screen font-poppins">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
         <div className="flex items-center gap-4 flex-wrap">
-          <h1 className="text-xl lg:text-3xl font-bold text-black font-poppins">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-4 h-4 text-gray-600" />
+          </button>
+
+          <h1 className="text-xl lg:text-2xl font-bold text-black">
             {t('subscriptions.title')}
           </h1>
 
-          <div className="bg-gray-200 p-1 rounded-lg flex gap-1">
+          <div className="flex items-center gap-1 bg-gray-200 p-1 rounded-lg">
             <button
               onClick={() => setCurrentView('list')}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -201,7 +210,7 @@ const SubscriptionTable = () => {
                   : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
-              {t('subscriptions.purchased')}
+              Purchased
             </button>
             <button
               onClick={() => setCurrentView('plans')}
@@ -211,12 +220,17 @@ const SubscriptionTable = () => {
                   : 'text-gray-700 hover:bg-gray-300'
               }`}
             >
-              {t('subscriptions.create')}
+              Create
             </button>
           </div>
         </div>
 
-        {/* period dropdown unchanged */}
+        <button
+          onClick={() => setCurrentView('plans')}
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] text-white font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity shadow-sm"
+        >
+          Create Subscription <Plus className="w-4 h-4" />
+        </button>
       </div>
 
       <p className="text-xs text-gray-500 mb-4">
@@ -224,7 +238,6 @@ const SubscriptionTable = () => {
       </p>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        {/* header row unchanged */}
         {historyLoading && isEmpty ? (
           <div className="p-10 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />

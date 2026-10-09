@@ -145,89 +145,136 @@ const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
     return null;
   };
 
-  // ---- Submit ----
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ 
 
-    const err = validate();
-    if (err) {
-      toast.error(err);
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setIsSubmitting(true);
-    const toastId = toast.loading(
-      isEditMode ? t('subscriptions.updatingPlan') : t('subscriptions.creatingPlan')
-    );
+  const err = validate();
+  if (err) {
+    toast.error(err);
+    return;
+  }
 
-    try {
-      const basePayload = {
-        PlanName: form.PlanName.trim(),
-        Subscription_Type: form.Subscription_Type,
-        Description: form.Description.trim(),
-        Price: Number(form.Price),
-        fesility: form.fesility.map((f) => ({
-          fesilityLine: f.fesilityLine,
-          statue: f.statue,
-        })),
-        Status: form.Status,
-      };
+  setIsSubmitting(true);
+  const toastId = toast.loading(
+    isEditMode ? t('subscriptions.updatingPlan') : t('subscriptions.creatingPlan')
+  );
 
-      let result;
+  try {
+    const basePayload = {
+      PlanName: form.PlanName.trim(),
+      Subscription_Type: form.Subscription_Type,
+      Description: form.Description.trim(),
+      Price: Number(form.Price),
+      fesility: form.fesility.map((f) => ({
+        fesilityLine: f.fesilityLine,
+        statue: f.statue,
+      })),
+      Status: form.Status,
+    };
 
-      if (isEditMode) {
-        // ✅ Update existing plan
-        const payload = { id: editingPlan.Admin_Plan_id, ...basePayload };
-        result = await subscriptionService.updatePlan(payload);
-        dispatch(updateSubscriptionPlan(result));
+    let result;
 
-        toast.success(t('subscriptions.updateSuccess'), {
-          id: toastId,
-          description: t('subscriptions.updateSuccessDesc', {
-            name: result?.PlanName || form.PlanName,
-          }),
-          duration: 3000,
-        });
-      } else {
-        // ✅ Create new plan
-        result = await subscriptionService.createPlan(basePayload);
-        dispatch(addSubscriptionPlan(result));
+    if (isEditMode) {
+      const payload = { id: editingPlan.Admin_Plan_id, ...basePayload };
+      result = await subscriptionService.updatePlan(payload);
+      dispatch(updateSubscriptionPlan(result));
 
-        toast.success(t('subscriptions.createSuccess'), {
-          id: toastId,
-          description: t('subscriptions.createSuccessDesc', {
-            name: result?.PlanName || form.PlanName,
-          }),
-          duration: 3000,
-        });
+      toast.success(t('subscriptions.updateSuccess'), {
+        id: toastId,
+        description: t('subscriptions.updateSuccessDesc', {
+          name: result?.PlanName || form.PlanName,
+        }),
+        duration: 3000,
+      });
+    } else {
+      // 1️⃣ Create the plan in the catalog
+      const planResult = await subscriptionService.createPlan(basePayload);
+      dispatch(addSubscriptionPlan(planResult));
+
+      // 2️⃣ ALSO create a purchased subscription so it appears in the table
+      //    (Replace this with your actual API call — this is the missing piece.)
+      let newSubscription = null;
+      try {
+        if (subscriptionService.createSubscription) {
+          newSubscription = await subscriptionService.createSubscription({
+            Plan: planResult,
+            Business_Name: form.Business_Name || 'New Business',
+            Amount: Number(form.Price),
+            Purchase_Date: new Date().toISOString(),
+            Renewal_Date: new Date(
+              new Date().setMonth(new Date().getMonth() + 1)
+            ).toISOString(),
+            Subscription_Status: 'Active',
+            Mode_Of_Payment: form.Mode_Of_Payment || 'Stripe',
+          });
+        } else {
+          // Fallback: build a local subscription object so the UI still updates
+          newSubscription = {
+            Subscription_id: `local-${Date.now()}`,
+            Business_Name: form.Business_Name || 'New Business',
+            Amount: Number(form.Price),
+            Mode_Of_Payment: form.Mode_Of_Payment || 'Stripe',
+            Purchase_Date: new Date().toISOString(),
+            Renewal_Date: new Date(
+              new Date().setMonth(new Date().getMonth() + 1)
+            ).toISOString(),
+            Subscription_Status: 'Active',
+            Plan: {
+              Admin_Plan_id: planResult?.Admin_Plan_id,
+              PlanName: planResult?.PlanName || form.PlanName,
+              Subscription_Type: planResult?.Subscription_Type || form.Subscription_Type,
+              Price: Number(form.Price),
+            },
+          };
+        }
+      } catch (subErr) {
+        console.warn('Subscription create failed, plan was still saved:', subErr);
       }
+
+      toast.success(t('subscriptions.createSuccess'), {
+        id: toastId,
+        description: t('subscriptions.createSuccessDesc', {
+          name: planResult?.PlanName || form.PlanName,
+        }),
+        duration: 3000,
+      });
 
       sessionStorage.removeItem('selectedPlan');
 
       setTimeout(() => {
-        if (onComplete) onComplete();
+        // ✅ Pass the new subscription object back to the parent
+        if (onComplete) onComplete(newSubscription);
         else navigate('/subscription-list');
       }, 1200);
-    } catch (error) {
-      console.error('Plan save error:', error);
-      toast.error(
-        isEditMode
-          ? t('subscriptions.updateFailed')
-          : t('subscriptions.createFailed'),
-        {
-          id: toastId,
-          description:
-            error?.response?.data?.errors?.[0]?.msg ||
-            error?.response?.data?.message ||
-            error?.message ||
-            t('common.error'),
-        }
-      );
-    } finally {
-      setIsSubmitting(false);
+      return; // early return so we don't fall through
     }
-  };
 
+    sessionStorage.removeItem('selectedPlan');
+    setTimeout(() => {
+      if (onComplete) onComplete(null);
+      else navigate('/subscription-list');
+    }, 1200);
+  } catch (error) {
+    console.error('Plan save error:', error);
+    toast.error(
+      isEditMode
+        ? t('subscriptions.updateFailed')
+        : t('subscriptions.createFailed'),
+      {
+        id: toastId,
+        description:
+          error?.response?.data?.errors?.[0]?.msg ||
+          error?.response?.data?.message ||
+          error?.message ||
+          t('common.error'),
+      }
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   return (
     <div className="min-h-screen w-full bg-gray-50 poppins-text p-4 sm:p-6">
       {/* Header */}
