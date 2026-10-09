@@ -4,19 +4,84 @@ import arrow from '../../assets/Images/Home/arrow.png';
 import { Eye, EyeOff } from 'lucide-react';
 import PasswordResetModal from './PasswordResetModal';
 import ChangePasswordSuccessPopupModal from './ChangePasswordSuccessPopupModal';
+import { changePasswordService } from '../../Services/apiService';
 
 const ChangePasswordForm = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // ✅ API states
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  // ✅ Handle Save Password
+  const handleSavePassword = async () => {
+    setError('');
+    setSuccessMessage('');
+
+    // Client-side validation
+    if (!currentPassword.trim()) {
+      setError('Please enter your current password.');
+      return;
+    }
+    if (!newPassword.trim()) {
+      setError('Please enter a new password.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('New password and confirm password do not match.');
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setError('New password must be different from current password.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await changePasswordService.change(
+        currentPassword,
+        newPassword,
+        confirmPassword
+      );
+
+      // Clear form
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+
+      // Show success popup
+      setShowModal(true);
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Failed to change password. Please try again.';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSuccessClose = () => {
+    setShowModal(false);
+    setSuccessMessage('');
+  };
 
   return (
     <div className="px-4 py-6 md:px-10 md:py-10 w-full max-w-5xl mx-auto">
@@ -34,6 +99,13 @@ const ChangePasswordForm = () => {
         </h2>
 
         <div className="flex flex-col gap-8">
+          {/* ✅ Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-sm md:text-base">
+              {error}
+            </div>
+          )}
+
           {/* Current Password + Forget Password */}
           <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
             {/* Current Password */}
@@ -42,9 +114,14 @@ const ChangePasswordForm = () => {
                 Enter Current Password
               </label>
               <div className="relative w-full h-12 md:h-14 bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] rounded-lg">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm md:text-base text-black">
-                  ***************
-                </span>
+                <input
+                  type={showCurrent ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full h-full bg-transparent px-4 outline-none text-black text-sm md:text-base"
+                  placeholder="Enter current password"
+                  autoComplete="current-password"
+                />
                 <div
                   className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
                   onClick={() => setShowCurrent(!showCurrent)}
@@ -57,6 +134,7 @@ const ChangePasswordForm = () => {
             {/* Forget Password Button */}
             <div className="flex justify-start md:justify-end">
               <button
+                type="button"
                 onClick={openModal}
                 className="bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white text-xs md:text-sm py-2 px-4 rounded-lg w-full md:w-auto"
               >
@@ -79,6 +157,7 @@ const ChangePasswordForm = () => {
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full h-full bg-transparent px-4 outline-none text-black text-sm md:text-base"
                   placeholder="Enter new password"
+                  autoComplete="new-password"
                 />
                 <div
                   className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
@@ -101,6 +180,7 @@ const ChangePasswordForm = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full h-full bg-transparent px-4 outline-none text-black text-sm md:text-base"
                   placeholder="Confirm new password"
+                  autoComplete="new-password"
                 />
                 <div
                   className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
@@ -115,10 +195,14 @@ const ChangePasswordForm = () => {
           {/* Save Password Button */}
           <div className="flex justify-center">
             <button
-              onClick={() => setShowModal(true)}
-              className="bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white font-medium text-base md:text-lg py-3 px-6 md:px-10 rounded-xl w-full md:w-auto"
+              type="button"
+              onClick={handleSavePassword}
+              disabled={loading}
+              className={`bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white font-medium text-base md:text-lg py-3 px-6 md:px-10 rounded-xl w-full md:w-auto transition-opacity ${
+                loading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-95'
+              }`}
             >
-              Save Password
+              {loading ? 'Saving...' : 'Save Password'}
             </button>
           </div>
         </div>
@@ -127,9 +211,7 @@ const ChangePasswordForm = () => {
       {/* Modals */}
       {isModalOpen && <PasswordResetModal onClose={closeModal} />}
       {showModal && (
-        <ChangePasswordSuccessPopupModal
-          onClose={() => setShowModal(false)}
-        />
+        <ChangePasswordSuccessPopupModal onClose={handleSuccessClose} />
       )}
     </div>
   );

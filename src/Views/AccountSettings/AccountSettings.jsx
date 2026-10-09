@@ -9,6 +9,7 @@ import {
   CreditCard,
   Pencil,
   ChevronRight,
+  ChevronLeft,
   Menu,
   X,
 } from 'lucide-react';
@@ -63,6 +64,37 @@ const SettingsRow = ({ label, hasChevron = false }) => (
   </div>
 );
 
+/**
+ * ✅ Reusable Back Button
+ * - If `onBack` is provided, uses that handler.
+ * - Otherwise falls back to browser history (navigate(-1)).
+ */
+const BackButton = ({ onBack, label = 'Back' }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onBack) {
+      onBack();
+    } else if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="flex items-center gap-2 mb-6 text-gray-700 hover:text-gray-900 font-medium transition-colors group"
+    >
+      <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
+        <ChevronLeft className="w-5 h-5" />
+      </div>
+      <span>{label}</span>
+    </button>
+  );
+};
+
 const AccountSettings = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -88,18 +120,70 @@ const AccountSettings = () => {
     }
   };
 
+  /**
+   * ✅ Back button handler used inside each section.
+   * For sections with a dedicated route (sub-admin, supports) it navigates back.
+   * For in-page sections, it returns to the default "account" section.
+   */
+  const handleSectionBack = (sectionId) => {
+    const item = sidebarItems.find((i) => i.id === sectionId);
+
+    // If the section has its own route → use browser back / fallback
+    if (item?.route) {
+      if (window.history.length > 1) {
+        navigate(-1);
+      } else {
+        setActiveSection('account');
+      }
+      return;
+    }
+
+    // In-page section → return to Account section
+    setActiveSection('account');
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'account':
-        return <div className="max-w-xl"><AccountSection /></div>;
+        return (
+          <div className="max-w-xl">
+            <BackButton />
+            <AccountSection />
+          </div>
+        );
+
       case 'business':
-        return <BusinessSection />;
+        return (
+          <div>
+            <BackButton onBack={() => handleSectionBack('business')} />
+            <BusinessSection />
+          </div>
+        );
+
       case 'admins':
-        return <AdminSection />;
+        return (
+          <div>
+            <BackButton onBack={() => handleSectionBack('admins')} />
+            <AdminSection />
+          </div>
+        );
+
       case 'logs':
-        return <LogsSection />;
+        return (
+          <div>
+            <BackButton onBack={() => handleSectionBack('logs')} />
+            <LogsSection />
+          </div>
+        );
+
       case 'payments':
-        return <PaymentSection />;
+        return (
+          <div>
+            <BackButton onBack={() => handleSectionBack('payments')} />
+            <PaymentSection />
+          </div>
+        );
+
       default:
         return <div>Select a section from the sidebar</div>;
     }
@@ -107,16 +191,6 @@ const AccountSettings = () => {
 
   return (
     <div className="font-sans min-h-screen">
-      {/* Mobile Topbar */}
-      {/* <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow px-4 py-3 h-14 flex justify-between items-center">
-        <h1 className="text-lg font-semibold">
-          {sidebarItems.find(i => i.id === activeSection)?.label}
-        </h1>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-          {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-        </button>
-      </div> */}
-
       {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
         <div
@@ -149,9 +223,7 @@ const AccountSettings = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 md:p-10">
-          {renderContent()}
-        </main>
+        <main className="flex-1 p-4 md:p-10">{renderContent()}</main>
       </div>
 
       {/* Bottom Menu for Mobile */}
