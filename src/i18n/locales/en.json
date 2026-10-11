@@ -403,13 +403,200 @@
 
   "accountSettings": {
     "title": "Account Settings",
-    "accountDetails": "Account Details",
-    "password": "Password: **********",
-    "manageAdmin": "Manage TRIAXX.{{role}}",
-    "regionalPreference": "Regional Preference",
-    "languages": "Languages",
-    "dateTime": "Date & Time",
-    "currency": "Currency"
+
+    "common": {
+      "loading": "Loading data...",
+      "close": "Close",
+      "cancel": "Cancel",
+      "copy": "Copy",
+      "unknown": "Unknown"
+    },
+
+    "accountDetails": {
+      "title": "Account Details",
+      "password": "Password",
+      "manageAdmin": "Manage {{role}}"
+    },
+
+    "regionalPreference": {
+      "title": "Regional Preference",
+      "languages": "Languages",
+      "dateTime": "Date & Time",
+      "currency": "Currency"
+    },
+
+    "security": {
+      "title": "Security",
+      "twoFactor": "Two-Factor Authentication",
+      "activeSessions": "Active Sessions",
+      "activeSessionsCount": "{{count}} active devices",
+      "trustedDevices": "Trusted Devices",
+      "trustedDevicesCount": "{{count}} devices",
+      "loginHistory": "Login History",
+      "suspiciousActivity": "Suspicious Activity",
+      "noAlerts": "No alerts",
+      "passwordResetLogs": "Password Reset Logs",
+      "apiKeys": "API Keys"
+    },
+
+    "twoFactor": {
+      "title": "Two-Factor Authentication",
+      "status": "Status",
+      "enabled": "Enabled",
+      "enabledMessage": "2FA is currently enabled",
+      "aboutTitle": "About 2FA",
+      "aboutDescription": "Two-factor authentication adds an extra layer of security to your account. When enabled, you'll need to enter a code from your authenticator app in addition to your password.",
+      "supportedMethods": "Supported Methods",
+      "methods": {
+        "authenticator": "Authenticator App (Google Authenticator, Authy)",
+        "sms": "SMS Text Message",
+        "email": "Email Verification"
+      },
+      "backupCodeTitle": "Backup Code",
+      "backupCodeDescription": "Save this code in a secure place. You can use it to access your account if you lose your device.",
+      "disableButton": "Disable 2FA"
+    },
+
+    "sessions": {
+      "title": "Active Sessions",
+      "description": "These devices are currently signed in to your account. Revoke any sessions you don't recognize.",
+      "empty": "No active sessions found.",
+      "loadFailed": "Failed to load sessions",
+      "current": "Current",
+      "activeNow": "Active now",
+      "lastActive": "Last active: {{time}}",
+      "revoke": "Revoke",
+      "revokeAllOther": "Revoke All Other Sessions"
+    },
+
+    "trustedDevices": {
+      "title": "Trusted Devices",
+      "description": "Trusted devices won't require 2FA verification. Remove any devices you don't recognize.",
+      "addDevice": "Add Device",
+      "empty": "No trusted devices yet.",
+      "loadFailed": "Failed to load trusted devices",
+      "confirmRemove": "Remove this device from trusted devices?",
+      "remove": "Remove",
+      "addedOn": "Added {{date}}",
+      "lastUsed": "Last used {{date}}"
+    },
+
+    "addDevice": {
+      "title": "Add New Device",
+      "deviceName": "Device Name",
+      "deviceNamePlaceholder": "e.g., MacBook Pro, iPhone 15",
+      "deviceType": "Device Type",
+      "types": {
+        "desktop": "Desktop",
+        "mobile": "Mobile",
+        "tablet": "Tablet"
+      },
+      "addButton": "Add Device",
+      "adding": "Adding..."
+    },
+
+    "loginHistory": {
+      "title": "Login History",
+      "description": "Review all login attempts to your account. Report any suspicious activity immediately.",
+      "empty": "No login history found.",
+      "success": "Success",
+      "ip": "IP",
+      "method": "Method",
+      "password": "Password"
+    },
+
+    "suspiciousActivity": {
+      "title": "Suspicious Activity",
+      "description": "We monitor your account for suspicious activity. Review and resolve any alerts below.",
+      "empty": "No suspicious activity detected.",
+      "resolved": "Resolved",
+      "securityTipsTitle": "Security Tips",
+      "tips": {
+        "enable2fa": "Enable 2FA for an extra layer of security",
+        "strongPassword": "Use a strong, unique password for your account",
+        "reviewSessions": "Regularly review your active sessions and trusted devices"
+      }
+    },
+
+    "passwordResetLogs": {
+      "title": "Password Reset Logs",
+      "description": "View all password reset attempts for your account. If you see any unauthorized resets, contact support immediately.",
+      "empty": "No password reset logs found.",
+      "completed": "Completed",
+      "ip": "IP",
+      "noticeTitle": "Important Security Notice",
+      "noticeDescription": "If you notice any password reset attempts that you didn't initiate, your account may be compromised. Please change your password immediately and enable two-factor authentication.",
+      "changePasswordNow": "Change Password Now"
+    },
+
+    "apiKeys": {
+      "title": "API Keys",
+      "description": "Manage API keys for accessing TRIAXX services programmatically.",
+      "createNewKey": "Create New Key",
+      "empty": "No API keys found. Create one to get started.",
+      "loadFailed": "Failed to load API keys",
+      "confirmRevoke": "Are you sure you want to revoke this API key? This action cannot be undone.",
+      "confirmDelete": "Are you sure you want to permanently delete this API key?",
+      "revoke": "Revoke",
+      "delete": "Delete",
+      "createdOn": "Created {{date}}",
+      "lastUsed": "Last used {{date}}"
+    },
+
+    "createApiKey": {
+      "title": "Create New Key",
+      "keyNameLabel": "API Key Name",
+      "keyNamePlaceholder": "e.g., Production API",
+      "permissionsLabel": "Permissions",
+      "selectAtLeastOne": "Please select at least one permission.",
+      "createButton": "Create API Key",
+      "creating": "Creating...",
+      "importantTitle": "Important",
+      "importantDescription": "Your API key will only be shown once. Make sure to copy and store it securely.",
+      "permissions": {
+        "read": {
+          "label": "Read",
+          "badge": "Safe",
+          "description": "View data and resources"
+        },
+        "write": {
+          "label": "Write",
+          "badge": "Moderate",
+          "description": "Create and modify resources"
+        },
+        "delete": {
+          "label": "Delete",
+          "badge": "Dangerous",
+          "description": "Remove resources permanently"
+        }
+      }
+    },
+
+    "apiKeyCreated": {
+      "title": "API Key Created",
+      "successTitle": "API Key Created Successfully",
+      "importantTitle": "Important — Copy Now",
+      "importantDescription": "This key will only be shown once. Make sure to copy and store it securely.",
+      "doneButton": "Done"
+    },
+
+    "toasts": {
+      "backupCodeCopied": "Backup code copied to clipboard",
+      "sessionRevoked": "Session revoked successfully",
+      "sessionRevokeFailed": "Failed to revoke session",
+      "deviceNameRequired": "Please enter a device name",
+      "deviceAdded": "\"{{name}}\" added to trusted devices",
+      "deviceAddFailed": "Failed to add device",
+      "deviceRemoved": "Device removed from trusted devices",
+      "deviceRemoveFailed": "Failed to remove device",
+      "apiKeyCreated": "API key created successfully. Copy it now!",
+      "apiKeyCreateFailed": "Failed to create API key",
+      "apiKeyCopied": "API key copied to clipboard",
+      "apiKeyRevoked": "API key revoked successfully",
+      "apiKeyRevokeFailed": "Failed to revoke API key",
+      "apiKeyDeleted": "API key deleted successfully",
+      "apiKeyDeleteFailed": "Failed to delete API key"
+    }
   },
 
   "language": {

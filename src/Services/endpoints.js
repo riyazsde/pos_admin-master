@@ -16,7 +16,6 @@ export const ENDPOINTS = {
     },
     LOGOUT: '/api/v1/user/logout',
     CHANGE_PASSWORD: '/api/v1/user/change-password',
-
     FORGOT_PASSWORD: {
       SEND_OTP: '/api/v1/user/forget-password/send-otp',
       RESEND_OTP: '/api/v1/user/forget-password/resend-otp',
@@ -26,6 +25,25 @@ export const ENDPOINTS = {
 
   // ----------------------------- ADMIN -----------------------------
   ADMIN: {
+    // ✅ SINGLE consolidated ACCOUNT_SETTINGS block (only declared ONCE)
+ACCOUNT_SETTINGS: {
+  DATE_TIME: '/api/v1/admin/account-settings/date-time',                    // GET
+  DATE_TIME_UPDATE: '/api/v1/admin/account-settings/date-time/update', 
+  PROFILE: '/api/v1/user/getbyauth',
+  SESSIONS: '/api/v1/admin/account-settings/sessions',
+  REVOKE_SESSION: (id) => `/api/v1/admin/account-settings/sessions/${id}`,
+  LOGIN_HISTORY: '/api/v1/admin/account-settings/login-history',
+  SUSPICIOUS_ACTIVITY: '/api/v1/admin/account-settings/suspicious-activity',
+  PASSWORD_RESET_LOGS: '/api/v1/admin/account-settings/password-reset-logs',
+  API_KEYS: '/api/v1/admin/account-settings/api-keys',
+  REVOKE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}/revoke`,
+  DELETE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}`,
+
+  // ✅ ADD THESE TWO LINES:
+  TRUSTED_DEVICES: '/api/v1/admin/account-settings/trusted-devices',
+  REMOVE_TRUSTED_DEVICE: (id) => `/api/v1/admin/account-settings/trusted-devices/${id}`,
+},
+
     LANGUAGE: {
       GET_ALL: '/api/v1/admin/language/getall',
     },
@@ -40,11 +58,13 @@ export const ENDPOINTS = {
       ACTIVATE: (id) => `/api/v1/admin/subadmin/activate/${id}`,
     },
 
-    //  Account Settings
-    ACCOUNT_SETTINGS: {
-      DATE_TIME: '/api/v1/admin/account-settings/date-time',
-      PROFILE: '/api/v1/user/getbyauth',
-    },
+    // ❌ REMOVED — this was the DUPLICATE block causing the 404.
+    //    Delete this whole block from your file:
+    //
+    //  ACCOUNT_SETTINGS: {
+    //    DATE_TIME: '/api/v1/admin/account-settings/date-time',
+    //    PROFILE: '/api/v1/user/getbyauth',
+    //  },
 
     DASHBOARD: {
       MAIN: '/api/v1/admin/dashboard/main-dashboard',
@@ -123,9 +143,15 @@ export const ENDPOINTS = {
       WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
       WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`,
     },
+
+    PAYMENT_OPTIONS: {
+      GET_ALL: '/api/v1/admin/payment_options/getall',
+      CREATE: '/api/v1/admin/payment_options/create',
+      UPDATE: (id) => `/api/v1/admin/payment_options/update/${id}`,
+      DELETE: (id) => `/api/v1/admin/payment_options/delete/${id}`,
+    },
   },
 
-  // MASTER data (currencies, etc.)
   MASTER: {
     CURRENCY: {
       GET_ALL: '/api/v1/master/currency/getall',

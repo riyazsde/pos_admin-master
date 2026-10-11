@@ -5,6 +5,7 @@ import { ENDPOINTS } from './endpoints';
 import { clearAuth } from '../utils/authStorage';
 import { store } from '../Store/store';
 import { loginSuccess, logoutSuccess } from '../Store/Features/auth/authSlice';
+import { getToken } from '../utils/authStorage';
 
 /**
  * Auth Services
@@ -24,7 +25,6 @@ export const authService = {
 
     if (!token) throw new Error('No token received from server');
 
-    //  Dispatch Redux action (also saves to storage)
     store.dispatch(
       loginSuccess({ token, user, rememberMe: credentials.rememberMe })
     );
@@ -38,13 +38,12 @@ export const authService = {
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      // Dispatch Redux action (also clears storage)
       store.dispatch(logoutSuccess());
     }
   },
 };
+
 export const forgotPasswordService = {
-  // Send OTP
   sendOtp: async (email) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.SEND_OTP,
@@ -53,7 +52,6 @@ export const forgotPasswordService = {
     return response.data;
   },
 
-  // ✅ NEW: Resend OTP
   resendOtp: async (email) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.RESEND_OTP,
@@ -62,7 +60,6 @@ export const forgotPasswordService = {
     return response.data;
   },
 
-  // ✅ Verify OTP + set new password (combined in backend)
   verifyOtp: async (email, otp, newPassword) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.VERIFY_OTP,
@@ -71,7 +68,6 @@ export const forgotPasswordService = {
     return response.data;
   },
 };
-
 
 export const changePasswordService = {
   change: async (currentPassword, newPassword, reEnterPassword) => {
@@ -82,11 +78,6 @@ export const changePasswordService = {
     return response.data;
   },
 };
-/**
- * Forgot Password Services
- */
-
-
 
 /**
  * Admin Dashboard Services
@@ -95,129 +86,109 @@ export const dashboardService = {
   getMainDashboard: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN);
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load dashboard');
     }
-
     return payload?.data || null;
   },
 
-  //  Profit After Tax
   getProfitAfterTax: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.PROFIT_AFTER_TAX);
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load profit data');
     }
-
     return payload?.data || null;
   },
 
-  // Top Performers (with pagination)
   getTopPerformers: async (page = 1, limit = 10) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.DASHBOARD.TOP_PERFORMERS,
       { params: { page, limit } }
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load top performers');
     }
-
     return {
       data: payload?.data || [],
       pagination: payload?.pagination || null,
     };
   },
-  // Subscriptions
-getSubscriptions: async (page = 1, limit = 10) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.DASHBOARD.SUBSCRIPTIONS,
-    { params: { page, limit } }
-  );
-  const payload = response.data;
 
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load subscriptions');
-  }
+  getSubscriptions: async (page = 1, limit = 10) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.DASHBOARD.SUBSCRIPTIONS,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscriptions');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
 
-  return {
-    data: payload?.data || [],
-    pagination: payload?.pagination || null,
-  };
-},
+  getHeatmap: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.HEATMAP);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load heatmap');
+    }
+    return payload?.data || null;
+  },
 
-//  Heatmap
-getHeatmap: async () => {
-  const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.HEATMAP);
-  const payload = response.data;
+  getSupportTickets: async (page = 1, limit = 5, status = 'Open') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.DASHBOARD.SUPPORT_TICKETS,
+      { params: { page, limit, status } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load support tickets');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
 
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load heatmap');
-  }
+  getRenewalAlerts: async (page = 1, limit = 10) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.DASHBOARD.RENEWAL_ALERTS,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load renewal alerts');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
 
-  return payload?.data || null;
-},
-// ✅ NEW: Support Tickets
-getSupportTickets: async (page = 1, limit = 5, status = 'Open') => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.DASHBOARD.SUPPORT_TICKETS,
-    { params: { page, limit, status } }
-  );
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load support tickets');
-  }
-
-  return {
-    data: payload?.data || [],
-    pagination: payload?.pagination || null,
-  };
-},
-
-// ✅ NEW: Renewal Alerts
-getRenewalAlerts: async (page = 1, limit = 10) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.DASHBOARD.RENEWAL_ALERTS,
-    { params: { page, limit } }
-  );
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load renewal alerts');
-  }
-
-  return {
-    data: payload?.data || [],
-    pagination: payload?.pagination || null,
-  };
-},
-// ✅ NEW: Single call to fetch all 4 dashboard widgets at once
-getCompleteDashboard: async () => {
-  const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.COMPLETE);
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load complete dashboard');
-  }
-
-  const data = payload?.data || {};
-
-  return {
-    subscriptionsPurchased: data.subscriptionsPurchased || [],
-    heatMap: data.heatMap || { title: '', data: [] },
-    supportTickets: data.supportTickets || { title: '', count: 0, data: [] },
-    renewalAlerts: data.renewalAlerts || { title: '', count: 0, data: [] },
-  };
-},
-
+  getCompleteDashboard: async () => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.COMPLETE);
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load complete dashboard');
+    }
+    const data = payload?.data || {};
+    return {
+      subscriptionsPurchased: data.subscriptionsPurchased || [],
+      heatMap: data.heatMap || { title: '', data: [] },
+      supportTickets: data.supportTickets || { title: '', count: 0, data: [] },
+      renewalAlerts: data.renewalAlerts || { title: '', count: 0, data: [] },
+    };
+  },
 };
-// -------------- Client Services------------------------
 
+/**
+ * Client Services
+ */
 export const clientService = {
   createClient: async (payload) => {
     const response = await apiClient.post(ENDPOINTS.ADMIN.CLIENTS.CREATE, payload);
@@ -228,15 +199,12 @@ export const clientService = {
     return data?.data || null;
   },
 
-  // ✅ NEW: Get all clients
   getAllClients: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.CLIENTS.GET_ALL);
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load clients');
     }
-
     return {
       data: payload?.data || [],
       count: payload?.count ?? (payload?.data?.length || 0),
@@ -255,12 +223,10 @@ export const clientService = {
   },
 };
 
-// --------------------subscription service------------------
-
-// src/Services/apiService.js
-
+/**
+ * Subscription Services
+ */
 export const subscriptionService = {
-  // ---------- Dashboard (plan counts) ----------
   getSubscriptionDashboard: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.DASHBOARD
@@ -272,11 +238,9 @@ export const subscriptionService = {
     return payload?.data || null;
   },
 
-  // ---------- List plans (optionally filter by type) ----------
   getAllPlans: async (subscriptionType) => {
     const params = {};
     if (subscriptionType) params.Subscription_Type = subscriptionType;
-
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.GET_ALL,
       { params }
@@ -291,7 +255,6 @@ export const subscriptionService = {
     };
   },
 
-  // ---------- Get a single plan by id ----------
   getPlanById: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.GET_BY_ID(id)
@@ -303,7 +266,6 @@ export const subscriptionService = {
     return payload?.data || null;
   },
 
-  // ---------- Get plans for the authenticated user ----------
   getPlansByAuth: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.GET_BY_AUTH
@@ -318,7 +280,6 @@ export const subscriptionService = {
     };
   },
 
-  // ---------- Create ----------
   createPlan: async (payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.SUBSCRIPTION.CREATE,
@@ -331,7 +292,6 @@ export const subscriptionService = {
     return data?.data || null;
   },
 
-  // ---------- Update ----------
   updatePlan: async (payload) => {
     const response = await apiClient.put(
       ENDPOINTS.ADMIN.SUBSCRIPTION.UPDATE,
@@ -344,7 +304,6 @@ export const subscriptionService = {
     return data?.data || null;
   },
 
-  // ---------- Purchased subscriptions (history) ----------
   getSubscriptionHistory: async (page = 1, limit = 10, status = 'all') => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.HISTORY,
@@ -360,8 +319,10 @@ export const subscriptionService = {
     };
   },
 };
-// -----------------reports services api------------------
 
+/**
+ * Reports Services
+ */
 export const reportService = {
   getKpiDashboard: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.REPORTS.KPI_DASHBOARD);
@@ -372,7 +333,6 @@ export const reportService = {
     return payload?.data || null;
   },
 
-  // ✅ NEW: Active clients
   getActiveClients: async (page = 1, limit = 10, search = '') => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.REPORTS.ACTIVE_CLIENTS,
@@ -388,7 +348,6 @@ export const reportService = {
     };
   },
 
-  // ✅ NEW: Inactive clients
   getInactiveClients: async (page = 1, limit = 10, search = '') => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.REPORTS.INACTIVE_CLIENTS,
@@ -403,99 +362,89 @@ export const reportService = {
       pagination: payload?.pagination || null,
     };
   },
-  // ✅ NEW: Subscription Sales Report
-getSubscriptionSales: async (month, year) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.REPORTS.SUBSCRIPTION_SALES,
-    { params: { month, year } }
-  );
-  const payload = response.data;
 
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load subscription sales');
-  }
+  getSubscriptionSales: async (month, year) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.SUBSCRIPTION_SALES,
+      { params: { month, year } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscription sales');
+    }
+    return payload?.data || null;
+  },
 
-  return payload?.data || null;
-},
-// ✅ NEW: Latest transactions
-getLatestTransactions: async (page = 1, limit = 20) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.REPORTS.LATEST_TRANSACTIONS,
-    { params: { page, limit } }
-  );
-  const payload = response.data;
+  getLatestTransactions: async (page = 1, limit = 20) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.LATEST_TRANSACTIONS,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load transactions');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+      pagination: payload?.pagination || null,
+    };
+  },
 
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load transactions');
-  }
+  getTransactionGraph: async (months = 12) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.TRANSACTION_GRAPH,
+      { params: { months } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load transaction graph');
+    }
+    return payload?.data || null;
+  },
 
-  return {
-    data: payload?.data || [],
-    summary: payload?.summary || null,
-    pagination: payload?.pagination || null,
-  };
-},
+  getSupportTicketsReport: async (page = 1, limit = 10, status = 'Open') => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.SUPPORT_TICKETS,
+      { params: { page, limit, status } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load support tickets');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
 
-// ✅ NEW: Transaction graph
-getTransactionGraph: async (months = 12) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.REPORTS.TRANSACTION_GRAPH,
-    { params: { months } }
-  );
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load transaction graph');
-  }
-
-  return payload?.data || null;
-},
-// ✅ NEW: Support tickets for reports
-getSupportTicketsReport: async (page = 1, limit = 10, status = 'Open') => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.REPORTS.SUPPORT_TICKETS,
-    { params: { page, limit, status } }
-  );
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load support tickets');
-  }
-
-  return {
-    data: payload?.data || [],
-    pagination: payload?.pagination || null,
-  };
-},
-// ✅ NEW: City-wise usage
-getCityWiseUsage: async (page = 1, limit = 20) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.REPORTS.CITY_WISE_USAGE,
-    { params: { page, limit } }
-  );
-  const payload = response.data;
-
-  if (payload?.success === false) {
-    throw new Error(payload?.message || 'Failed to load city-wise usage');
-  }
-
-  return {
-    data: payload?.data || [],
-    summary: payload?.summary || null,
-    pagination: payload?.pagination || null,
-  };
-},
+  getCityWiseUsage: async (page = 1, limit = 20) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.CITY_WISE_USAGE,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load city-wise usage');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+      pagination: payload?.pagination || null,
+    };
+  },
 };
-// -----------language-------------------
+
+/**
+ * Language Services
+ */
 export const languageService = {
   getAllLanguages: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.LANGUAGE.GET_ALL);
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load languages');
     }
-
     return {
       data: payload?.data || [],
       count: payload?.count ?? (payload?.data?.length || 0),
@@ -504,10 +453,9 @@ export const languageService = {
 };
 
 /**
- * ✅ NEW: Audit Services
+ * Audit Services
  */
 export const auditService = {
-  // Dashboard overview (stats)
   getOverview: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.AUDITS.OVERVIEW);
     const payload = response.data;
@@ -517,7 +465,6 @@ export const auditService = {
     return payload?.data || null;
   },
 
-  // Activity report (paginated)
   getActivity: async ({
     page = 1,
     limit = 20,
@@ -539,18 +486,15 @@ export const auditService = {
       { params }
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load audit activity');
     }
-
     return {
       data: payload?.data || [],
       pagination: payload?.pagination || null,
     };
   },
 
-  // Get single audit log
   getById: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.AUDITS.GET_BY_ID(id)
@@ -562,7 +506,6 @@ export const auditService = {
     return payload?.data || null;
   },
 
-  // Export summary (for CSV/PDF)
   getExportSummary: async (startDate, endDate) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.AUDITS.EXPORT_SUMMARY,
@@ -577,7 +520,7 @@ export const auditService = {
 };
 
 /**
- * ✅ NEW: POS Hardware Services
+ * POS Hardware Services
  */
 export const posHardwareService = {
   getDashboard: async () => {
@@ -585,22 +528,17 @@ export const posHardwareService = {
       ENDPOINTS.ADMIN.POS_HARDWARE.DASHBOARD
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load POS hardware dashboard');
     }
-
     return payload?.data || null;
   },
 };
+
 /**
- * ✅ NEW: Support Ticket Services
- */
-/**
- * ✅ Support Ticket Services
+ * Support Ticket Services
  */
 export const supportTicketService = {
-  // GET
   getSummary: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.SUMMARY
@@ -612,7 +550,6 @@ export const supportTicketService = {
     return payload?.data || null;
   },
 
-  // GET
   getTickets: async (page = 1, limit = 10, status = null) => {
     const params = { page, limit };
     if (status) params.status = status;
@@ -622,18 +559,15 @@ export const supportTicketService = {
       { params }
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load tickets');
     }
-
     return {
       data: payload?.data || [],
       pagination: payload?.pagination || null,
     };
   },
 
-  // ✅ PUT (was POST)
   updateTicketStatus: async (id, status) => {
     const response = await apiClient.put(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.UPDATE,
@@ -646,7 +580,6 @@ export const supportTicketService = {
     return payload?.data || null;
   },
 
-  // POST (create reply — creating a new resource)
   createReply: async ({
     support_ticket_id,
     reply,
@@ -671,7 +604,6 @@ export const supportTicketService = {
     return payload?.data || null;
   },
 
-  // GET
   getChart: async (filter = '1Month') => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.CHART,
@@ -686,10 +618,9 @@ export const supportTicketService = {
 };
 
 /**
- * ✅ NEW: Hardware Asset Management Services
+ * Hardware Asset Management Services
  */
 export const hamService = {
-  // Get all devices in the master inventory
   getMyDevices: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.HAM.MY_DEVICES);
     const payload = response.data;
@@ -702,7 +633,6 @@ export const hamService = {
     };
   },
 
-  // Get devices that were sold & assigned to restaurants
   getSoldInRestaurant: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.HAM.SOLD_IN_RESTAURANT
@@ -717,7 +647,6 @@ export const hamService = {
     };
   },
 
-  // Inventory status (aggregate counts)
   getInventoryStatus: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.HAM.INVENTORY_STATUS
@@ -729,7 +658,6 @@ export const hamService = {
     return payload?.data || null;
   },
 
-  // Create a new device
   createDevice: async (payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.HAM.CREATE_DEVICE,
@@ -742,11 +670,11 @@ export const hamService = {
     return data?.data || null;
   },
 };
+
 /**
- * ✅ MDM Device Management Services
+ * MDM Device Management Services
  */
 export const mdmService = {
-  // Get all devices
   getAllDevices: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_ALL);
     const payload = response.data;
@@ -759,7 +687,6 @@ export const mdmService = {
     };
   },
 
-  // Get devices for the authenticated user
   getMyDevicesByAuth: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_BY_AUTH);
     const payload = response.data;
@@ -769,7 +696,6 @@ export const mdmService = {
     return payload?.data || [];
   },
 
-  // Session logs
   getSessionLogs: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.MDM.SESSION_LOGS(id)
@@ -778,12 +704,10 @@ export const mdmService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load session logs');
     }
-    // Response can be either { data: [...] } or { device, logs }
     if (Array.isArray(payload?.data)) return { logs: payload.data };
     return payload?.data || { logs: [] };
   },
 
-  // ✅ Lock device
   lockDevice: async (id, reason) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.LOCK(id),
@@ -796,7 +720,6 @@ export const mdmService = {
     return payload?.data || null;
   },
 
-  // ✅ Restart device
   restartDevice: async (id, payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.RESTART(id),
@@ -809,7 +732,6 @@ export const mdmService = {
     return data?.data || null;
   },
 
-  // ✅ Push app update
   pushUpdate: async (id, App_Version) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.PUSH_UPDATE(id),
@@ -822,7 +744,6 @@ export const mdmService = {
     return data?.data || null;
   },
 
-  // ✅ Wipe device — step 1: initiate with credentials
   wipeDevice: async (id, { email, password }) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.WIPE(id),
@@ -835,7 +756,6 @@ export const mdmService = {
     return data?.data || null;
   },
 
-  // ✅ Wipe device — step 2: verify with OTP
   verifyWipeDevice: async (id, { otp, mode }) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id),
@@ -848,13 +768,11 @@ export const mdmService = {
     return data?.data || null;
   },
 };
-// src/Services/apiService.js
 
 /**
- * ✅ NEW: SubAdmin Services
+ * SubAdmin Services
  */
 export const subadminService = {
-  // List with pagination + filters
   getAll: async ({ page = 1, limit = 10, status = true, search = '' } = {}) => {
     const params = { page, limit };
     if (status !== undefined && status !== null) params.Status = status;
@@ -865,18 +783,15 @@ export const subadminService = {
       { params }
     );
     const payload = response.data;
-
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load subadmins');
     }
-
     return {
       data: payload?.data || [],
       pagination: payload?.pagination || null,
     };
   },
 
-  // Current authenticated user's profile
   getByAuth: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBADMIN.GET_BY_AUTH
@@ -888,25 +803,17 @@ export const subadminService = {
     return payload?.data || null;
   },
 
-  // src/Services/apiService.js
+  update: async (id, payload) => {
+    const url = ENDPOINTS.ADMIN.SUBADMIN.UPDATE(id);
+    const response = await apiClient.put(url, payload);
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to update subadmin');
+    }
+    return data?.data || null;
+  },
 
-update: async (id, payload) => {
-  // ✅ Exactly matching Postman: PUT /admin/subadmin/update/{id}
-  const url = ENDPOINTS.ADMIN.SUBADMIN.UPDATE(id);
-  console.log('🔄 PUT', url);
-  console.log('🔄 Payload:', JSON.stringify(payload, null, 2));
-
-  const response = await apiClient.put(url, payload);
-
-  console.log('✅ Response:', response.data);
-
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to update subadmin');
-  }
-  return data?.data || null;
-},
- create: async (payload) => {
+  create: async (payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.SUBADMIN.CREATE,
       payload
@@ -917,7 +824,7 @@ update: async (id, payload) => {
     }
     return data?.data || null;
   },
-  // Delete
+
   remove: async (id) => {
     const response = await apiClient.delete(
       ENDPOINTS.ADMIN.SUBADMIN.DELETE(id)
@@ -929,7 +836,7 @@ update: async (id, payload) => {
     return data?.data || null;
   },
 
- deactivate: async (id) => {
+  deactivate: async (id) => {
     const response = await apiClient.patch(
       ENDPOINTS.ADMIN.SUBADMIN.DEACTIVATE(id),
       {}
@@ -941,7 +848,6 @@ update: async (id, payload) => {
     return data?.data || null;
   },
 
-  // ✅ FIXED: PATCH instead of PUT
   activate: async (id) => {
     const response = await apiClient.patch(
       ENDPOINTS.ADMIN.SUBADMIN.ACTIVATE(id),
@@ -954,38 +860,12 @@ update: async (id, payload) => {
     return data?.data || null;
   },
 };
-// src/Services/apiService.js
 
 /**
- * ✅ NEW: Account Settings Services
+ * ✅ Account Settings Services
  */
 export const accountSettingsService = {
-  // Get date/time settings
-  getDateTime: async () => {
-    const response = await apiClient.get(
-      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME
-    );
-    const payload = response.data;
-    if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load date/time settings');
-    }
-    return payload?.data || null;
-  },
-
-  // ✅ POST — update
-  updateDateTime: async (payload) => {
-    const response = await apiClient.post(   // ← POST, not PUT
-      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME,
-      payload
-    );
-    const data = response.data;
-    if (data?.success === false) {
-      throw new Error(data?.message || 'Failed to update date/time');
-    }
-    return data?.data || null;
-  },
-
-  // Get current logged-in user profile
+  // ---------- Profile ----------
   getProfile: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.PROFILE
@@ -996,10 +876,190 @@ export const accountSettingsService = {
     }
     return payload?.data || null;
   },
+
+  // ---------- Date & Time ----------
+  getDateTime: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load date/time settings');
+    }
+    return payload?.data || null;
+  },
+updateDateTime: async (payload) => {
+  console.log(' updateDateTime URL:', ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME);
+  console.log('🟢 updateDateTime baseURL:', apiClient.defaults.baseURL);
+  console.log(' updateDateTime FULL URL:', `${apiClient.defaults.baseURL}${ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME}`);
+  console.log(' updateDateTime payload:', payload);
+
+  const response = await apiClient.post(
+    ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME,
+    payload
+  );
+  // ...
+},
+
+  // ---------- Active Sessions ----------
+  getSessions: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.SESSIONS
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load sessions');
+    }
+    return payload?.data || [];
+  },
+
+  revokeSession: async (sessionId) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.REVOKE_SESSION(sessionId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to revoke session');
+    }
+    return payload;
+  },
+
+  // ---------- Login History ----------
+  getLoginHistory: async (page = 1, limit = 20) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.LOGIN_HISTORY,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load login history');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // ---------- Suspicious Activity ----------
+  getSuspiciousActivity: async (page = 1, limit = 20) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.SUSPICIOUS_ACTIVITY,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load suspicious activity');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // ---------- Password Reset Logs ----------
+  getPasswordResetLogs: async (page = 1, limit = 20) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.PASSWORD_RESET_LOGS,
+      { params: { page, limit } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load password reset logs');
+    }
+    return {
+      data: payload?.data || [],
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  // ---------- API Keys ----------
+  getApiKeys: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.API_KEYS
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load API keys');
+    }
+    return payload?.data || [];
+  },
+
+  createApiKey: async ({ name, environment = 'Production', permissions = ['read'] }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.API_KEYS,
+      { name, environment, permissions }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to create API key');
+    }
+    return {
+      data: payload?.data || null,
+      warning: payload?.warning || null,
+    };
+  },
+
+  revokeApiKey: async (keyId) => {
+    const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.REVOKE_API_KEY(keyId);
+    const response = await apiClient.post(url, {});
+    return response.data?.data || null;
+  },
+
+  deleteApiKey: async (keyId) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DELETE_API_KEY(keyId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to delete API key');
+    }
+    return payload;
+  },
+
+  // ---------- Trusted Devices ----------
+  getTrustedDevices: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load trusted devices');
+    }
+    return payload?.data || [];
+  },
+
+addTrustedDevice: async ({ device_name, device_type }) => {
+  const payload = {
+    name: device_name,
+    type: device_type,
+  };
+  console.log(' addTrustedDevice payload:', JSON.stringify(payload));
+
+  const response = await apiClient.post(
+    ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES,
+    payload
+  );
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to add device');
+  }
+  return data?.data || null;
+},
+
+  removeTrustedDevice: async (deviceId) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.REMOVE_TRUSTED_DEVICE(deviceId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to remove device');
+    }
+    return payload;
+  },
 };
 
 /**
- * ✅ NEW: Currency Services
+ * Currency Services
  */
 export const currencyService = {
   getAll: async () => {
@@ -1022,6 +1082,66 @@ export const currencyService = {
     const data = response.data;
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to create currency');
+    }
+    return data?.data || null;
+  },
+};
+
+/**
+ * Payment Options Services
+ */
+export const paymentOptionService = {
+  getAll: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.GET_ALL
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load payment options');
+    }
+    return {
+      data: payload?.data || [],
+      count: payload?.count ?? (payload?.data?.length || 0),
+    };
+  },
+
+  create: async ({ option, details, status = true }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.CREATE,
+      {
+        PaymentOption: [{ option, Details: details }],
+        Status: status,
+      }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to create payment option');
+    }
+    return data?.data || null;
+  },
+
+  update: async (id, { option, details, status = true }) => {
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.UPDATE(id),
+      {
+        PaymentOption: [{ option, Details: details }],
+        Status: status,
+      }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to update payment option');
+    }
+    return data?.data || null;
+  },
+
+  remove: async (id) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to delete payment option');
     }
     return data?.data || null;
   },

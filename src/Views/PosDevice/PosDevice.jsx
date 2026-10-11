@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 import withAdminLayout from '../AdminPanel/withAdminLayout';
 
@@ -8,20 +8,51 @@ import printer from '../../assets/Images/admin/Pos/printer.png';
 import system from '../../assets/Images/admin/Pos/system.png';
 import global from '../../assets/Images/admin/client/global-user.png';
 
-import HardwareChart from '../../Components/PosDevice/HardwareChart';
-import HardwareSold from '../../Components/PosDevice/HardwareSold';
-
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setPosHardwareLoading,
   setPosHardwareData,
   setPosHardwareError,
 } from '../../Store/Features/posHardware/posHardwareSlice';
-import { posHardwareService } from '../../Services/apiService';
+import { posHardwareService, hamService } from '../../Services/apiService';
 
+// Helper to format numbers
 const formatNumber = (n) => {
   if (n === null || n === undefined) return '0';
   return Number(n).toLocaleString('en-US');
+};
+
+// Helper for Condition Badges
+const getConditionBadge = (condition) => {
+  const normalized = condition?.toLowerCase() || '';
+  switch (normalized) {
+    case 'excellent':
+      return 'bg-green-100 text-green-700';
+    case 'good':
+      return 'bg-blue-100 text-blue-700';
+    case 'new':
+      return 'bg-blue-100 text-blue-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
+  }
+};
+
+// Helper to map API data to Table format
+// ⚠️ Adjust the keys on the right side to match your actual API response
+const mapApiResponseToDevices = (apiData) => {
+  if (!Array.isArray(apiData)) return [];
+
+  return apiData.map((item, index) => ({
+    id: item.id || index,
+    name: item.deviceName || item.name || 'Unknown Device',
+    model: item.model || item.deviceModel || 'N/A',
+    serial: item.serialNumber || item.serial || 'N/A',
+    posId: item.posId || item.tagId || 'N/A',
+    warrantyExp: item.warrantyExpiry || item.warrantyExp || 'N/A',
+    purchaseDate: item.purchaseDate || 'N/A',
+    condition: item.condition || 'Good',
+    iconColor: 'bg-purple-100 text-purple-600',
+  }));
 };
 
 const PosDevice = () => {
@@ -36,7 +67,11 @@ const PosDevice = () => {
     lastUpdated,
   } = useAppSelector((state) => state.posHardware);
 
-  // ✅ Fetch once
+  // ✅ Local state for the devices table
+  const [devices, setDevices] = useState([]);
+  const [devicesLoading, setDevicesLoading] = useState(true);
+
+  // ✅ Fetch Dashboard Metrics
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasLoaded || hasFetched.current) return;
@@ -64,7 +99,28 @@ const PosDevice = () => {
     fetchDashboard();
   }, [dispatch, hasLoaded]);
 
-  // ✅ Metrics now use real API data
+  // ✅ Fetch All Devices using hamService
+  useEffect(() => {
+    const fetchDevices = async () => {
+      setDevicesLoading(true);
+      try {
+        const result = await hamService.getMyDevices();
+        // hamService returns { data, count }
+        const mappedDevices = mapApiResponseToDevices(result.data);
+        setDevices(mappedDevices);
+      } catch (err) {
+        console.error('Error fetching devices:', err);
+        toast.error('Failed to load hardware devices list', {
+          description: err?.message || 'Please try again later.',
+        });
+      } finally {
+        setDevicesLoading(false);
+      }
+    };
+
+    fetchDevices();
+  }, []);
+
   const metrics = [
     {
       title: 'Total Clients',
@@ -174,15 +230,126 @@ const PosDevice = () => {
         </div>
       )}
 
-     {/* Charts and Table */}
-<div className="flex flex-col lg:flex-row w-full gap-6 mt-10 items-stretch">
-  <div className="w-full lg:w-[40%] flex">
-    <HardwareChart />
-  </div>
-  <div className="w-full lg:w-[60%] flex">
-    <HardwareSold />
-  </div>
-</div>
+      {/* All Hardware Devices Table Section */}
+      <div className="mt-10">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          All Hardware Devices
+        </h2>
+        <p className="text-sm text-gray-500 mt-1 mb-6">
+          Manage and track all hardware devices across locations
+        </p>
+
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            {devicesLoading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
+                <p>Loading hardware devices...</p>
+              </div>
+            ) : devices.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-500">
+                <p>No hardware devices found.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900 w-1/3">
+                      Device
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      Serial Number
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      Warranty
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      Condition
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {devices.map((device) => (
+                    <tr
+                      key={device.id}
+                      className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
+                    >
+                      {/* Device Column */}
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-4">
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${device.iconColor}`}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                x="2"
+                                y="3"
+                                width="20"
+                                height="14"
+                                rx="2"
+                                ry="2"
+                              ></rect>
+                              <line x1="8" y1="21" x2="16" y2="21"></line>
+                              <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {device.name}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {device.model}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Serial Number Column */}
+                      <td className="py-4 px-6">
+                        <p className="text-sm text-gray-900">{device.serial}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {device.posId}
+                        </p>
+                      </td>
+
+                      {/* Warranty Column */}
+                      <td className="py-4 px-6">
+                        <p className="text-sm text-gray-900">
+                          Exp: {device.warrantyExp}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          Purchase: {device.purchaseDate}
+                        </p>
+                      </td>
+
+                      {/* Condition Column */}
+                      <td className="py-4 px-6">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getConditionBadge(
+                            device.condition
+                          )}`}
+                        >
+                          {device.condition}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

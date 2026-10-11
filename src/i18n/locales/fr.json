@@ -403,13 +403,200 @@
 
   "accountSettings": {
     "title": "Paramètres du Compte",
-    "accountDetails": "Détails du Compte",
-    "password": "Mot de Passe : **********",
-    "manageAdmin": "Gérer TRIAXX.{{role}}",
-    "regionalPreference": "Préférences Régionales",
-    "languages": "Langues",
-    "dateTime": "Date & Heure",
-    "currency": "Devise"
+
+    "common": {
+      "loading": "Chargement des données...",
+      "close": "Fermer",
+      "cancel": "Annuler",
+      "copy": "Copier",
+      "unknown": "Inconnu"
+    },
+
+    "accountDetails": {
+      "title": "Détails du Compte",
+      "password": "Mot de passe",
+      "manageAdmin": "Gérer {{role}}"
+    },
+
+    "regionalPreference": {
+      "title": "Préférences Régionales",
+      "languages": "Langues",
+      "dateTime": "Date & Heure",
+      "currency": "Devise"
+    },
+
+    "security": {
+      "title": "Sécurité",
+      "twoFactor": "Authentification à Deux Facteurs",
+      "activeSessions": "Sessions Actives",
+      "activeSessionsCount": "{{count}} appareils actifs",
+      "trustedDevices": "Appareils de Confiance",
+      "trustedDevicesCount": "{{count}} appareils",
+      "loginHistory": "Historique de Connexion",
+      "suspiciousActivity": "Activité Suspecte",
+      "noAlerts": "Aucune alerte",
+      "passwordResetLogs": "Journaux de Réinitialisation de Mot de Passe",
+      "apiKeys": "Clés API"
+    },
+
+    "twoFactor": {
+      "title": "Authentification à Deux Facteurs",
+      "status": "Statut",
+      "enabled": "Activée",
+      "enabledMessage": "L'A2F est actuellement activée",
+      "aboutTitle": "À propos de l'A2F",
+      "aboutDescription": "L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte. Lorsqu'elle est activée, vous devrez saisir un code depuis votre application d'authentification en plus de votre mot de passe.",
+      "supportedMethods": "Méthodes Prises en Charge",
+      "methods": {
+        "authenticator": "Application d'Authentification (Google Authenticator, Authy)",
+        "sms": "Message Texte SMS",
+        "email": "Vérification par E-mail"
+      },
+      "backupCodeTitle": "Code de Secours",
+      "backupCodeDescription": "Conservez ce code dans un endroit sûr. Vous pouvez l'utiliser pour accéder à votre compte si vous perdez votre appareil.",
+      "disableButton": "Désactiver l'A2F"
+    },
+
+    "sessions": {
+      "title": "Sessions Actives",
+      "description": "Ces appareils sont actuellement connectés à votre compte. Révoquez toute session que vous ne reconnaissez pas.",
+      "empty": "Aucune session active trouvée.",
+      "loadFailed": "Échec du chargement des sessions",
+      "current": "Actuelle",
+      "activeNow": "Active maintenant",
+      "lastActive": "Dernière activité : {{time}}",
+      "revoke": "Révoquer",
+      "revokeAllOther": "Révoquer Toutes les Autres Sessions"
+    },
+
+    "trustedDevices": {
+      "title": "Appareils de Confiance",
+      "description": "Les appareils de confiance ne nécessiteront pas de vérification A2F. Supprimez tout appareil que vous ne reconnaissez pas.",
+      "addDevice": "Ajouter un Appareil",
+      "empty": "Aucun appareil de confiance pour le moment.",
+      "loadFailed": "Échec du chargement des appareils de confiance",
+      "confirmRemove": "Supprimer cet appareil des appareils de confiance ?",
+      "remove": "Supprimer",
+      "addedOn": "Ajouté le {{date}}",
+      "lastUsed": "Dernière utilisation {{date}}"
+    },
+
+    "addDevice": {
+      "title": "Ajouter un Nouvel Appareil",
+      "deviceName": "Nom de l'Appareil",
+      "deviceNamePlaceholder": "ex. MacBook Pro, iPhone 15",
+      "deviceType": "Type d'Appareil",
+      "types": {
+        "desktop": "Ordinateur",
+        "mobile": "Mobile",
+        "tablet": "Tablette"
+      },
+      "addButton": "Ajouter l'Appareil",
+      "adding": "Ajout en cours..."
+    },
+
+    "loginHistory": {
+      "title": "Historique de Connexion",
+      "description": "Examinez toutes les tentatives de connexion à votre compte. Signalez immédiatement toute activité suspecte.",
+      "empty": "Aucun historique de connexion trouvé.",
+      "success": "Succès",
+      "ip": "IP",
+      "method": "Méthode",
+      "password": "Mot de passe"
+    },
+
+    "suspiciousActivity": {
+      "title": "Activité Suspecte",
+      "description": "Nous surveillons votre compte pour détecter toute activité suspecte. Examinez et résolvez toutes les alertes ci-dessous.",
+      "empty": "Aucune activité suspecte détectée.",
+      "resolved": "Résolue",
+      "securityTipsTitle": "Conseils de Sécurité",
+      "tips": {
+        "enable2fa": "Activez l'A2F pour une couche de sécurité supplémentaire",
+        "strongPassword": "Utilisez un mot de passe fort et unique pour votre compte",
+        "reviewSessions": "Examinez régulièrement vos sessions actives et vos appareils de confiance"
+      }
+    },
+
+    "passwordResetLogs": {
+      "title": "Journaux de Réinitialisation de Mot de Passe",
+      "description": "Consultez toutes les tentatives de réinitialisation de mot de passe pour votre compte. Si vous constatez des réinitialisations non autorisées, contactez immédiatement le support.",
+      "empty": "Aucun journal de réinitialisation de mot de passe trouvé.",
+      "completed": "Terminée",
+      "ip": "IP",
+      "noticeTitle": "Avis de Sécurité Important",
+      "noticeDescription": "Si vous remarquez des tentatives de réinitialisation de mot de passe que vous n'avez pas initiées, votre compte peut être compromis. Veuillez changer votre mot de passe immédiatement et activer l'authentification à deux facteurs.",
+      "changePasswordNow": "Changer le Mot de Passe Maintenant"
+    },
+
+    "apiKeys": {
+      "title": "Clés API",
+      "description": "Gérez les clés API pour accéder aux services TRIAXX par programmation.",
+      "createNewKey": "Créer une Nouvelle Clé",
+      "empty": "Aucune clé API trouvée. Créez-en une pour commencer.",
+      "loadFailed": "Échec du chargement des clés API",
+      "confirmRevoke": "Êtes-vous sûr de vouloir révoquer cette clé API ? Cette action est irréversible.",
+      "confirmDelete": "Êtes-vous sûr de vouloir supprimer définitivement cette clé API ?",
+      "revoke": "Révoquer",
+      "delete": "Supprimer",
+      "createdOn": "Créée le {{date}}",
+      "lastUsed": "Dernière utilisation {{date}}"
+    },
+
+    "createApiKey": {
+      "title": "Créer une Nouvelle Clé",
+      "keyNameLabel": "Nom de la Clé API",
+      "keyNamePlaceholder": "ex. API de Production",
+      "permissionsLabel": "Permissions",
+      "selectAtLeastOne": "Veuillez sélectionner au moins une permission.",
+      "createButton": "Créer la Clé API",
+      "creating": "Création...",
+      "importantTitle": "Important",
+      "importantDescription": "Votre clé API ne sera affichée qu'une seule fois. Assurez-vous de la copier et de la conserver en lieu sûr.",
+      "permissions": {
+        "read": {
+          "label": "Lecture",
+          "badge": "Sûr",
+          "description": "Consulter les données et les ressources"
+        },
+        "write": {
+          "label": "Écriture",
+          "badge": "Modéré",
+          "description": "Créer et modifier des ressources"
+        },
+        "delete": {
+          "label": "Suppression",
+          "badge": "Dangereux",
+          "description": "Supprimer définitivement des ressources"
+        }
+      }
+    },
+
+    "apiKeyCreated": {
+      "title": "Clé API Créée",
+      "successTitle": "Clé API Créée avec Succès",
+      "importantTitle": "Important — Copiez Maintenant",
+      "importantDescription": "Cette clé ne sera affichée qu'une seule fois. Assurez-vous de la copier et de la conserver en lieu sûr.",
+      "doneButton": "Terminé"
+    },
+
+    "toasts": {
+      "backupCodeCopied": "Code de secours copié dans le presse-papiers",
+      "sessionRevoked": "Session révoquée avec succès",
+      "sessionRevokeFailed": "Échec de la révocation de la session",
+      "deviceNameRequired": "Veuillez saisir un nom d'appareil",
+      "deviceAdded": "\"{{name}}\" ajouté aux appareils de confiance",
+      "deviceAddFailed": "Échec de l'ajout de l'appareil",
+      "deviceRemoved": "Appareil retiré des appareils de confiance",
+      "deviceRemoveFailed": "Échec de la suppression de l'appareil",
+      "apiKeyCreated": "Clé API créée avec succès. Copiez-la maintenant !",
+      "apiKeyCreateFailed": "Échec de la création de la clé API",
+      "apiKeyCopied": "Clé API copiée dans le presse-papiers",
+      "apiKeyRevoked": "Clé API révoquée avec succès",
+      "apiKeyRevokeFailed": "Échec de la révocation de la clé API",
+      "apiKeyDeleted": "Clé API supprimée avec succès",
+      "apiKeyDeleteFailed": "Échec de la suppression de la clé API"
+    }
   },
 
   "language": {

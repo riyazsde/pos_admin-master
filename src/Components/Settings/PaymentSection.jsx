@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import deleteIcon from '../../assets/Images/Settings/1.png';
 import AddPaymentModal from './AddPaymentModal';
 import {
@@ -11,29 +11,96 @@ import {
 import { RiBankLine } from 'react-icons/ri';
 import { BiRupee } from 'react-icons/bi';
 import DeletePaymentConfirmModal from './DeletePaymentConfirmModal';
+import { paymentOptionService } from '../../Services/apiService';
 
 const Payments = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [paymentMode, setPaymentMode] = useState('');
-  const [paymentModes, setPaymentModes] = useState([
-    { name: 'Debit / Credit Card', icon: <FaCreditCard size={24} /> },
-    { name: 'Cash', icon: <RiBankLine size={24} /> },
-    { name: 'Apple Pay', icon: <FaApplePay size={24} /> },
-    { name: 'Google Pay', icon: <BiRupee size={24} /> },
-    { name: 'Mobile Pay', icon: <FaPaypal size={24} /> },
-    { name: 'Orange Pay', icon: <BiRupee size={24} /> },
-    { name: 'Stripe', icon: <FaPaypal size={24} /> },
-  ]);
+  const [paymentModes, setPaymentModes] = useState([]);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleAddPayment = () => {
-    if (paymentMode.trim()) {
-      setPaymentModes([
-        ...paymentModes,
-        { name: paymentMode, icon: <FaCreditCard size={24} /> },
-      ]);
+  // Map an option name to an icon
+  const getIconForOption = (optionName) => {
+    const name = (optionName || '').toLowerCase();
+    if (name.includes('card') || name.includes('debit') || name.includes('credit'))
+      return <FaCreditCard size={24} />;
+    if (name.includes('cash')) return <RiBankLine size={24} />;
+    if (name.includes('apple')) return <FaApplePay size={24} />;
+    if (name.includes('google')) return <FaGooglePay size={24} />;
+    if (name.includes('paypal')) return <FaPaypal size={24} />;
+    if (name.includes('stripe')) return <FaPaypal size={24} />;
+    if (name.includes('bank') || name.includes('upi'))
+      return <FaUniversity size={24} />;
+    return <BiRupee size={24} />;
+  };
+
+  // Fetch all payment options
+  const fetchPaymentOptions = async () => {
+    setLoading(true);
+    try {
+      const { data } = await paymentOptionService.getAll();
+
+      const mapped = data.map((item) => {
+        const option = item.PaymentOption?.[0] || {};
+        return {
+          id: item._id,
+          name: option.option || 'Unknown',
+          details: option.Details || '',
+          status: item.Status,
+          icon: getIconForOption(option.option),
+        };
+      });
+
+      setPaymentModes(mapped);
+    } catch (error) {
+      console.error('Error fetching payment options:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPaymentOptions();
+  }, []);
+
+  // Add a new payment mode
+  const handleAddPayment = async () => {
+    if (!paymentMode.trim()) return;
+
+    try {
+      await paymentOptionService.create({
+        option: paymentMode,
+        details: `${paymentMode} payment`,
+        status: true,
+      });
+
       setPaymentMode('');
       setIsAddModalOpen(false);
+      fetchPaymentOptions();
+    } catch (error) {
+      console.error('Error creating payment option:', error);
+    }
+  };
+
+  // Open the delete confirmation
+  const handleDeleteClick = (payment) => {
+    setSelectedPayment(payment);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!selectedPayment?.id) return;
+
+    try {
+      await paymentOptionService.remove(selectedPayment.id);
+      setIsDeleteModalOpen(false);
+      setSelectedPayment(null);
+      fetchPaymentOptions();
+    } catch (error) {
+      console.error('Error deleting payment option:', error);
     }
   };
 
@@ -53,22 +120,43 @@ const Payments = () => {
       </div>
 
       {/* Payment Mode Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {paymentModes.map((mode, index) => (
-          <div
-            key={index}
-            className="w-full border border-black rounded-lg flex items-center justify-between px-4 py-3 bg-white shadow-sm"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-8 flex items-center justify-center">{mode.icon}</div>
-              <span className="text-base md:text-lg font-medium">{mode.name}</span>
+      {loading ? (
+        <div className="text-center py-10 text-gray-500">
+          Loading payment options...
+        </div>
+      ) : paymentModes.length === 0 ? (
+        <div className="text-center py-10 text-gray-500">
+          No payment options found.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paymentModes.map((mode) => (
+            <div
+              key={mode.id}
+              className="w-full border border-black rounded-lg flex items-center justify-between px-4 py-3 bg-white shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {mode.icon}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-base md:text-lg font-medium">
+                    {mode.name}
+                  </span>
+                  {mode.details && (
+                    <span className="text-xs text-gray-500">
+                      {mode.details}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <button onClick={() => handleDeleteClick(mode)}>
+                <img src={deleteIcon} alt="Delete" className="w-6 h-6" />
+              </button>
             </div>
-            <button onClick={() => setIsDeleteModalOpen(true)}>
-              <img src={deleteIcon} alt="Delete" className="w-6 h-6" />
-            </button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add Payment Modal */}
       <AddPaymentModal
@@ -82,10 +170,15 @@ const Payments = () => {
       {/* Delete Confirmation Modal */}
       <DeletePaymentConfirmModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={() => setIsDeleteModalOpen(false)}
-        title="Delete Card Payment"
-        description="You can delete this payment method permanently."
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedPayment(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="Delete Payment Method"
+        description={`You can delete "${
+          selectedPayment?.name || 'this payment method'
+        }" permanently.`}
       />
     </div>
   );
