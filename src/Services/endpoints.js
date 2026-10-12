@@ -86,16 +86,23 @@ ACCOUNT_SETTINGS: {
       HISTORY: '/api/v1/admin/subscription-history/listing',
     },
 
-    REPORTS: {
-      KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
-      ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',
-      INACTIVE_CLIENTS: '/api/v1/admin/reports/inactive-clients',
-      SUBSCRIPTION_SALES: '/api/v1/admin/reports/subscription-sales',
-      LATEST_TRANSACTIONS: '/api/v1/admin/reports/latest-transactions',
-      TRANSACTION_GRAPH: '/api/v1/admin/reports/transaction-graph',
-      SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets',
-      CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage',
-    },
+   REPORTS: {
+  // existing...
+  KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
+  ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',
+  INACTIVE_CLIENTS: '/api/v1/admin/reports/inactive-clients',
+  SUBSCRIPTION_SALES: '/api/v1/admin/reports/subscription-sales',
+  LATEST_TRANSACTIONS: '/api/v1/admin/reports/latest-transactions',
+  TRANSACTION_GRAPH: '/api/v1/admin/reports/transaction-graph',
+  SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets',
+  CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage',
+
+  // NEW — AnalyticsView
+  REVENUE_REPORT: '/api/v1/admin/reports/revenue-report',
+  LOW_STOCK_ALERTS: '/api/v1/admin/reports/low-stock-alerts',
+  SUBSCRIPTION_REPORT: '/api/v1/admin/reports/subscription-report',
+  RESTAURANT_DASHBOARD: '/api/v1/admin/restaurant-reports/dashboard',
+},
 
     AUDITS: {
       OVERVIEW: '/api/v1/admin/audits/dashboard/overview',

@@ -35,7 +35,12 @@
     "active": "Active",
     "inactive": "Inactive",
     "noPlan": "No Plan",
-    "vsLastPeriod": "vs last period"
+    "vsLastPeriod": "vs last period",
+    "all": "All",
+    "apply": "Apply",
+    "reset": "Reset",
+    "success": "Success",
+    "actions": "Actions"
   },
 
   "nav": {
@@ -207,7 +212,7 @@
     "quickActions": {
       "revenueReports": "Revenue Reports",
       "subscriptionReports": "Subscription Reports",
-      "marketplaceSales": "Marketplace Sales",
+      "marketplaceSales": "Hardware Sales",
       "inventoryReports": "Inventory Reports",
       "lowStockAlerts": "Low-Stock Alerts",
       "locationComparison": "Location Comparison"
@@ -322,6 +327,55 @@
         "harborGrill": "Harbor Grill",
         "sunsetRestaurant": "Sunset Restaurant"
       }
+    },
+    "subscriptionReports": {
+      "mrr": "Monthly Recurring Revenue",
+      "fromActive": "From {{count}} active subscriptions",
+      "totalSubscriptions": "Total Subscriptions",
+      "active": "Active",
+      "inactive": "Inactive",
+      "byPlan": "Subscriptions by Plan",
+      "plan": "Plan",
+      "count": "Subscriptions",
+      "revenue": "Total Revenue",
+      "upcomingRenewals": "Upcoming Renewals",
+      "month": "Month",
+      "renewals": "Renewals",
+      "expected": "Expected Revenue"
+    },
+    "hardwareSales": {
+      "totalHardwareSales": "Total Hardware Sales",
+      "unitsSold": "Units Sold",
+      "avgUnitPrice": "Avg Unit Price",
+      "unitsSoldFootnote": "{{count}} units sold",
+      "byCategory": "Sales by Hardware Category",
+      "category": "Category",
+      "revenue": "Revenue",
+      "avgPrice": "Avg Price"
+    },
+    "inventory": {
+      "totalItems": "Total Inventory Items",
+      "acrossLocations": "Across all locations",
+      "lowStock": "Low Stock Items",
+      "outOfStock": "Out of Stock",
+      "totalValue": "Total Value",
+      "byLocation": "Inventory by Location",
+      "device": "Devices"
+    },
+    "lowStock": {
+      "alertTitle": "Low Stock Alert",
+      "alertDesc": "{{count}} items require immediate attention",
+      "items": "Low Stock Items",
+      "status": "Status",
+      "current": "Current",
+      "minimum": "Minimum",
+      "needToOrder": "Need to Order",
+      "critical": "Critical"
+    },
+    "locationComparison": {
+      "title": "Cross-Location Performance Comparison",
+      "subtitle": "Compare revenue, orders and inventory across locations",
+      "performance": "Performance"
     },
     "subscriptionSalesChart": {
       "title": "Subscription Sales",

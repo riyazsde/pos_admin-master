@@ -433,6 +433,104 @@ export const reportService = {
       pagination: payload?.pagination || null,
     };
   },
+  getRevenueReport: async ({
+    dateRange = 'last30days',
+    location = 'all',
+    search = '',
+  } = {}) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.REVENUE_REPORT,
+      { params: { dateRange, location, search } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load revenue report');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+      pagination: payload?.pagination || null,
+    };
+  },
+
+  getLowStockAlerts: async ({
+    threshold = 10,
+    location = 'all',
+    search = '',
+  } = {}) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.LOW_STOCK_ALERTS,
+      { params: { threshold, location, search } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load low stock alerts');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+    };
+  },
+
+  getSubscriptionReport: async ({
+    dateRange = 'last30days',
+    location = 'all',
+    search = '',
+  } = {}) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.SUBSCRIPTION_REPORT,
+      { params: { dateRange, location, search } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load subscription report');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+    };
+  },
+
+  getRestaurantDashboard: async () => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.REPORTS.RESTAURANT_DASHBOARD
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load restaurant dashboard');
+    }
+    return payload?.data || null;
+  },
+
+  getInventoryStatus: async (params = {}) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.POS_HARDWARE.INVENTORY_STATUS,
+      { params }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load inventory status');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+    };
+  },
+
+  getHardwareSalesReport: async ({ month, year, ...rest } = {}) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.POS_HARDWARE.SALES_REPORT,
+      { params: { month, year, ...rest } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load hardware sales report');
+    }
+    return {
+      data: payload?.data || [],
+      summary: payload?.summary || null,
+    };
+  },
 };
 
 /**
