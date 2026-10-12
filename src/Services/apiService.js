@@ -568,10 +568,10 @@ export const supportTicketService = {
     };
   },
 
-  updateTicketStatus: async (id, status) => {
+  updateTicketStatus: async (id, backendStatus) => {
     const response = await apiClient.put(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.UPDATE,
-      { id, Ticket_status: status }
+      { id, Ticket_status: backendStatus }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -589,13 +589,7 @@ export const supportTicketService = {
   }) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.REPLY,
-      {
-        support_ticket_id,
-        reply,
-        employee_id,
-        Ticket_status,
-        Status,
-      }
+      { support_ticket_id, reply, employee_id, Ticket_status, Status }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -675,6 +669,8 @@ export const hamService = {
  * MDM Device Management Services
  */
 export const mdmService = {
+  // GET /api/v1/master/myDevices/getall
+  // Returns: { data: Device[], count: number }
   getAllDevices: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_ALL);
     const payload = response.data;
@@ -687,6 +683,8 @@ export const mdmService = {
     };
   },
 
+  // GET /api/v1/master/myDevices/getbyauth
+  // Returns: Device[]
   getMyDevicesByAuth: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_BY_AUTH);
     const payload = response.data;
@@ -696,6 +694,9 @@ export const mdmService = {
     return payload?.data || [];
   },
 
+  // GET /api/v1/master/myDevices/:id/session-logs
+  // API returns: { success, data: { device, logs: [...] } }
+  // We return that exact shape so the modal can render device stats too.
   getSessionLogs: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.MDM.SESSION_LOGS(id)
@@ -704,15 +705,22 @@ export const mdmService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load session logs');
     }
-    if (Array.isArray(payload?.data)) return { logs: payload.data };
-    return payload?.data || { logs: [] };
+    // Handle both possible shapes just in case
+    if (Array.isArray(payload?.data)) {
+      return { device: null, logs: payload.data };
+    }
+    return {
+      device: payload?.data?.device || null,
+      logs: payload?.data?.logs || [],
+    };
   },
 
+  // POST /api/v1/master/myDevices/:id/lock
+  // Body: { reason }
   lockDevice: async (id, reason) => {
-    const response = await apiClient.post(
-      ENDPOINTS.ADMIN.MDM.LOCK(id),
-      { reason }
-    );
+    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.LOCK(id), {
+      reason,
+    });
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to lock device');
@@ -720,6 +728,8 @@ export const mdmService = {
     return payload?.data || null;
   },
 
+  // POST /api/v1/master/myDevices/:id/restart
+  // Body: { Restart_Reason, Scheduled_Restart, Restart_Queue, ... }
   restartDevice: async (id, payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.RESTART(id),
@@ -732,6 +742,8 @@ export const mdmService = {
     return data?.data || null;
   },
 
+  // POST /api/v1/master/myDevices/:id/push-update
+  // Body: { App_Version }
   pushUpdate: async (id, App_Version) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.PUSH_UPDATE(id),
@@ -743,31 +755,83 @@ export const mdmService = {
     }
     return data?.data || null;
   },
+  exportSessionLogs: async (id) => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.MDM.SESSION_LOGS_EXPORT(id),
+    {
+      responseType: 'blob', // ✅ critical — tells axios not to parse JSON
+    }
+  );
+  return response.data; // Blob
+},
 
-  wipeDevice: async (id, { email, password }) => {
-    const response = await apiClient.post(
-      ENDPOINTS.ADMIN.MDM.WIPE(id),
-      { Email: email, password }
-    );
+  // -------------------------------------------------------------------------
+  // WIPE FLOW — 2 steps on the SAME endpoint
+  // -------------------------------------------------------------------------
+
+  // STEP 1: POST /api/v1/master/myDevices/:id/wipe
+  // Body: { Email, password }   ← capital E, lowercase p (matches backend)
+  // Sends OTP to the admin's email
+ // STEP 1: Sends OTP to admin's email
+wipeDevice: async (id, { email, password }) => {
+  try {
+    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE(id), {
+      Email: email,
+      password: password,
+    });
     const data = response.data;
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to initiate wipe');
     }
     return data?.data || null;
-  },
+  } catch (err) {
+    // Preserve backend message
+    const backendMsg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err.message;
+    throw new Error(backendMsg);
+  }
+},
 
-  verifyWipeDevice: async (id, { otp, mode }) => {
-    const response = await apiClient.post(
-      ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id),
-      { OTP: otp, Wipe_Mode: mode }
-    );
+// STEP 2: Verifies OTP and executes wipe
+verifyWipeDevice: async (id, { otp, mode }) => {
+  try {
+    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id), {
+      OTP: String(otp).trim(),
+      Wipe_Mode: mode,
+    });
     const data = response.data;
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to verify wipe');
     }
     return data?.data || null;
+  } catch (err) {
+    const backendMsg =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      err.message;
+    throw new Error(backendMsg);
+  }
+},
+
+  // -------------------------------------------------------------------------
+  // ENROLL (Create new device)
+  // POST /api/v1/master/myDevices/create
+  // -------------------------------------------------------------------------
+  enrollDevice: async (formData) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.HAM.CREATE_DEVICE,
+      formData
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to enroll device');
+    }
+    return data?.data || null;
   },
 };
+
 
 /**
  * SubAdmin Services

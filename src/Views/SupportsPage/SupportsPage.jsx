@@ -1,12 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 
 import withAdminLayout from '../AdminPanel/withAdminLayout';
 
-import NewTicketsPage from '../../Components/Supports/NewTicketsPage';
-import OngoingTicketsPage from '../../Components/Supports/OngoingTicketsPage';
-import ResolvedTicketsPage from '../../Components/Supports/ResolvedTicketsPage';
-import AllTicketsPage from '../../Components/Supports/AllTicketsPage';
+import TicketListPage from '../../Components/Supports/TicketListPage';
 import TicketSummaryCard from '../../Components/Supports/TicketSummaryCard';
 import SearchBar from '../../Components/Supports/SearchBar';
 import TicketStatusNav from '../../Components/Supports/TicketStatusNav';
@@ -17,37 +14,50 @@ import {
   setSummaryData,
   setTicketsLoading,
   setTicketsData,
+  setUpdating,
+  patchTicketStatus,
   setSupportTicketsError,
 } from '../../Store/Features/supportTickets/supportTicketsSlice';
 import { supportTicketService } from '../../Services/apiService';
+import {
+  mapBackendStatus,
+  mapUiStatusToBackend,
+  TICKET_TABS,
+} from '../../Components/Supports/ticketStatus';
 
 // ---------------------------------------------------------------------------
-// Status mapping
+// Helpers
 // ---------------------------------------------------------------------------
-const BACKEND_TO_UI = {
-  Pending: 'Pending',
-  Open: 'New',
-  Process: 'On-Going',
-  Solve: 'Resolved',
-  Close: 'Closed',
-};
-
-const mapBackendStatus = (raw) => {
-  if (!raw) return 'New';
-  if (BACKEND_TO_UI[raw]) return BACKEND_TO_UI[raw];
-  const key = Object.keys(BACKEND_TO_UI).find(
-    (k) => k.toLowerCase() === String(raw).toLowerCase()
-  );
-  return key ? BACKEND_TO_UI[key] : 'New';
-};
-
 const getBusinessName = (ticket) => {
   if (ticket.businessName) return ticket.businessName;
   if (ticket.email) {
-    const local = ticket.email.split('@')[0];
+    const local = String(ticket.email).split('@')[0];
     return local.replace(/[._-]/g, ' ');
   }
-  return ticket.CreatedBy?.Name || ticket.CreatedBy || 'Unknown';
+  const createdBy = ticket.CreatedBy;
+  if (typeof createdBy === 'string') return createdBy;
+  return createdBy?.Name || 'Unknown';
+};
+
+const normaliseSummary = (raw) => {
+  const d = raw?.data ?? raw ?? {};
+  const totalTickets =
+    d.totalTickets ?? d.total ?? d.TotalTickets ?? d.total_tickets ?? 0;
+
+  const activeFromFields =
+    d.activeTickets ?? d.active ?? d.ActiveTickets ?? d.active_tickets;
+  const activeComputed =
+    (d.pendingTickets ?? 0) +
+    (d.openTickets ?? 0) +
+    (d.processTickets ?? 0);
+  const activeTickets = activeFromFields ?? activeComputed;
+
+  const resolvedFromFields =
+    d.resolvedTickets ?? d.resolved ?? d.ResolvedTickets ?? d.resolved_tickets;
+  const resolvedComputed = (d.solveTickets ?? 0) + (d.closeTickets ?? 0);
+  const resolvedTickets = resolvedFromFields ?? resolvedComputed;
+
+  return { totalTickets, activeTickets, resolvedTickets };
 };
 
 // ---------------------------------------------------------------------------
@@ -59,63 +69,81 @@ const SupportsPage = () => {
   const [statusFilter, setStatusFilter] = useState(null);
 
   const dispatch = useAppDispatch();
-
-  const { summary, tickets, hasLoaded } = useAppSelector(
-    (state) => state.supportTickets
-  );
-
+  const { summary, tickets } = useAppSelector((state) => state.supportTickets);
   const hasFetched = useRef(false);
+
+  // -------------------------------------------------------------------------
+  // Initial fetch
+  // -------------------------------------------------------------------------
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
-    const fetchAll = async () => {
+    (async () => {
       dispatch(setSummaryLoading(true));
-      try {
-        const s = await supportTicketService.getSummary();
-        dispatch(setSummaryData(s));
-      } catch (err) {
-        console.error('Summary fetch error:', err);
-        dispatch(setSupportTicketsError(err?.message || 'Failed to load summary'));
-      }
-
       dispatch(setTicketsLoading(true));
-      try {
-        const result = await supportTicketService.getTickets(1, 20);
-        dispatch(setTicketsData(result));
-      } catch (err) {
-        console.error('Tickets fetch error:', err);
-        dispatch(setSupportTicketsError(err?.message || 'Failed to load tickets'));
-        toast.error('Failed to load tickets', {
-          description: err?.message || 'Please try again later.',
-        });
-      }
-    };
 
-    fetchAll();
+      const [summaryRes, ticketsRes] = await Promise.allSettled([
+        supportTicketService.getSummary(),
+        supportTicketService.getTickets(1, 20),
+      ]);
+
+      if (summaryRes.status === 'fulfilled') {
+        dispatch(setSummaryData(normaliseSummary(summaryRes.value)));
+      } else {
+        dispatch(setSummaryData(normaliseSummary(null)));
+      }
+
+      if (ticketsRes.status === 'fulfilled') {
+        dispatch(setTicketsData(ticketsRes.value));
+      } else {
+        dispatch(setTicketsData({ data: [], pagination: null }));
+        dispatch(
+          setSupportTicketsError(
+            ticketsRes.reason?.message || 'Failed to load tickets'
+          )
+        );
+        toast.error('Failed to load tickets');
+      }
+    })();
   }, [dispatch]);
 
-  const mappedTickets = useMemo(
-    () =>
-      (tickets || []).map((t) => {
-        const rawStatus = t.Ticket_status || t.Status;
-        return {
-          id: t.TicketNumber || `TICKET${t.Support_Ticket_id}`,
-          dbId: t.Support_Ticket_id,
-          status: mapBackendStatus(rawStatus),
-          title: t.Subject || t.question || 'No subject',
-          description: t.Description || t.question || 'No description',
-          userName: getBusinessName(t),
-          email: t.email,
-          priority: t.Priority,
-          createdDate: t.CreatedDate || t.CreateAt,
-        };
-      }),
-    [tickets]
-  );
+  // -------------------------------------------------------------------------
+  // Map raw → UI tickets
+  // -------------------------------------------------------------------------
+  const mappedTickets = useMemo(() => {
+    const list = Array.isArray(tickets) ? tickets : [];
+    return list.map((t) => {
+      const rawStatus = t.Ticket_status ?? t.Status ?? t.status;
+      const dbId = t.Support_Ticket_id ?? t.support_ticket_id ?? t.id;
+      return {
+        id: t.TicketNumber || `TICKET${dbId}`,
+        dbId,
+        status: mapBackendStatus(rawStatus),
+        rawStatus,
+        title: t.Subject || t.question || 'No subject',
+        description: t.Description || t.question || 'No description',
+        userName: getBusinessName(t),
+        email: t.email,
+        priority: t.Priority || 'Normal',
+        createdDate: t.CreatedDate || t.CreateAt,
+      };
+    });
+  }, [tickets]);
 
+  // -------------------------------------------------------------------------
+  // Filter — search + tab + status filter
+  // -------------------------------------------------------------------------
   const filteredTickets = useMemo(() => {
+    const tabConfig = TICKET_TABS.find((t) => t.key === activeTab);
+    const tabFilter = tabConfig?.filter ?? null;
+
     return mappedTickets.filter((t) => {
+      if (tabFilter && t.status !== tabFilter) return false;
+      if (activeTab === 'Escalated') return false;
+
+      if (statusFilter && t.status !== statusFilter) return false;
+
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         const matches =
@@ -125,30 +153,80 @@ const SupportsPage = () => {
           t.id?.toLowerCase().includes(q);
         if (!matches) return false;
       }
-      if (statusFilter && t.status !== statusFilter) return false;
       return true;
     });
-  }, [mappedTickets, searchQuery, statusFilter]);
+  }, [mappedTickets, searchQuery, statusFilter, activeTab]);
 
-  const renderTicketSection = () => {
-    switch (activeTab) {
-      case 'New':
-        return <NewTicketsPage allTickets={filteredTickets} />;
-      case 'On-Going':
-        return <OngoingTicketsPage allTickets={filteredTickets} />;
-      case 'Resolved':
-        return <ResolvedTicketsPage allTickets={filteredTickets} />;
-      case 'Escalated':
-        return <AllTicketsPage allTickets={[]} />; // no escalated API yet
-      case 'All Tickets':
-      default:
-        return <AllTicketsPage allTickets={filteredTickets} />;
-    }
-  };
+  // -------------------------------------------------------------------------
+  // Status update from list card dropdown
+  // -------------------------------------------------------------------------
+  const handleStatusUpdate = useCallback(
+    async (ticketDbId, newUiStatus) => {
+      const backendStatus = mapUiStatusToBackend(newUiStatus);
+      if (!backendStatus) {
+        toast.error(`Unsupported status: ${newUiStatus}`);
+        return;
+      }
+
+      // Capture current ticket for rollback
+      const before = (tickets || []).find(
+        (t) =>
+          (t.Support_Ticket_id ?? t.support_ticket_id ?? t.id) === ticketDbId
+      );
+      const beforeBackend = before?.Ticket_status ?? before?.Status ?? null;
+
+      // Optimistic patch — ticket will jump tabs immediately
+      dispatch(
+        patchTicketStatus({ id: ticketDbId, status: backendStatus })
+      );
+
+      dispatch(setUpdating(true));
+      const toastId = toast.loading(`Moving to ${newUiStatus}...`);
+
+      try {
+        const res = await supportTicketService.updateTicketStatus(
+          ticketDbId,
+          backendStatus
+        );
+        const newBackend = res?.Ticket_status ?? backendStatus;
+
+        // Confirm with authoritative value
+        dispatch(patchTicketStatus({ id: ticketDbId, status: newBackend }));
+
+        toast.success(`Moved to ${mapBackendStatus(newBackend)}`, {
+          id: toastId,
+          duration: 2000,
+        });
+      } catch (err) {
+        // Rollback
+        if (beforeBackend) {
+          dispatch(
+            patchTicketStatus({ id: ticketDbId, status: beforeBackend })
+          );
+        }
+        console.error('Update status error:', err);
+        toast.error('Failed to update status', {
+          id: toastId,
+          description:
+            err?.response?.data?.errors?.[0]?.msg ||
+            err?.response?.data?.message ||
+            err?.message ||
+            'Please try again.',
+        });
+      } finally {
+        dispatch(setUpdating(false));
+      }
+    },
+    [dispatch, tickets]
+  );
+
+  // -------------------------------------------------------------------------
+  // Render
+  // -------------------------------------------------------------------------
+  const tabConfig = TICKET_TABS.find((t) => t.key === activeTab);
 
   return (
     <div className="min-h-screen px-4 sm:px-6 md:px-8 lg:px-12 py-8">
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -161,7 +239,6 @@ const SupportsPage = () => {
       </div>
 
       <div className="flex flex-col items-start gap-8 w-full">
-        {/* Summary Cards */}
         {activeTab === 'All Tickets' && (
           <div className="w-full flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap items-center justify-center gap-4 sm:gap-6 lg:gap-8">
             <TicketSummaryCard
@@ -188,7 +265,6 @@ const SupportsPage = () => {
           </div>
         )}
 
-        {/* Search Bar */}
         <SearchBar
           onSearch={setSearchQuery}
           onFilterChange={({ status }) => {
@@ -196,11 +272,15 @@ const SupportsPage = () => {
           }}
         />
 
-        {/* Tabs */}
         <TicketStatusNav activeTab={activeTab} setActiveTab={setActiveTab} />
 
-        {/* Content */}
-        <div className="w-full">{renderTicketSection()}</div>
+        <div className="w-full">
+          <TicketListPage
+            allTickets={filteredTickets}
+            heading={tabConfig?.heading || 'Tickets'}
+            onStatusChange={handleStatusUpdate}
+          />
+        </div>
       </div>
     </div>
   );

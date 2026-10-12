@@ -58,13 +58,7 @@ ACCOUNT_SETTINGS: {
       ACTIVATE: (id) => `/api/v1/admin/subadmin/activate/${id}`,
     },
 
-    // ❌ REMOVED — this was the DUPLICATE block causing the 404.
-    //    Delete this whole block from your file:
-    //
-    //  ACCOUNT_SETTINGS: {
-    //    DATE_TIME: '/api/v1/admin/account-settings/date-time',
-    //    PROFILE: '/api/v1/user/getbyauth',
-    //  },
+    
 
     DASHBOARD: {
       MAIN: '/api/v1/admin/dashboard/main-dashboard',

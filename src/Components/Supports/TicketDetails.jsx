@@ -14,41 +14,15 @@ import {
   setSupportTicketsError,
 } from '../../Store/Features/supportTickets/supportTicketsSlice';
 import { supportTicketService } from '../../Services/apiService';
+import {
+  mapBackendStatus,
+  mapUiStatusToBackend,
+} from './ticketStatus';
 
 // ---------------------------------------------------------------------------
-// ✅ Backend <-> Frontend status mapping
-// Backend valid: Pending | Open | Process | Solve | Close
+// Status dropdown — FULLY CONTROLLED, no local status state
 // ---------------------------------------------------------------------------
-const UI_TO_BACKEND = {
-  New: 'Open',
-  'On-Going': 'Process',
-  Resolved: 'Solve',
-  Pending: 'Pending',
-  Closed: 'Close',
-};
-
-const BACKEND_TO_UI = {
-  Pending: 'Pending',
-  Open: 'New',
-  Process: 'On-Going',
-  Solve: 'Resolved',
-  Close: 'Closed',
-};
-
-const toBackendStatus = (uiLabel) => UI_TO_BACKEND[uiLabel] || 'Open';
-const toUiStatus = (backendStatus) => {
-  if (!backendStatus) return 'New';
-  if (BACKEND_TO_UI[backendStatus]) return BACKEND_TO_UI[backendStatus];
-  const key = Object.keys(BACKEND_TO_UI).find(
-    (k) => k.toLowerCase() === String(backendStatus).toLowerCase()
-  );
-  return key ? BACKEND_TO_UI[key] : 'New';
-};
-
-// ---------------------------------------------------------------------------
-// Status dropdown
-// ---------------------------------------------------------------------------
-const StatusDropdown = ({ status, setStatus, onStatusChange, disabled }) => {
+const StatusDropdown = ({ status, onStatusChange, disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const statusOptions = ['New', 'On-Going', 'Resolved', 'Pending', 'Closed'];
@@ -72,18 +46,19 @@ const StatusDropdown = ({ status, setStatus, onStatusChange, disabled }) => {
   const currentColor = statusColors[status] || statusColors.New;
   const currentIcon = statusIcons[status] || statusIcons.New;
 
-  const handleSelect = async (option) => {
+  const handleSelect = (option) => {
     setIsOpen(false);
-    setStatus(option);
+    if (option === status) return;
     if (onStatusChange) {
-      const backendValue = toBackendStatus(option);
-      await onStatusChange(backendValue, option);
+      const backendValue = mapUiStatusToBackend(option);
+      onStatusChange(backendValue, option);
     }
   };
 
   return (
     <div className="relative inline-block text-left">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${currentColor} transition text-sm font-medium disabled:opacity-60`}
@@ -100,7 +75,9 @@ const StatusDropdown = ({ status, setStatus, onStatusChange, disabled }) => {
               key={option}
               onClick={() => handleSelect(option)}
               className={`px-4 py-2.5 cursor-pointer hover:bg-gray-50 flex items-center gap-3 text-sm ${
-                option === status ? 'bg-gray-50 font-semibold' : 'text-gray-700'
+                option === status
+                  ? 'bg-gray-50 font-semibold'
+                  : 'text-gray-700'
               }`}
             >
               <span
@@ -118,7 +95,7 @@ const StatusDropdown = ({ status, setStatus, onStatusChange, disabled }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Assign Agent dropdown
+// Assign agent dropdown (unchanged)
 // ---------------------------------------------------------------------------
 const AssignAgentDropdown = ({ value, onChange, agents = [], disabled }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -164,7 +141,9 @@ const AssignAgentDropdown = ({ value, onChange, agents = [], disabled }) => {
                   setIsOpen(false);
                 }}
                 className={`px-4 py-2.5 text-sm hover:bg-gray-50 cursor-pointer ${
-                  agent.id === value ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                  agent.id === value
+                    ? 'bg-gray-50 font-medium text-gray-900'
+                    : 'text-gray-700'
                 }`}
               >
                 {agent.name}
@@ -205,43 +184,45 @@ const TicketDetails = () => {
   const [status, setStatus] = useState(initial.status || 'New');
   const [showModal, setShowModal] = useState(false);
 
-  // Mock agents list — replace with API when available
   const AGENTS = [
     { id: 10, name: 'Sarah Johnson' },
     { id: 11, name: 'Michael Chen' },
     { id: 12, name: 'Emily Martinez' },
   ];
 
-  // ✅ Update status
-  const handleStatusChange = async (backendStatus, frontendLabel) => {
-    dispatch(setUpdating(true));
-    try {
-      const res = await supportTicketService.updateTicketStatus(
-        ticketDbId,
-        backendStatus
-      );
-      const newBackendStatus = res?.Ticket_status || backendStatus;
-      const newUiStatus = toUiStatus(newBackendStatus);
+  // -------------------------------------------------------------------------
+  // Status change — optimistic + rollback + Redux patch with BACKEND value
+  // -------------------------------------------------------------------------
+ const handleStatusChange = async (backendStatus, frontendLabel) => {
+  if (!backendStatus) return;
 
-      setStatus(newUiStatus);
-      dispatch(patchTicketStatus({ id: ticketDbId, status: newUiStatus }));
-      toast.success(`Status updated to ${newUiStatus}`);
-    } catch (err) {
-      console.error('Update status error:', err);
-      dispatch(setSupportTicketsError(err?.message || 'Failed to update status'));
-      toast.error('Failed to update status', {
-        description:
-          err?.response?.data?.errors?.[0]?.msg ||
-          err?.response?.data?.message ||
-          err?.message ||
-          'Please try again.',
-      });
-    } finally {
-      dispatch(setUpdating(false));
-    }
-  };
+  const previousUi = status;
+  setStatus(frontendLabel);              // optimistic
 
-  // ✅ Submit reply
+  dispatch(setUpdating(true));
+  try {
+    const res = await supportTicketService.updateTicketStatus(
+      ticketDbId,
+      backendStatus
+    );
+    const newBackend = res?.Ticket_status ?? backendStatus;
+    const newUi = mapBackendStatus(newBackend);
+
+    setStatus(newUi);
+    dispatch(patchTicketStatus({ id: ticketDbId, status: newBackend }));  // ← BACKEND
+
+    toast.success(`Status updated to ${newUi}`);
+  } catch (err) {
+    setStatus(previousUi);               // rollback
+    toast.error('Failed to update status');
+  } finally {
+    dispatch(setUpdating(false));
+  }
+};
+
+  // -------------------------------------------------------------------------
+  // Reply submit
+  // -------------------------------------------------------------------------
   const handleSubmitReply = async () => {
     if (!reply.trim()) {
       toast.error('Please write a reply before submitting');
@@ -255,7 +236,7 @@ const TicketDetails = () => {
         support_ticket_id: ticketDbId,
         reply: reply.trim(),
         employee_id: assignedAgent || 10,
-        Ticket_status: 'Process', // reply moves ticket to Process
+        Ticket_status: 'Process',
         Status: true,
       });
 
@@ -278,9 +259,8 @@ const TicketDetails = () => {
 
   return (
     <div className="w-full flex justify-center px-4 py-6">
-      {/* ==================== Card ==================== */}
       <div className="w-full max-w-[1100px] bg-white rounded-xl border border-gray-200 shadow-sm">
-        {/* -------- Header (inside card, top) -------- */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-6 py-4 border-b border-gray-100 gap-3">
           <div className="flex items-center gap-3">
             <span className="w-3 h-3 rounded-full bg-[#F5A623]"></span>
@@ -291,20 +271,24 @@ const TicketDetails = () => {
 
           <div className="flex items-center gap-3">
             <p className="font-poppins text-xs text-gray-500">
-              Posted at {new Date(initial.createdDate || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              Posted at{' '}
+              {new Date(
+                initial.createdDate || Date.now()
+              ).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
             </p>
             <StatusDropdown
               status={status}
-              setStatus={setStatus}
               onStatusChange={handleStatusChange}
               disabled={updating}
             />
           </div>
         </div>
 
-        {/* -------- Body -------- */}
+        {/* Body */}
         <div className="px-6 py-6 space-y-6">
-          {/* Row: Email / Business Name / Ticket Subject */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="flex flex-col gap-2">
               <label className="font-poppins text-sm font-medium text-gray-800">
@@ -343,7 +327,6 @@ const TicketDetails = () => {
             </div>
           </div>
 
-          {/* Assign Agent */}
           <div className="flex flex-col gap-2">
             <label className="font-poppins text-sm font-medium text-gray-800">
               Assign Agent
@@ -356,22 +339,6 @@ const TicketDetails = () => {
             />
           </div>
 
-          {/* Question + Description */}
-          {/* <div className="space-y-3">
-            <h3 className="font-poppins font-semibold text-base text-gray-900">
-              {subject}
-            </h3>
-            <p className="font-poppins text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-              {initial.description ||
-                `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`}
-            </p>
-            <p className="font-poppins text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-              {initial.description ||
-                `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.`}
-            </p>
-          </div> */}
-
-          {/* Images Uploaded */}
           <div className="space-y-3">
             <label className="font-poppins text-sm font-medium text-gray-800">
               Images Uploaded
@@ -424,7 +391,6 @@ const TicketDetails = () => {
             </div>
           </div>
 
-          {/* Reply Ticket */}
           <div className="space-y-2">
             <label className="font-poppins text-sm font-medium text-gray-800">
               Reply Ticket
@@ -438,7 +404,7 @@ const TicketDetails = () => {
           </div>
         </div>
 
-        {/* -------- Footer -------- */}
+        {/* Footer */}
         <div className="flex justify-end px-6 py-4 border-t border-gray-100">
           <button
             onClick={handleSubmitReply}

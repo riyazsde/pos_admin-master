@@ -4,51 +4,52 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/20/solid';
 
+const PRIORITY_OPTIONS = [
+  { name: 'New Ticket',      value: 'New',       color: 'bg-blue-500' },
+  { name: 'Ongoing Ticket',  value: 'On-Going',  color: 'bg-yellow-500' },
+  { name: 'Pending Ticket',  value: 'Pending',   color: 'bg-orange-500' },
+  { name: 'Resolved Ticket', value: 'Resolved',  color: 'bg-green-500' },
+  { name: 'Closed Ticket',   value: 'Closed',    color: 'bg-gray-500' },
+];
+
+const DATE_OPTIONS = [
+  'Today', 'Yesterday', 'This Week',
+  'This Month', 'Three Month', 'Six Month',
+];
+
 const SearchBar = ({ onSearch, onFilterChange }) => {
-  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
-  const [isDateDropdownOpen, setIsDateDropdownOpen] = useState(false);
+  const [isPriorityOpen, setIsPriorityOpen] = useState(false);
+  const [isDateOpen, setIsDateOpen] = useState(false);
   const [selectedPriority, setSelectedPriority] = useState('Select Priority');
-  const [selectedDateRange, setSelectedDateRange] = useState('Today');
+  const [selectedDate, setSelectedDate] = useState('Today');
   const [query, setQuery] = useState('');
 
-  const priorityOptions = [
-    { name: 'New Ticket', value: 'New', color: 'bg-blue-500' },
-    { name: 'Ongoing Ticket', value: 'On-Going', color: 'bg-yellow-500' },
-    { name: 'Resolved Ticket', value: 'Resolved', color: 'bg-green-500' },
-  ];
-
-  const dateOptions = [
-    'Today',
-    'Yesterday',
-    'This Week',
-    'This Month',
-    'Three Month',
-    'Six Month',
-  ];
-
-  // ✅ Notify parent on any change (debounced)
+  // Debounced search
   useEffect(() => {
-    const t = setTimeout(() => {
-      onSearch?.(query);
-    }, 300);
+    const t = setTimeout(() => onSearch?.(query), 300);
     return () => clearTimeout(t);
   }, [query, onSearch]);
 
   const handlePrioritySelect = (priority) => {
     setSelectedPriority(priority.name);
-    setIsPriorityDropdownOpen(false);
+    setIsPriorityOpen(false);
     onFilterChange?.({ status: priority.value });
   };
 
+  const handlePriorityClear = () => {
+    setSelectedPriority('Select Priority');
+    setIsPriorityOpen(false);
+    onFilterChange?.({ status: null });
+  };
+
   const handleDateSelect = (range) => {
-    setSelectedDateRange(range);
-    setIsDateDropdownOpen(false);
+    setSelectedDate(range);
+    setIsDateOpen(false);
     onFilterChange?.({ dateRange: range });
   };
 
   return (
     <div className="flex flex-col md:flex-row justify-between md:items-end w-full gap-4">
-      {/* Search input */}
       <div className="flex items-center px-4 py-2 gap-2 bg-gradient-to-r from-purple-100 to-red-100 rounded-lg w-full md:w-auto">
         <MagnifyingGlassIcon className="h-6 w-6 text-gray-500" />
         <input
@@ -60,15 +61,15 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
         />
       </div>
 
-      {/* Dropdowns */}
       <div className="flex flex-col sm:flex-row items-start md:items-end gap-4 w-full md:w-auto">
-        {/* Priority Dropdown */}
+        {/* Priority dropdown */}
         <div className="relative w-full sm:w-auto">
           <button
+            type="button"
             className="flex items-center justify-between sm:justify-center w-full sm:w-auto px-4 py-2 gap-2 border border-black rounded-lg cursor-pointer"
             onClick={() => {
-              setIsPriorityDropdownOpen(!isPriorityDropdownOpen);
-              setIsDateDropdownOpen(false);
+              setIsPriorityOpen(!isPriorityOpen);
+              setIsDateOpen(false);
             }}
           >
             <span className="text-black text-base font-normal truncate">
@@ -77,32 +78,27 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
             <ChevronDownIcon className="h-4 w-4 text-black" />
           </button>
 
-          {isPriorityDropdownOpen && (
+          {isPriorityOpen && (
             <div className="absolute top-full left-0 mt-2 w-[246px] bg-white shadow-lg rounded-lg flex flex-col items-start gap-4 px-3 py-5 z-10">
               <button
-                onClick={() => {
-                  setSelectedPriority('Select Priority');
-                  setIsPriorityDropdownOpen(false);
-                  onFilterChange?.({ status: null });
-                }}
+                type="button"
+                onClick={handlePriorityClear}
                 className="flex items-center w-full h-8 px-2 py-4 gap-4 border-b border-black/20 text-black bg-white hover:bg-gray-50 rounded"
               >
                 Clear filter
               </button>
-              {priorityOptions.map(({ name, value, color }) => (
+              {PRIORITY_OPTIONS.map(({ name, value, color }) => (
                 <button
                   key={name}
-                  onClick={() =>
-                    handlePrioritySelect({ name, value, color })
-                  }
-                  className={`flex items-center w-full h-8 px-2 py-4 gap-4 border-b border-black/20 font-[500] text-[16px] leading-[24px] font-[Manrope]
-                    ${
-                      selectedPriority === name
-                        ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded'
-                        : 'text-black bg-white hover:text-white hover:bg-gradient-to-b hover:from-[#6A1B9A] hover:to-[#D32F2F] rounded'
-                    }`}
+                  type="button"
+                  onClick={() => handlePrioritySelect({ name, value, color })}
+                  className={`flex items-center w-full h-8 px-2 py-4 gap-4 border-b border-black/20 font-medium text-base ${
+                    selectedPriority === name
+                      ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded'
+                      : 'text-black bg-white hover:text-white hover:bg-gradient-to-b hover:from-[#6A1B9A] hover:to-[#D32F2F] rounded'
+                  }`}
                 >
-                  <span className={`w-3 h-3 rounded-full ${color}`}></span>
+                  <span className={`w-3 h-3 rounded-full ${color}`} />
                   {name}
                 </button>
               ))}
@@ -110,33 +106,34 @@ const SearchBar = ({ onSearch, onFilterChange }) => {
           )}
         </div>
 
-        {/* Date Dropdown */}
+        {/* Date dropdown */}
         <div className="relative w-full sm:w-auto">
           <button
+            type="button"
             className="flex items-center justify-between sm:justify-center w-full sm:w-auto px-4 py-2 gap-2 border border-black rounded-lg cursor-pointer"
             onClick={() => {
-              setIsDateDropdownOpen(!isDateDropdownOpen);
-              setIsPriorityDropdownOpen(false);
+              setIsDateOpen(!isDateOpen);
+              setIsPriorityOpen(false);
             }}
           >
             <span className="text-black text-base font-normal truncate">
-              {selectedDateRange}
+              {selectedDate}
             </span>
             <ChevronDownIcon className="h-4 w-4 text-black" />
           </button>
 
-          {isDateDropdownOpen && (
+          {isDateOpen && (
             <div className="absolute top-full right-0 mt-2 w-[246px] bg-white shadow-lg rounded-lg flex flex-col items-start gap-4 px-3 py-5 z-10">
-              {dateOptions.map((range) => (
+              {DATE_OPTIONS.map((range) => (
                 <button
                   key={range}
+                  type="button"
                   onClick={() => handleDateSelect(range)}
-                  className={`flex items-center w-full h-8 px-2 py-4 gap-4 border-b border-black/20 font-[500] text-[16px] leading-[24px] font-[Manrope]
-                    ${
-                      selectedDateRange === range
-                        ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded'
-                        : 'text-black bg-white hover:text-white hover:bg-gradient-to-b hover:from-[#6A1B9A] hover:to-[#D32F2F] rounded'
-                    }`}
+                  className={`flex items-center w-full h-8 px-2 py-4 gap-4 border-b border-black/20 font-medium text-base ${
+                    selectedDate === range
+                      ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded'
+                      : 'text-black bg-white hover:text-white hover:bg-gradient-to-b hover:from-[#6A1B9A] hover:to-[#D32F2F] rounded'
+                  }`}
                 >
                   {range}
                 </button>
