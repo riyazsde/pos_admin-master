@@ -17,7 +17,7 @@ import {
 import { RiBankLine } from 'react-icons/ri';
 import { BiRupee } from 'react-icons/bi';
 
-// --- Notification Component ---
+// ---------- Notification Toast Component ----------
 const Notification = ({ message, type, onClose }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,7 +31,7 @@ const Notification = ({ message, type, onClose }) => {
 
   return (
     <div
-      className={`fixed top-5 right-5 z-[100] flex items-center gap-3 ${bgColor} text-white px-5 py-3 rounded-lg shadow-lg transition-all duration-300 animate-slide-in`}
+      className={`fixed top-5 right-5 z-[100] flex items-center gap-3 ${bgColor} text-white px-5 py-3 rounded-lg shadow-lg animate-slide-in`}
     >
       <Icon size={20} />
       <span className="font-medium">{message}</span>
@@ -42,6 +42,7 @@ const Notification = ({ message, type, onClose }) => {
   );
 };
 
+// ---------- Main Payments Component ----------
 const Payments = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -49,20 +50,18 @@ const Payments = () => {
   const [paymentModes, setPaymentModes] = useState([]);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
-  // Notification State
-  const [notification, setNotification] = useState(null); // { message, type }
-
-  // Edit Mode State
+  // Edit mode state
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
 
-  // Helper to trigger notification
+  // ---------- Notification Helper ----------
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
   };
 
-  // Map an option name to an icon
+  // ---------- Icon Mapper ----------
   const getIconForOption = (optionName) => {
     const name = (optionName || '').toLowerCase();
     if (name.includes('card') || name.includes('debit') || name.includes('credit'))
@@ -77,38 +76,38 @@ const Payments = () => {
     return <BiRupee size={20} />;
   };
 
-  // Fetch all payment options
-const fetchPaymentOptions = async () => {
-  setLoading(true);
-  try {
-    const response = await paymentOptionService.getAll();
+  // ---------- Fetch Payment Options ----------
+  const fetchPaymentOptions = async () => {
+    setLoading(true);
+    try {
+      const response = await paymentOptionService.getAll();
 
-    const mapped = response.data.map((item) => {
-      const option = item.PaymentOption?.[0] || {};
-      return {
-        id: item.Payment_Options_id, // ✅ Numeric ID for update/delete APIs
-        mongoId: item._id,
-        name: option.option || 'Unknown',
-        details: option.Details || '',
-        status: item.Status,
-        icon: getIconForOption(option.option),
-      };
-    });
+      const mapped = (response.data || []).map((item) => {
+        const option = item.PaymentOption?.[0] || {};
+        return {
+          id: item.Payment_Options_id, // ✅ Numeric ID for update/delete
+          mongoId: item._id,
+          name: option.option || 'Unknown',
+          details: option.Details || '',
+          status: item.Status,
+          icon: getIconForOption(option.option),
+        };
+      });
 
-    setPaymentModes(mapped);
-  } catch (error) {
-    console.error('Error fetching payment options:', error);
-    showNotification('Failed to load payment options', 'error');
-  } finally {
-    setLoading(false);
-  }
-};
+      setPaymentModes(mapped);
+    } catch (error) {
+      console.error('Error fetching payment options:', error);
+      showNotification('Failed to load payment options', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchPaymentOptions();
   }, []);
 
-  // Handle Create OR Update
+  // ---------- Create OR Update ----------
   const handleSavePayment = async () => {
     if (!paymentMode.trim()) {
       showNotification('Please enter a payment mode', 'error');
@@ -137,32 +136,46 @@ const fetchPaymentOptions = async () => {
       setIsAddModalOpen(false);
       setIsEditMode(false);
       setCurrentId(null);
-      fetchPaymentOptions();
+      await fetchPaymentOptions();
     } catch (error) {
       console.error('Error saving payment option:', error);
       showNotification(error.message || 'Failed to save payment mode', 'error');
     }
   };
 
-  // Toggle Status Handler
+  // ---------- Toggle Status ----------
   const handleToggleStatus = async (payment) => {
+    const newStatus = !payment.status;
+
+    // Optimistic UI update
+    setPaymentModes((prev) =>
+      prev.map((m) => (m.id === payment.id ? { ...m, status: newStatus } : m))
+    );
+
     try {
       await paymentOptionService.update(payment.id, {
         option: payment.name,
         details: payment.details,
-        status: !payment.status,
+        status: newStatus,
       });
       showNotification(
-        `Payment mode turned ${!payment.status ? 'ON' : 'OFF'}`,
+        `Payment mode turned ${newStatus ? 'ON' : 'OFF'}`,
         'success'
       );
-      fetchPaymentOptions();
+      await fetchPaymentOptions();
     } catch (error) {
       console.error('Error toggling status:', error);
       showNotification('Failed to update status', 'error');
+      // Revert on error
+      setPaymentModes((prev) =>
+        prev.map((m) =>
+          m.id === payment.id ? { ...m, status: payment.status } : m
+        )
+      );
     }
   };
 
+  // ---------- Edit Click ----------
   const handleEditClick = (payment) => {
     setPaymentMode(payment.name);
     setCurrentId(payment.id);
@@ -170,6 +183,7 @@ const fetchPaymentOptions = async () => {
     setIsAddModalOpen(true);
   };
 
+  // ---------- Add Click ----------
   const handleAddClick = () => {
     setPaymentMode('');
     setCurrentId(null);
@@ -177,47 +191,48 @@ const fetchPaymentOptions = async () => {
     setIsAddModalOpen(true);
   };
 
+  // ---------- Delete Click (opens modal) ----------
   const handleDeleteClick = (payment) => {
     setSelectedPayment(payment);
     setIsDeleteModalOpen(true);
   };
 
-const handleConfirmDelete = async () => {
-  if (!selectedPayment?.id) {
-    showNotification('No payment mode selected', 'error');
-    return;
-  }
+  // ---------- Confirm Delete ----------
+  const handleConfirmDelete = async () => {
+    if (!selectedPayment?.id) {
+      showNotification('No payment mode selected', 'error');
+      return;
+    }
 
-  try {
-    console.log('🗑️ Deleting ID:', selectedPayment.id);
-    
-    await paymentOptionService.remove(selectedPayment.id);
-    
-    // 1. Optimistically remove from UI (instant feedback)
-    setPaymentModes((prev) =>
-      prev.filter((m) => m.id !== selectedPayment.id)
-    );
-    
-    // 2. Close modals
+    const deletedId = selectedPayment.id;
+
+    // 1. Optimistic UI update: remove instantly
+    setPaymentModes((prev) => prev.filter((m) => m.id !== deletedId));
     setIsDeleteModalOpen(false);
     setSelectedPayment(null);
-    
-    // 3. Show success
-    showNotification('Payment mode deleted successfully!', 'success');
-    
-    // 4. Sync with backend (in case of multi-user or backend logic)
-    await fetchPaymentOptions();
-    
-    console.log('✅ Refresh complete');
-  } catch (error) {
-    console.error('❌ Delete error:', error);
-    showNotification(error.message || 'Failed to delete payment mode', 'error');
-    
-    // Restore the list on error
-    await fetchPaymentOptions();
-  }
-};
 
+    try {
+      await paymentOptionService.remove(deletedId);
+
+      // ✅ Show success immediately
+      showNotification('Payment mode deleted successfully!', 'success');
+
+      // ⚠️ IMPORTANT: We do NOT re-fetch here.
+      // If the backend does a soft-delete (Status: false) but still returns
+      // the record in GET_ALL, re-fetching would bring it back.
+      // The optimistic removal is the final state.
+    } catch (error) {
+      console.error('❌ Delete error:', error);
+      showNotification(
+        error.message || 'Failed to delete payment mode',
+        'error'
+      );
+      // Restore the list on error
+      await fetchPaymentOptions();
+    }
+  };
+
+  // ---------- Render ----------
   return (
     <div className="px-4 md:px-10 py-6 w-full max-w-7xl mx-auto">
       {/* Notification Toast */}
@@ -236,7 +251,7 @@ const handleConfirmDelete = async () => {
         </h2>
         <button
           onClick={handleAddClick}
-          className="bg-gradient-to-r from-purple-800 to-red-600 text-white px-4 py-2 rounded-md font-medium shadow flex items-center gap-2"
+          className="bg-gradient-to-r from-purple-800 to-red-600 text-white px-4 py-2 rounded-md font-medium shadow flex items-center gap-2 hover:opacity-90 transition"
         >
           Add New Payment Mode <span className="text-xl">＋</span>
         </button>
@@ -258,6 +273,7 @@ const handleConfirmDelete = async () => {
               key={mode.id}
               className="border border-purple-200 rounded-2xl p-4 bg-white shadow-sm flex flex-col justify-between h-32 relative"
             >
+              {/* Top: Icon + Name */}
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-800">
                   {mode.icon}
@@ -267,17 +283,20 @@ const handleConfirmDelete = async () => {
                 </span>
               </div>
 
+              {/* Bottom: Actions + Toggle */}
               <div className="flex items-center justify-between mt-auto">
                 <div className="flex items-center gap-3 text-gray-600">
                   <button
                     onClick={() => handleEditClick(mode)}
                     className="hover:text-purple-600 transition-colors"
+                    title="Edit"
                   >
                     <FaEdit size={16} />
                   </button>
                   <button
                     onClick={() => handleDeleteClick(mode)}
                     className="hover:text-red-500 transition-colors"
+                    title="Delete"
                   >
                     <FaTrash size={16} />
                   </button>
@@ -312,15 +331,22 @@ const handleConfirmDelete = async () => {
         </div>
       )}
 
+      {/* Add/Edit Modal */}
       <AddPaymentModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setIsEditMode(false);
+          setCurrentId(null);
+          setPaymentMode('');
+        }}
         onSave={handleSavePayment}
         paymentMode={paymentMode}
         setPaymentMode={setPaymentMode}
         isEditMode={isEditMode}
       />
 
+      {/* Delete Confirmation Modal */}
       <DeletePaymentConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => {

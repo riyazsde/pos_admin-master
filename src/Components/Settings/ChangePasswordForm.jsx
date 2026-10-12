@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import arrow from '../../assets/Images/Home/arrow.png';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import PasswordResetModal from './PasswordResetModal';
-import ChangePasswordSuccessPopupModal from './ChangePasswordSuccessPopupModal';
 import { changePasswordService } from '../../Services/apiService';
+import { toast } from 'sonner';
 
 const ChangePasswordForm = () => {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -14,46 +14,59 @@ const ChangePasswordForm = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // ✅ API states
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // ✅ Handle Save Password
-  const handleSavePassword = async () => {
-    setError('');
-    setSuccessMessage('');
+  // Password strength
+  const getPasswordStrength = (pwd) => {
+    let score = 0;
+    if (pwd.length >= 6) score++;
+    if (pwd.length >= 10) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    return score;
+  };
 
-    // Client-side validation
+  const strength = getPasswordStrength(newPassword);
+  const strengthLabel = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'][strength];
+  const strengthColor = [
+    'bg-red-400', 'bg-red-400', 'bg-yellow-400',
+    'bg-yellow-500', 'bg-green-500', 'bg-green-600',
+  ][strength];
+
+  const handleSavePassword = async () => {
+    // Validation with sonner
     if (!currentPassword.trim()) {
-      setError('Please enter your current password.');
+      toast.error('Please enter your current password.');
       return;
     }
     if (!newPassword.trim()) {
-      setError('Please enter a new password.');
+      toast.error('Please enter a new password.');
       return;
     }
     if (newPassword.length < 6) {
-      setError('New password must be at least 6 characters long.');
+      toast.error('New password must be at least 6 characters long.');
       return;
     }
     if (newPassword !== confirmPassword) {
-      setError('New password and confirm password do not match.');
+      toast.error('New password and confirm password do not match.');
       return;
     }
     if (newPassword === currentPassword) {
-      setError('New password must be different from current password.');
+      toast.error('New password must be different from current password.');
       return;
     }
 
+    const toastId = toast.loading('Updating your password...');
+
     try {
       setLoading(true);
+
+      // ✅ Positional args — matches your service signature
       await changePasswordService.change(
         currentPassword,
         newPassword,
@@ -65,22 +78,32 @@ const ChangePasswordForm = () => {
       setNewPassword('');
       setConfirmPassword('');
 
-      // Show success popup
-      setShowModal(true);
+      // ✅ Success toast
+      toast.success('Password changed successfully! 🎉', {
+        id: toastId,
+        description: 'Your new password is now active.',
+        duration: 4000,
+      });
     } catch (err) {
-      const message =
+      const status = err?.response?.status;
+      let message =
         err?.response?.data?.message ||
+        err?.response?.data?.error ||
         err?.message ||
         'Failed to change password. Please try again.';
-      setError(message);
+
+      if (status === 404) {
+        message = 'Password service unavailable. Please contact support.';
+      } else if (status === 401) {
+        message = 'Your session expired. Please log in again.';
+      } else if (status === 400) {
+        message = err?.response?.data?.message || 'Invalid password details. Please check and retry.';
+      }
+
+      toast.error(message, { id: toastId, duration: 5000 });
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSuccessClose = () => {
-    setShowModal(false);
-    setSuccessMessage('');
   };
 
   return (
@@ -90,7 +113,7 @@ const ChangePasswordForm = () => {
           Account Settings
           <img src={arrow} alt="Arrow" className="w-4 h-4" />
         </span>
-        Forget Password
+        Change Password
       </h1>
 
       <div className="flex flex-col gap-8">
@@ -99,16 +122,8 @@ const ChangePasswordForm = () => {
         </h2>
 
         <div className="flex flex-col gap-8">
-          {/* ✅ Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-lg text-sm md:text-base">
-              {error}
-            </div>
-          )}
-
           {/* Current Password + Forget Password */}
           <div className="flex flex-col md:flex-row md:items-end gap-4 md:gap-6">
-            {/* Current Password */}
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-base md:text-lg font-semibold text-black">
                 Enter Current Password
@@ -123,7 +138,7 @@ const ChangePasswordForm = () => {
                   autoComplete="current-password"
                 />
                 <div
-                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600"
                   onClick={() => setShowCurrent(!showCurrent)}
                 >
                   {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -131,7 +146,6 @@ const ChangePasswordForm = () => {
               </div>
             </div>
 
-            {/* Forget Password Button */}
             <div className="flex justify-start md:justify-end">
               <button
                 type="button"
@@ -145,7 +159,6 @@ const ChangePasswordForm = () => {
 
           {/* New + Confirm Password */}
           <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-            {/* New Password */}
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-base md:text-lg font-semibold text-black">
                 Enter New Password
@@ -160,15 +173,26 @@ const ChangePasswordForm = () => {
                   autoComplete="new-password"
                 />
                 <div
-                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600"
                   onClick={() => setShowNew(!showNew)}
                 >
                   {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
                 </div>
               </div>
+
+              {newPassword && (
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${strengthColor} transition-all duration-300`}
+                      style={{ width: `${(strength / 5) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-600">{strengthLabel}</span>
+                </div>
+              )}
             </div>
 
-            {/* Confirm Password */}
             <div className="flex flex-col gap-2 flex-1">
               <label className="text-base md:text-lg font-semibold text-black">
                 Re-enter New Password
@@ -183,36 +207,51 @@ const ChangePasswordForm = () => {
                   autoComplete="new-password"
                 />
                 <div
-                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-600"
                   onClick={() => setShowConfirm(!showConfirm)}
                 >
                   {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
                 </div>
               </div>
+
+              {confirmPassword && (
+                <p
+                  className={`text-xs mt-1 flex items-center gap-1 ${
+                    newPassword === confirmPassword ? 'text-green-600' : 'text-red-500'
+                  }`}
+                >
+                  {newPassword === confirmPassword ? (
+                    <>
+                      <CheckCircle2 size={12} /> Passwords match
+                    </>
+                  ) : (
+                    <>
+                      <XCircle size={12} /> Passwords do not match
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           </div>
 
-          {/* Save Password Button */}
+          {/* Save Button */}
           <div className="flex justify-center">
             <button
               type="button"
               onClick={handleSavePassword}
               disabled={loading}
-              className={`bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white font-medium text-base md:text-lg py-3 px-6 md:px-10 rounded-xl w-full md:w-auto transition-opacity ${
+              className={`bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white font-medium text-base md:text-lg py-3 px-6 md:px-10 rounded-xl w-full md:w-auto flex items-center justify-center gap-2 transition-opacity ${
                 loading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-95'
               }`}
             >
+              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
               {loading ? 'Saving...' : 'Save Password'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Modals */}
       {isModalOpen && <PasswordResetModal onClose={closeModal} />}
-      {showModal && (
-        <ChangePasswordSuccessPopupModal onClose={handleSuccessClose} />
-      )}
     </div>
   );
 };

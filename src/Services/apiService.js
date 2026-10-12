@@ -1188,14 +1188,14 @@ export const paymentOptionService = {
     return data?.data || null;
   },
 
-  remove: async (id) => {
-    const response = await apiClient.delete(
-      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)
-    );
-    const data = response.data;
-    if (data?.success === false) {
-      throw new Error(data?.message || 'Failed to delete payment option');
-    }
-    return data?.data || null;
-  },
+ remove: async (id) => {
+  const response = await apiClient.delete(
+    ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id) // ✅ Correct
+  );
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to delete payment option');
+  }
+  return data?.data || null;
+},
 };
