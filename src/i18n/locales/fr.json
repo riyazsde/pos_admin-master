@@ -21,7 +21,21 @@
     "noData": "Aucune donnée disponible",
     "error": "Une erreur s'est produite",
     "total": "Total",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "details": "Détails",
+    "export": "Exporter",
+    "exportCSV": "Exporter CSV",
+    "exportPDF": "Exporter PDF",
+    "filters": "Filtres",
+    "searchPlaceholder": "Rechercher...",
+    "selectOne": "Sélectionnez...",
+    "showing": "Affichage",
+    "of": "sur",
+    "page": "Page",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "noPlan": "Aucun Forfait",
+    "vsLastPeriod": "vs la période précédente"
   },
 
   "nav": {
@@ -175,6 +189,267 @@
       "low": "Faible",
       "normal": "Normale",
       "medium": "Moyenne"
+    }
+  },
+
+  "reports": {
+    "title": "Rapports",
+    "titleAnalytics": "Rapports & Analyses",
+    "tabs": {
+      "reports": "Rapports",
+      "analytics": "Analyses"
+    },
+    "metrics": {
+      "totalActiveClients": "Total Clients Actifs",
+      "totalInactiveClients": "Total Clients Inactifs",
+      "totalRenewalRate": "Taux de Renouvellement Total"
+    },
+    "quickActions": {
+      "revenueReports": "Rapports de Revenus",
+      "subscriptionReports": "Rapports d'Abonnements",
+      "marketplaceSales": "Ventes Marketplace",
+      "inventoryReports": "Rapports d'Inventaire",
+      "lowStockAlerts": "Alertes de Stock Faible",
+      "locationComparison": "Comparaison des Emplacements"
+    },
+    "filters": {
+      "dateRange": "Plage de Dates",
+      "location": "Emplacement",
+      "last7Days": "7 derniers jours",
+      "last30Days": "30 derniers jours",
+      "last90Days": "90 derniers jours"
+    },
+    "kpi": {
+      "totalRevenue": "Revenu Total",
+      "totalOrders": "Total des Commandes",
+      "averageOrderValue": "Valeur Moyenne des Commandes",
+      "activeLocations": "Emplacements Actifs"
+    },
+    "analytics": {
+      "revenueByLocation": "Revenus par Emplacement",
+      "location": "Emplacement",
+      "revenue": "Revenus",
+      "orders": "Commandes",
+      "avgOrder": "Commande Moy.",
+      "growth": "Croissance"
+    },
+    "activeClients": {
+      "title": "Clients Actifs",
+      "subtitle": "{{count}} client{{count, plural}} actif",
+      "subtitle_one": "{{count}} client actif",
+      "subtitle_other": "{{count}} clients actifs",
+      "loading": "Chargement des clients actifs…",
+      "noData": "Aucun client actif",
+      "noDataDesc": "Les clients actifs apparaîtront ici.",
+      "table": {
+        "hash": "#",
+        "businessName": "Nom de l'Entreprise",
+        "plan": "Forfait",
+        "purchased": "Acheté",
+        "status": "Statut"
+      }
+    },
+    "activeClientsReport": {
+      "title": "Clients Actifs",
+      "reportLabel": "(Rapport)",
+      "subtitle": "Répartition des clients actifs",
+      "details": "Détails",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "newClients": "Nouveaux Clients",
+      "renewedClients": "Clients Renouvelés",
+      "noData": "Aucune donnée",
+      "periods": {
+        "1W": "1S",
+        "1M": "1M",
+        "6M": "6M",
+        "1Y": "1A"
+      }
+    },
+    "inactiveClientsChart": {
+      "title": "Clients Inactifs",
+      "reportLabel": "(Rapport)",
+      "subtitle": "Tendance des clients inactifs",
+      "details": "Détails",
+      "inactive": "Inactif",
+      "inactiveLastMonth": "{{percent}}% inactifs le mois dernier",
+      "noData": "Aucun client",
+      "noDataDesc": "inactif pour l'instant",
+      "january": "Janvier",
+      "months": {
+        "jan": "Jan",
+        "feb": "Fév",
+        "mar": "Mar",
+        "apr": "Avr",
+        "may": "Mai",
+        "jun": "Juin",
+        "jul": "Juil",
+        "aug": "Août",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Déc"
+      },
+      "periods": {
+        "1M": "1M",
+        "3M": "3M",
+        "6M": "6M",
+        "1Y": "1A"
+      }
+    },
+    "inactiveClients": {
+      "title": "Clients Inactifs",
+      "subtitle": "{{count}} client{{count, plural}} inactif",
+      "subtitle_one": "{{count}} client inactif",
+      "subtitle_other": "{{count}} clients inactifs",
+      "loading": "Chargement des clients inactifs…",
+      "noData": "Aucun client inactif",
+      "noDataDesc": "Tous vos clients sont actuellement actifs. Les clients inactifs apparaîtront ici.",
+      "table": {
+        "hash": "#",
+        "businessName": "Nom de l'Entreprise",
+        "plan": "Forfait",
+        "purchased": "Acheté",
+        "status": "Statut"
+      }
+    },
+    "analyticsView": {
+      "revenueData": {
+        "downtownBistro": "Bistro du Centre-Ville",
+        "oceanViewCafe": "Café Vue sur l'Océan",
+        "mountainLodge": "Chalet de Montagne",
+        "citySquareDiner": "Restaurant de la Place",
+        "harborGrill": "Grill du Port",
+        "sunsetRestaurant": "Restaurant du Coucher de Soleil"
+      }
+    },
+    "subscriptionSalesChart": {
+      "title": "Ventes d'Abonnements",
+      "reportLabel": "(Rapport)",
+      "loading": "Chargement des données de ventes…",
+      "noData": "Aucune donnée de ventes pour cette période",
+      "totalSales": "ventes totales",
+      "sales": "Ventes",
+      "revenue": "Revenus",
+      "day": "Jour {{day}}"
+    },
+    "subscriptionTable": {
+      "title": "Ventes d'Abonnements",
+      "subtitle": "Derniers achats d'abonnements",
+      "loading": "Chargement des abonnements…",
+      "noData": "Aucune vente d'abonnement",
+      "noDataDesc": "Les achats d'abonnements apparaîtront ici.",
+      "table": {
+        "hash": "#",
+        "business": "Entreprise",
+        "plan": "Forfait",
+        "date": "Date",
+        "amount": "Montant"
+      }
+    },
+    "latestTransactions": {
+      "title": "Dernières Transactions",
+      "subtitle": "Affichage de {{shown}} sur {{total}} transaction{{total, plural}} · {{amount}} XOF",
+      "subtitle_one": "Affichage de {{shown}} sur {{total}} transaction · {{amount}} XOF",
+      "subtitle_other": "Affichage de {{shown}} sur {{total}} transactions · {{amount}} XOF",
+      "loading": "Chargement des transactions…",
+      "noData": "Aucune transaction pour l'instant",
+      "noDataDesc": "Les transactions récentes apparaîtront ici.",
+      "table": {
+        "hash": "#",
+        "reference": "Référence",
+        "date": "Date",
+        "type": "Type",
+        "method": "Méthode",
+        "amount": "Montant",
+        "status": "Statut"
+      },
+      "status": {
+        "success": "Réussi",
+        "pending": "En Attente",
+        "failed": "Échoué"
+      }
+    },
+    "transactionGraph": {
+      "title": "Graphique des Transactions",
+      "reportLabel": "(Rapport)",
+      "subtitle": "12 derniers mois · {{count}} transaction{{count, plural}}",
+      "subtitle_one": "12 derniers mois · {{count}} transaction",
+      "subtitle_other": "12 derniers mois · {{count}} transactions",
+      "loading": "Chargement du graphique…",
+      "totalTransactions": "Total des Transactions",
+      "topMethod": "Méthode principale :",
+      "transactions": "transactions",
+      "noData": "Aucune transaction",
+      "noDataDesc": "dans cette période",
+      "topMethodLabel": "Méthode Principale",
+      "used": "Utilisé",
+      "remaining": "Restant"
+    },
+    "ticketsReportCard": {
+      "title": "Tickets",
+      "reportLabel": "(Rapport)",
+      "ticketsLabel": "{{count}} Tickets",
+      "lessThanLastMonth": "Moins de tickets que le mois dernier",
+      "moreThanLastMonth": "Plus de tickets que le mois dernier",
+      "sameAsLastMonth": "Identique au mois dernier"
+    },
+    "supportTickets": {
+      "title": "Tickets de Support",
+      "subtitle": "{{count}} ticket{{count, plural}} ouvert",
+      "subtitle_one": "{{count}} ticket ouvert",
+      "subtitle_other": "{{count}} tickets ouverts",
+      "loading": "Chargement des tickets de support…",
+      "noData": "Aucun ticket ouvert",
+      "noDataDesc": "Vous êtes à jour ! Les nouveaux tickets apparaîtront ici.",
+      "resolveSuccess": "Ticket marqué pour résolution",
+      "resolveSuccessDesc": "Ticket #{{id}} — {{business}}",
+      "loadFailed": "Échec du chargement des tickets de support",
+      "loadFailedDesc": "Veuillez réessayer plus tard.",
+      "table": {
+        "hash": "#",
+        "businessName": "Nom de l'Entreprise",
+        "issue": "Problème",
+        "date": "Date",
+        "priority": "Priorité",
+        "status": "Statut"
+      },
+      "noSubject": "Aucun sujet",
+      "resolve": "Résoudre",
+      "status": {
+        "open": "Ouvert",
+        "resolved": "Résolu",
+        "closed": "Fermé",
+        "pending": "En Attente"
+      },
+      "priority": {
+        "high": "Élevée",
+        "critical": "Critique",
+        "low": "Faible",
+        "medium": "Moyenne",
+        "normal": "Normale"
+      }
+    },
+    "cityWiseUsage": {
+      "title": "Utilisation par Ville",
+      "reportLabel": "(Rapport)",
+      "subtitle": "{{cities}} vill{{cities, plural}} · {{restaurants}} restaurants · moy {{avg}}/ville",
+      "subtitle_one": "{{cities}} ville · {{restaurants}} restaurants · moy {{avg}}/ville",
+      "subtitle_other": "{{cities}} villes · {{restaurants}} restaurants · moy {{avg}}/ville",
+      "loading": "Chargement des données de ville…",
+      "noData": "Aucune donnée de ville disponible",
+      "noDataDesc": "L'utilisation par ville apparaîtra ici une fois les restaurants enregistrés.",
+      "unknown": "Inconnu",
+      "legend": {
+        "low": "Faible consommation",
+        "good": "Bonne consommation"
+      },
+      "summary": {
+        "totalRestaurants": "Total des restaurants :",
+        "good": "Bon :",
+        "low": "Faible :"
+      },
+      "tooltip": "{{city}} : {{count}} restaurants, {{active}} abonnements actifs"
     }
   },
 
@@ -403,7 +678,6 @@
 
   "accountSettings": {
     "title": "Paramètres du Compte",
-
     "common": {
       "loading": "Chargement des données...",
       "close": "Fermer",
@@ -411,20 +685,17 @@
       "copy": "Copier",
       "unknown": "Inconnu"
     },
-
     "accountDetails": {
       "title": "Détails du Compte",
       "password": "Mot de passe",
       "manageAdmin": "Gérer {{role}}"
     },
-
     "regionalPreference": {
       "title": "Préférences Régionales",
       "languages": "Langues",
       "dateTime": "Date & Heure",
       "currency": "Devise"
     },
-
     "security": {
       "title": "Sécurité",
       "twoFactor": "Authentification à Deux Facteurs",
@@ -438,7 +709,6 @@
       "passwordResetLogs": "Journaux de Réinitialisation de Mot de Passe",
       "apiKeys": "Clés API"
     },
-
     "twoFactor": {
       "title": "Authentification à Deux Facteurs",
       "status": "Statut",
@@ -456,7 +726,6 @@
       "backupCodeDescription": "Conservez ce code dans un endroit sûr. Vous pouvez l'utiliser pour accéder à votre compte si vous perdez votre appareil.",
       "disableButton": "Désactiver l'A2F"
     },
-
     "sessions": {
       "title": "Sessions Actives",
       "description": "Ces appareils sont actuellement connectés à votre compte. Révoquez toute session que vous ne reconnaissez pas.",
@@ -468,7 +737,6 @@
       "revoke": "Révoquer",
       "revokeAllOther": "Révoquer Toutes les Autres Sessions"
     },
-
     "trustedDevices": {
       "title": "Appareils de Confiance",
       "description": "Les appareils de confiance ne nécessiteront pas de vérification A2F. Supprimez tout appareil que vous ne reconnaissez pas.",
@@ -480,7 +748,6 @@
       "addedOn": "Ajouté le {{date}}",
       "lastUsed": "Dernière utilisation {{date}}"
     },
-
     "addDevice": {
       "title": "Ajouter un Nouvel Appareil",
       "deviceName": "Nom de l'Appareil",
@@ -494,7 +761,6 @@
       "addButton": "Ajouter l'Appareil",
       "adding": "Ajout en cours..."
     },
-
     "loginHistory": {
       "title": "Historique de Connexion",
       "description": "Examinez toutes les tentatives de connexion à votre compte. Signalez immédiatement toute activité suspecte.",
@@ -504,7 +770,6 @@
       "method": "Méthode",
       "password": "Mot de passe"
     },
-
     "suspiciousActivity": {
       "title": "Activité Suspecte",
       "description": "Nous surveillons votre compte pour détecter toute activité suspecte. Examinez et résolvez toutes les alertes ci-dessous.",
@@ -517,7 +782,6 @@
         "reviewSessions": "Examinez régulièrement vos sessions actives et vos appareils de confiance"
       }
     },
-
     "passwordResetLogs": {
       "title": "Journaux de Réinitialisation de Mot de Passe",
       "description": "Consultez toutes les tentatives de réinitialisation de mot de passe pour votre compte. Si vous constatez des réinitialisations non autorisées, contactez immédiatement le support.",
@@ -528,7 +792,6 @@
       "noticeDescription": "Si vous remarquez des tentatives de réinitialisation de mot de passe que vous n'avez pas initiées, votre compte peut être compromis. Veuillez changer votre mot de passe immédiatement et activer l'authentification à deux facteurs.",
       "changePasswordNow": "Changer le Mot de Passe Maintenant"
     },
-
     "apiKeys": {
       "title": "Clés API",
       "description": "Gérez les clés API pour accéder aux services TRIAXX par programmation.",
@@ -542,7 +805,6 @@
       "createdOn": "Créée le {{date}}",
       "lastUsed": "Dernière utilisation {{date}}"
     },
-
     "createApiKey": {
       "title": "Créer une Nouvelle Clé",
       "keyNameLabel": "Nom de la Clé API",
@@ -571,7 +833,6 @@
         }
       }
     },
-
     "apiKeyCreated": {
       "title": "Clé API Créée",
       "successTitle": "Clé API Créée avec Succès",
@@ -579,7 +840,6 @@
       "importantDescription": "Cette clé ne sera affichée qu'une seule fois. Assurez-vous de la copier et de la conserver en lieu sûr.",
       "doneButton": "Terminé"
     },
-
     "toasts": {
       "backupCodeCopied": "Code de secours copié dans le presse-papiers",
       "sessionRevoked": "Session révoquée avec succès",
@@ -802,7 +1062,463 @@
     "resolved": "Résolu",
     "closed": "Fermé"
   },
+  "ham": {
+    "title": "Gestion des Actifs Matériels (HAM)",
+    "subtitle": "{{count}} appareil{{count, plural}} en inventaire",
+    "subtitle_one": "{{count}} appareil en inventaire",
+    "subtitle_other": "{{count}} appareils en inventaire",
+    "addDevice": "Ajouter un Appareil",
+    "loading": "Chargement des appareils…",
+    "noData": "Aucun appareil trouvé",
+    "noDataAddFirst": "Ajoutez votre premier appareil pour commencer.",
+    "noDataFilter": "Aucun appareil ne correspond à ce filtre.",
+    "tabs": {
+      "all": "Tous les Appareils",
+      "assigned": "Appareils Assignés",
+      "out": "En Rupture de Stock"
+    },
+    "table": {
+      "deviceType": "Type d'Appareil",
+      "totalStock": "Stock Total",
+      "available": "Disponible",
+      "assigned": "Assigné",
+      "manufacturerWarranty": "Garantie Fabricant",
+      "extendedWarranty": "Garantie Étendue",
+      "slaCoverage": "Couverture SLA",
+      "swapEligibility": "Éligibilité au Remplacement",
+      "replacementCycle": "Cycle de Remplacement"
+    },
+    "deviceTypes": {
+      "posTerminal": "Terminal de Paiement",
+      "printer": "Imprimante de Reçus",
+      "scanner": "Scanner de Codes-Barres",
+      "cashDrawer": "Tiroir-Caisse",
+      "kds": "Écran KDS",
+      "tablet": "Tablette",
+      "default": "Appareil"
+    },
+    "row": {
+      "exp": "Exp : {{date}}",
+      "purchased": "Acheté {{date}}",
+      "noCoverage": "Aucune Couverture",
+      "notEligible": "Non Éligible",
+      "eligible": "Éligible",
+      "swapNow": "Remplacer Maintenant",
+      "nextBusinessDay": "Jour Ouvré Suivant",
+      "months": "mois"
+    },
+    "modal": {
+      "title": "Ajouter de Nouveaux Appareils",
+      "deviceName": "Nom de l'Appareil",
+      "deviceNamePlaceholder": "Entrez le nom de l'appareil",
+      "serialNumber": "Numéro de Série",
+      "serialNumberPlaceholder": "Entrez",
+      "hardwareModel": "Modèle Matériel",
+      "hardwareModelPlaceholder": "Entrez",
+      "manufacturer": "Fabricant",
+      "manufacturerPlaceholder": "Entrez",
+      "imei": "IMEI",
+      "imeiPlaceholder": "Entrez",
+      "deviceType": "Type d'Appareil",
+      "adding": "Ajout en cours...",
+      "addDevice": "Ajouter l'Appareil",
+      "validation": {
+        "nameRequired": "Le nom de l'appareil est requis",
+        "serialRequired": "Le numéro de série est requis",
+        "typeRequired": "Le type d'appareil est requis"
+      },
+      "options": {
+        "printer": "Imprimante",
+        "posTerminal": "Terminal POS",
+        "scanner": "Scanner",
+        "cashDrawer": "Tiroir-Caisse",
+        "kds": "KDS",
+        "tablet": "Tablette"
+      },
+      "toasts": {
+        "adding": "Ajout de l'appareil...",
+        "addSuccess": "Appareil ajouté avec succès !",
+        "addSuccessDesc": "\"{{name}}\" est maintenant en inventaire.",
+        "addFailed": "Échec de l'ajout de l'appareil",
+        "addFailedDesc": "Veuillez réessayer."
+      }
+    }
+  },
+  "mdm": {
+    "title": "Gestion des Appareils MDM",
+    "subtitle": "{{count}} appareil{{count, plural}} dans la flotte",
+    "subtitle_one": "{{count}} appareil dans la flotte",
+    "subtitle_other": "{{count}} appareils dans la flotte",
+    "enrollNewDevice": "Enrôler un Nouvel Appareil",
+    "loading": "Chargement des appareils…",
+    "noDevices": "Aucun appareil trouvé",
+    "noDevicesDesc": "Essayez d'ajuster vos filtres.",
+    "searchPlaceholder": "Rechercher des appareils...",
+    "filter": "Filtrer",
+    "unknownModel": "Modèle Inconnu",
+    "na": "N/D",
+    "never": "Jamais",
+    "stats": {
+      "totalDevices": "Total des Appareils",
+      "onlineDevices": "Appareils en Ligne",
+      "offlineDevices": "Appareils Hors Ligne",
+      "needsUpdate": "Nécessite une Mise à Jour",
+      "uptime": "{{percent}}% de disponibilité",
+      "requiresAttention": "Nécessite une attention",
+      "updatesAvailable": "Mises à jour disponibles"
+    },
+    "filters": {
+      "all": "Tous les Appareils",
+      "online": "En Ligne",
+      "offline": "Hors Ligne",
+      "active": "Actif",
+      "idle": "Inactif",
+      "syncDelay": "Retard de Synchronisation"
+    },
+    "table": {
+      "status": "Statut",
+      "deviceName": "Nom de l'Appareil",
+      "location": "Emplacement",
+      "appVersion": "Version de l'App",
+      "lastSeen": "Dernière Vue",
+      "actions": "Actions",
+      "updateAvailable": "Mise à Jour Disponible",
+      "android": "Android"
+    },
+    "status": {
+      "online": "En Ligne",
+      "offline": "Hors Ligne"
+    },
+    "actions": {
+      "viewLogs": "Voir les Journaux",
+      "lock": "Verrouiller",
+      "unlock": "Déverrouiller",
+      "restart": "Redémarrer",
+      "pushUpdate": "Pousser la Mise à Jour",
+      "wipe": "Effacer"
+    },
+    "enrollModal": {
+      "title": "Enrôler un Nouvel Appareil",
+      "subtitle": "Lorem ipsum is simply dummy text of the printing and typesetting industry",
+      "information": "Informations",
+      "deviceName": "Nom de l'Appareil",
+      "totalStocks": "Stock Total",
+      "serialNumber": "Numéro de Série",
+      "imei": "IMEI",
+      "androidId": "ID Android",
+      "hardwareModel": "Modèle Matériel",
+      "merchantAssignment": "Affectation Marchand",
+      "enrollmentToken": "Jeton d'Enrôlement",
+      "provisioningType": "Type de Provisionnement",
+      "deviceOwnership": "Propriété de l'Appareil",
+      "kioskProfile": "Profil Kiosque",
+      "mdmPolicyAssignment": "Affectation de Politique MDM",
+      "location": "Emplacement",
+      "enrollmentMode": "Mode d'Enrôlement",
+      "selectOne": "Sélectionnez...",
+      "modeToken": "Jeton",
+      "modeManual": "Manuel",
+      "modeAuto": "Auto",
+      "modeQrCode": "Code QR",
+      "status": "Statut",
+      "placeholder": "Entrez",
+      "cancel": "Annuler",
+      "enroll": "Enrôler",
+      "validation": {
+        "nameRequired": "Le nom de l'appareil est requis",
+        "serialRequired": "Le numéro de série est requis"
+      },
+      "toasts": {
+        "enrolling": "Enrôlement de l'appareil...",
+        "enrollSuccess": "Appareil enrôlé avec succès",
+        "enrollFailed": "Échec de l'enrôlement de l'appareil",
+        "tryAgain": "Veuillez réessayer."
+      }
+    },
+    "lockModal": {
+      "title": "Verrouillage à Distance",
+      "warning": "Cela verrouillera immédiatement l'appareil et nécessitera une authentification pour le déverrouiller.",
+      "deviceId": "ID de l'Appareil",
+      "status": "Statut",
+      "location": "Emplacement",
+      "reason": "Raison",
+      "defaultReason": "Appareil signalé perdu",
+      "cancel": "Annuler",
+      "lockDevice": "Verrouiller l'Appareil",
+      "toasts": {
+        "locking": "Verrouillage de l'appareil...",
+        "lockSuccess": "Appareil verrouillé",
+        "lockFailed": "Échec du verrouillage de l'appareil",
+        "tryAgain": "Veuillez réessayer."
+      }
+    },
+    "restartModal": {
+      "title": "Redémarrage à Distance",
+      "warning": "Cela redémarrera l'appareil. Tout travail non enregistré sera perdu.",
+      "restartReason": "Raison du Redémarrage",
+      "defaultReason": "Appliquer les modifications de configuration",
+      "scheduleRestart": "Planifier le Redémarrage",
+      "restartQueue": "File de Redémarrage",
+      "restartSuccessConfirmation": "Confirmation de Réussite du Redémarrage",
+      "autoRecoveryMode": "Mode de récupération automatique",
+      "cancel": "Annuler",
+      "restartDevice": "Redémarrer l'Appareil",
+      "toasts": {
+        "scheduling": "Planification du redémarrage...",
+        "restartSuccess": "Redémarrage planifié",
+        "restartFailed": "Échec de la planification du redémarrage",
+        "tryAgain": "Veuillez réessayer."
+      }
+    },
+    "updateModal": {
+      "title": "Pousser la Mise à Jour",
+      "warning": "Cela poussera la dernière version de l'app vers l'appareil et l'installera.",
+      "appVersion": "Version de l'App",
+      "cancel": "Annuler",
+      "pushUpdate": "Pousser la Mise à Jour",
+      "toasts": {
+        "pushing": "Poussée de la mise à jour...",
+        "updateSuccess": "Mise à jour poussée",
+        "updateFailed": "Échec de la poussée de la mise à jour",
+        "tryAgain": "Veuillez réessayer."
+      }
+    },
+    "wipeModal": {
+      "title": "Effacement à Distance",
+      "warning": "ATTENTION : Cela effacera toutes les données sur {{name}}. Cette action est irréversible.",
+      "email": "Email",
+      "emailPlaceholder": "Entrez votre email enregistré",
+      "password": "Mot de Passe",
+      "passwordPlaceholder": "Entrez votre mot de passe",
+      "otpInstructions": "Pour effacer l'appareil, vous devez saisir le code OTP à 6 chiffres envoyé à l'adresse email enregistrée.",
+      "otp": "OTP",
+      "resendOtp": "Renvoyer l'OTP",
+      "resending": "Renvoi…",
+      "wipeMode": "Mode d'Effacement",
+      "modeFullReset": "Réinitialisation Complète d'Usine",
+      "modeSelective": "Effacement Sélectif",
+      "modeEnterprise": "Réinitialisation d'Entreprise",
+      "cancel": "Annuler",
+      "next": "Suivant",
+      "wipeNow": "Effacer Maintenant",
+      "validation": {
+        "emailRequired": "L'email est requis",
+        "passwordRequired": "Le mot de passe est requis",
+        "otpRequired": "Veuillez saisir les 6 chiffres"
+      },
+      "toasts": {
+        "otpSent": "OTP envoyé à votre email",
+        "otpResent": "OTP renvoyé à votre email",
+        "otpFailed": "Échec de l'envoi de l'OTP",
+        "wiping": "Effacement de l'appareil...",
+        "wipeSuccess": "Appareil effacé",
+        "wipeFailed": "Échec de l'effacement de l'appareil",
+        "tryAgain": "Veuillez réessayer."
+      }
+    },
+    "sessionLogsModal": {
+      "title": "Journaux de Session",
+      "ipAddress": "Adresse IP",
+      "uptime": "Durée de Fonctionnement",
+      "battery": "Batterie",
+      "storageUsed": "Stockage Utilisé",
+      "days": "{{count}} jours",
+      "loading": "Chargement des journaux…",
+      "noLogs": "Aucun journal de session",
+      "exportLogs": "Exporter les Journaux",
+      "exporting": "Exportation…",
+      "toasts": {
+        "preparing": "Préparation de l'export…",
+        "exportSuccess": "Export téléchargé",
+        "exportFailed": "Échec de l'export",
+        "noDevice": "Aucun appareil sélectionné"
+      },
+      "status": {
+        "completed": "Terminé",
+        "queued": "En File"
+      }
+    }
+  },
+  "audits": {
+    "title": "Audits",
+    "lastUpdated": "Dernière mise à jour : {{date}}",
+    "loading": "Chargement des journaux d'audit…",
+    "noData": "Aucun journal d'audit trouvé",
+    "noDataDesc": "Essayez d'ajuster vos filtres ou votre plage de dates",
+    "unknown": "Inconnu",
+    "na": "—",
+    "never": "Jamais",
+    "activity": "Activité",
+    "export": {
+      "exportCSV": "Exporter CSV",
+      "exportPDF": "Exporter PDF",
+      "generating": "Génération de l'export...",
+      "csvSuccess": "CSV exporté",
+      "failed": "Échec de l'export",
+      "tryAgain": "Veuillez réessayer."
+    },
+    "stats": {
+      "totalLogs": "Total des Journaux",
+      "todayActivity": "Activité du Jour",
+      "loginEvents": "Événements de Connexion",
+      "orderChanges": "Modifications de Commandes",
+      "stockAdjustments": "Ajustements de Stock"
+    },
+    "filters": {
+      "title": "Filtres",
+      "startDate": "Date de Début",
+      "endDate": "Date de Fin",
+      "environment": "Environnement",
+      "action": "Action",
+      "search": "Rechercher",
+      "searchPlaceholder": "Rechercher dans les journaux...",
+      "allEnvironments": "Tous les environnements",
+      "allActions": "Toutes les actions",
+      "clear": "Effacer",
+      "apply": "Appliquer les Filtres",
+      "applied": "Filtres appliqués",
+      "failed": "Échec du chargement de l'activité d'audit",
+      "environments": {
+        "development": "Développement",
+        "staging": "Pré-production",
+        "production": "Production"
+      },
+      "actions": {
+        "login": "Connexion",
+        "logout": "Déconnexion",
+        "modify": "Modifier",
+        "create": "Créer",
+        "delete": "Supprimer",
+        "refund": "Remboursement",
+        "discount": "Remise Appliquée",
+        "menuPrice": "Prix du Menu Modifié"
+      }
+    },
+    "sort": {
+      "title": "Trier",
+      "asc": "Croissant",
+      "desc": "Décroissant",
+      "options": {
+        "timestamp": "Horodatage",
+        "user": "Utilisateur",
+        "action": "Action",
+        "location": "Emplacement",
+        "ip": "Adresse IP",
+        "details": "Détails",
+        "pos": "Quel POS"
+      }
+    },
+    "table": {
+      "timestamp": "Horodatage",
+      "user": "Utilisateur",
+      "action": "Action",
+      "location": "Emplacement",
+      "ip": "Adresse IP",
+      "details": "Détails",
+      "pos": "Quel POS"
+    },
+    "pagination": {
+      "showing": "Affichage de {{start}}–{{end}} sur {{total}} journaux",
+      "rows": "Lignes :",
+      "firstPage": "Première page",
+      "previousPage": "Page précédente",
+      "nextPage": "Page suivante",
+      "lastPage": "Dernière page"
+    },
+    "overview": {
+      "failed": "Échec du chargement de l'aperçu d'audit",
+      "activityFailed": "Échec du chargement de l'activité"
+    }
+  },
 
+  "posHardware": {
+    "pageTitle": "Appareils Matériels POS",
+    "lastUpdated": "Dernière mise à jour : {{date}}",
+    "metrics": {
+      "totalClients": "Total Clients",
+      "totalPrinters": "Total Imprimantes",
+      "totalSystems": "Total Systèmes POS"
+    },
+    "devicesSection": {
+      "title": "Tous les Appareils Matériels",
+      "subtitle": "Gérez et suivez tous les appareils matériels sur tous les sites",
+      "loading": "Chargement des appareils matériels...",
+      "noData": "Aucun appareil matériel trouvé.",
+      "table": {
+        "device": "Appareil",
+        "serialNumber": "Numéro de Série",
+        "warranty": "Garantie",
+        "condition": "État"
+      },
+      "warranty": {
+        "exp": "Exp : {{date}}",
+        "purchase": "Achat : {{date}}"
+      },
+      "toasts": {
+        "fetchFailed": "Échec du chargement des données matérielles POS",
+        "fetchFailedDesc": "Veuillez réessayer plus tard.",
+        "devicesFailed": "Échec du chargement de la liste des appareils matériels"
+      }
+    },
+    "hardwareChart": {
+      "title": "Matériel Vendu",
+      "units": "unités",
+      "changeFromLastMonth": "de changement depuis le mois dernier",
+      "sold": "Vendu",
+      "unitsLabel": "{{count}} unités"
+    },
+    "history": {
+      "title": "Historique des Appareils Matériels POS",
+      "records": "{{count}} enregistrement{{count, plural}}",
+      "records_one": "{{count}} enregistrement",
+      "records_other": "{{count}} enregistrements",
+      "refresh": "Actualiser",
+      "filter": {
+        "all": "Tous les Appareils",
+        "printer": "Imprimante",
+        "system": "Système",
+        "kds": "KDS",
+        "tablet": "Tablette"
+      },
+      "loading": "Chargement de l'historique…",
+      "noData": "Aucun historique matériel pour l'instant",
+      "noDataDesc": "Les achats de matériel apparaîtront ici.",
+      "table": {
+        "hash": "#",
+        "businessName": "Nom de l'Entreprise",
+        "planPurchased": "Forfait Acheté",
+        "renewalDate": "Date de Renouvellement",
+        "transactionId": "ID de Transaction",
+        "devicePurchased": "Appareil Acheté"
+      }
+    },
+    "hardwareSold": {
+      "title": "Matériel Vendu",
+      "records": "{{count}} enregistrement{{count, plural}}",
+      "records_one": "{{count}} enregistrement",
+      "records_other": "{{count}} enregistrements",
+      "loading": "Chargement des ventes de matériel…",
+      "noData": "Aucun matériel vendu pour l'instant",
+      "noDataDesc": "Le matériel acheté apparaîtra ici une fois les ventes enregistrées.",
+      "table": {
+        "hash": "#",
+        "businessName": "Nom de l'Entreprise",
+        "planPurchased": "Forfait Acheté",
+        "purchasedDate": "Date d'Achat",
+        "device": "Appareil"
+      }
+    },
+    "conditions": {
+      "excellent": "Excellent",
+      "good": "Bon",
+      "new": "Neuf",
+      "unknown": "Inconnu"
+    },
+    "deviceLabels": {
+      "device": "Appareil",
+      "sold": "{{count}} vendus"
+    }
+  },
   "notifications": {
     "searchPlaceholder": "Rechercher des notifications..."
   }

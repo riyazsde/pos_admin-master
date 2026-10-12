@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { Loader2, Activity, ChevronRight } from 'lucide-react';
 
@@ -15,13 +16,13 @@ const formatNumber = (n) => {
 };
 
 const TransactionGraph = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const { transactionGraph, transactionGraphLoading } = useAppSelector(
     (state) => state.reports
   );
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -41,12 +42,10 @@ const TransactionGraph = () => {
     fetchGraph();
   }, [dispatch]);
 
-  // ✅ Build "used vs remaining" visualization from top payment methods
   const topMethods = transactionGraph?.topPaymentMethods || [];
   const summary = transactionGraph?.monthly?.[0] || { count: 0, totalAmount: 0 };
   const totalAmount = summary.totalAmount || 0;
 
-  // Pick the top payment method as the "used" slice
   const topMethod = topMethods[0];
   const topMethodShare =
     totalAmount > 0 && topMethod
@@ -54,14 +53,18 @@ const TransactionGraph = () => {
       : 0;
 
   const pieData = [
-    { name: topMethod?._id || 'Used', value: topMethodShare },
-    { name: 'Remaining', value: Math.max(100 - topMethodShare, 0) },
+    {
+      name: topMethod?._id || t('reports.transactionGraph.used'),
+      value: topMethodShare,
+    },
+    {
+      name: t('reports.transactionGraph.remaining'),
+      value: Math.max(100 - topMethodShare, 0),
+    },
   ];
 
   const COLORS = ['url(#grad1)', '#E5E7EB'];
 
-  // Format the trend line
-  const daily = transactionGraph?.daily || [];
   const currentMonth = transactionGraph?.monthly?.[0];
   const countLabel = currentMonth?.count ?? 0;
 
@@ -71,15 +74,17 @@ const TransactionGraph = () => {
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            Transaction Graph{' '}
-            <span className="text-gray-400 font-medium">(Report)</span>
+            {t('reports.transactionGraph.title')}{' '}
+            <span className="text-gray-400 font-medium">
+              {t('reports.transactionGraph.reportLabel')}
+            </span>
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Last 12 months · {countLabel} transaction{countLabel !== 1 ? 's' : ''}
+            {t('reports.transactionGraph.subtitle', { count: countLabel })}
           </p>
         </div>
         <button className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors">
-          Details
+          {t('common.details')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -89,14 +94,16 @@ const TransactionGraph = () => {
         {transactionGraphLoading && !transactionGraph ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading graph…</span>
+            <span className="text-sm">
+              {t('reports.transactionGraph.loading')}
+            </span>
           </div>
         ) : (
           <>
             {/* Summary */}
             <div className="shrink-0 mb-4">
               <p className="text-gray-400 text-sm mb-1">
-                Total Transactions
+                {t('reports.transactionGraph.totalTransactions')}
               </p>
               <p className="text-2xl font-bold text-[#941C93] tabular-nums">
                 {formatNumber(totalAmount)}{' '}
@@ -104,11 +111,11 @@ const TransactionGraph = () => {
               </p>
               {topMethod && (
                 <p className="text-sm mt-1 text-gray-700">
-                  Top method:{' '}
+                  {t('reports.transactionGraph.topMethod')}{' '}
                   <span className="text-green-600 font-semibold">
                     {topMethod._id}
                   </span>{' '}
-                  ({topMethod.count} transactions)
+                  ({topMethod.count} {t('reports.transactionGraph.transactions')})
                 </p>
               )}
             </div>
@@ -163,14 +170,19 @@ const TransactionGraph = () => {
                         {topMethodShare}%
                       </span>
                       <span className="text-[10px] text-gray-500 mt-0.5">
-                        {topMethod?._id || 'Top Method'}
+                        {topMethod?._id ||
+                          t('reports.transactionGraph.topMethodLabel')}
                       </span>
                     </div>
                   </>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2 rounded-full border border-dashed border-gray-200">
-                    <span className="text-sm font-medium">No transactions</span>
-                    <span className="text-xs">in this period</span>
+                    <span className="text-sm font-medium">
+                      {t('reports.transactionGraph.noData')}
+                    </span>
+                    <span className="text-xs">
+                      {t('reports.transactionGraph.noDataDesc')}
+                    </span>
                   </div>
                 )}
               </div>

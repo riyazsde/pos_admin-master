@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -40,6 +41,7 @@ const FALLBACK_MONTHS = [
 ];
 
 const HardwareChart = () => {
+  const { t } = useTranslation();
   const {
     monthlyBreakdown,
     totalHardwareSold,
@@ -48,7 +50,6 @@ const HardwareChart = () => {
     hasLoaded,
   } = useAppSelector((state) => state.posHardware);
 
-  // ✅ Build chart data
   const data =
     monthlyBreakdown && monthlyBreakdown.length > 0
       ? monthlyBreakdown.map((item) => ({
@@ -76,7 +77,7 @@ const HardwareChart = () => {
   return (
     <div className="w-full h-full flex flex-col">
       <h2 className="text-xl sm:text-2xl font-bold text-[#2E2E30] mb-4 poppins-text shrink-0">
-        Hardware Sold
+        {t('posHardware.hardwareChart.title')}
       </h2>
 
       <div className="flex-1 bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-6 flex flex-col min-h-0">
@@ -91,7 +92,9 @@ const HardwareChart = () => {
             <>
               <h1 className="text-4xl font-bold text-[#344BFD] mb-2 tabular-nums">
                 {formatNumber(totalHardwareSold)}{' '}
-                <span className="text-lg text-gray-500 font-medium">units</span>
+                <span className="text-lg text-gray-500 font-medium">
+                  {t('posHardware.hardwareChart.units')}
+                </span>
               </h1>
               <div className="flex items-center gap-2">
                 <svg
@@ -117,7 +120,7 @@ const HardwareChart = () => {
                 >
                   {changeText}{' '}
                   <span className="text-[#00000099]">
-                    change from last month
+                    {t('posHardware.hardwareChart.changeFromLastMonth')}
                   </span>
                 </span>
               </div>
@@ -158,7 +161,10 @@ const HardwareChart = () => {
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                   }}
                   labelStyle={{ color: '#1F2937', fontWeight: 'bold' }}
-                  formatter={(value) => [`${value} units`, 'Sold']}
+                  formatter={(value) => [
+                    t('posHardware.hardwareChart.unitsLabel', { count: value }),
+                    t('posHardware.hardwareChart.sold'),
+                  ]}
                 />
                 <Bar
                   dataKey="sales"

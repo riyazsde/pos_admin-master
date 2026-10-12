@@ -1,5 +1,6 @@
 // src/Components/MDM/MdmPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
   Wifi,
@@ -44,10 +45,10 @@ const isDeviceOnline = (d) => {
   return diff < 24 * 60 * 60 * 1000;
 };
 
-const formatDate = (iso) => {
-  if (!iso) return 'Never';
+const formatDate = (iso, locale = 'en-US', neverLabel = 'Never') => {
+  if (!iso) return neverLabel;
   try {
-    return new Date(iso).toLocaleString('en-US', {
+    return new Date(iso).toLocaleString(locale, {
       month: 'short',
       day: '2-digit',
       year: 'numeric',
@@ -55,7 +56,7 @@ const formatDate = (iso) => {
       minute: '2-digit',
     });
   } catch {
-    return 'Never';
+    return neverLabel;
   }
 };
 
@@ -76,25 +77,29 @@ const DeviceIcon = ({ type }) => {
 // ---------------------------------------------------------------------------
 // Status Badge
 // ---------------------------------------------------------------------------
-const StatusBadge = ({ online }) => (
-  <div
-    className={`flex items-center gap-1.5 text-xs font-semibold ${
-      online ? 'text-green-600' : 'text-red-500'
-    }`}
-  >
+const StatusBadge = ({ online }) => {
+  const { t } = useTranslation();
+  return (
     <div
-      className={`w-2 h-2 rounded-full ${
-        online ? 'bg-green-500' : 'bg-red-500'
+      className={`flex items-center gap-1.5 text-xs font-semibold ${
+        online ? 'text-green-600' : 'text-red-500'
       }`}
-    ></div>
-    {online ? 'Online' : 'Offline'}
-  </div>
-);
+    >
+      <div
+        className={`w-2 h-2 rounded-full ${
+          online ? 'bg-green-500' : 'bg-red-500'
+        }`}
+      ></div>
+      {online ? t('mdm.status.online') : t('mdm.status.offline')}
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Enroll New Device Modal
 // ---------------------------------------------------------------------------
 const EnrollModal = ({ onClose, onSubmit, loading }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     Name: '',
     type: 'POS Terminal',
@@ -117,9 +122,10 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
   const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSubmit = () => {
-    if (!form.Name.trim()) return toast.error('Device Name is required');
+    if (!form.Name.trim())
+      return toast.error(t('mdm.enrollModal.validation.nameRequired'));
     if (!form.Serial_Number.trim())
-      return toast.error('Serial Number is required');
+      return toast.error(t('mdm.enrollModal.validation.serialRequired'));
     onSubmit(form);
   };
 
@@ -128,9 +134,11 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col">
         <div className="flex items-start justify-between px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-500 rounded-t-2xl">
           <div>
-            <h3 className="font-bold text-white text-lg">Enroll New Device</h3>
+            <h3 className="font-bold text-white text-lg">
+              {t('mdm.enrollModal.title')}
+            </h3>
             <p className="text-xs text-purple-100 mt-0.5">
-              Lorem ipsum is simply dummy text of the printing and typesetting industry
+              {t('mdm.enrollModal.subtitle')}
             </p>
           </div>
           <button
@@ -142,167 +150,169 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          <h4 className="font-semibold text-gray-800 text-sm">Information</h4>
+          <h4 className="font-semibold text-gray-800 text-sm">
+            {t('mdm.enrollModal.information')}
+          </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Device Name
+                {t('mdm.enrollModal.deviceName')}
               </label>
               <input
                 type="text"
                 value={form.Name}
                 onChange={(e) => update('Name', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Total Stocks
+                {t('mdm.enrollModal.totalStocks')}
               </label>
               <input
                 type="number"
                 value={form.Total_Stocks}
                 onChange={(e) => update('Total_Stocks', Number(e.target.value))}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Serial Number
+                {t('mdm.enrollModal.serialNumber')}
               </label>
               <input
                 type="text"
                 value={form.Serial_Number}
                 onChange={(e) => update('Serial_Number', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                IMEI
+                {t('mdm.enrollModal.imei')}
               </label>
               <input
                 type="text"
                 value={form.IMEI}
                 onChange={(e) => update('IMEI', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Android ID
+                {t('mdm.enrollModal.androidId')}
               </label>
               <input
                 type="text"
                 value={form.Android_ID}
                 onChange={(e) => update('Android_ID', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Hardware Model
+                {t('mdm.enrollModal.hardwareModel')}
               </label>
               <input
                 type="text"
                 value={form.Devices_ModelNo}
                 onChange={(e) => update('Devices_ModelNo', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Merchant Assignment
+                {t('mdm.enrollModal.merchantAssignment')}
               </label>
               <input
                 type="text"
                 value={form.Merchant_Assignment}
                 onChange={(e) => update('Merchant_Assignment', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Enrollment Token
+                {t('mdm.enrollModal.enrollmentToken')}
               </label>
               <input
                 type="text"
                 value={form.Enrollment_Token}
                 onChange={(e) => update('Enrollment_Token', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Provisioning Type
+                {t('mdm.enrollModal.provisioningType')}
               </label>
               <input
                 type="text"
                 value={form.Provisioning_Type}
                 onChange={(e) => update('Provisioning_Type', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Device Ownership
+                {t('mdm.enrollModal.deviceOwnership')}
               </label>
               <input
                 type="text"
                 value={form.Device_Ownership}
                 onChange={(e) => update('Device_Ownership', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Kiosk Profile
+                {t('mdm.enrollModal.kioskProfile')}
               </label>
               <input
                 type="text"
                 value={form.Kiosk_Profile}
                 onChange={(e) => update('Kiosk_Profile', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                MDM Policy Assignment
+                {t('mdm.enrollModal.mdmPolicyAssignment')}
               </label>
               <input
                 type="text"
                 value={form.MDM_Policy_Assignment}
                 onChange={(e) => update('MDM_Policy_Assignment', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Location
+                {t('mdm.enrollModal.location')}
               </label>
               <input
                 type="text"
                 value={form.location}
                 onChange={(e) => update('location', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('mdm.enrollModal.placeholder')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Enrollment Mode
+                {t('mdm.enrollModal.enrollmentMode')}
               </label>
               <div className="relative">
                 <select
@@ -310,11 +320,11 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
                   onChange={(e) => update('Enrollment_Mode', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
                 >
-                  <option value="">Select one...</option>
-                  <option value="Token">Token</option>
-                  <option value="Manual">Manual</option>
-                  <option value="Auto">Auto</option>
-                  <option value="QR Code">QR Code</option>
+                  <option value="">{t('mdm.enrollModal.selectOne')}</option>
+                  <option value="Token">{t('mdm.enrollModal.modeToken')}</option>
+                  <option value="Manual">{t('mdm.enrollModal.modeManual')}</option>
+                  <option value="Auto">{t('mdm.enrollModal.modeAuto')}</option>
+                  <option value="QR Code">{t('mdm.enrollModal.modeQrCode')}</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
@@ -322,7 +332,9 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <span className="text-sm font-medium text-gray-700">Status</span>
+            <span className="text-sm font-medium text-gray-700">
+              {t('mdm.enrollModal.status')}
+            </span>
             <button
               onClick={() => update('Status', !form.Status)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
@@ -343,7 +355,7 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
             onClick={onClose}
             className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            {t('mdm.enrollModal.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -351,7 +363,7 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
             className="px-6 py-2.5 text-sm font-semibold text-white bg-purple-600 rounded-xl hover:bg-purple-700 disabled:opacity-60 flex items-center gap-2 transition-colors"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Enroll
+            {t('mdm.enrollModal.enroll')}
           </button>
         </div>
       </div>
@@ -363,7 +375,8 @@ const EnrollModal = ({ onClose, onSubmit, loading }) => {
 // Lock Modal
 // ---------------------------------------------------------------------------
 const LockModal = ({ device, onClose, onConfirm, loading }) => {
-  const [reason, setReason] = useState('Device reported lost');
+  const { t } = useTranslation();
+  const [reason, setReason] = useState(t('mdm.lockModal.defaultReason'));
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -374,7 +387,9 @@ const LockModal = ({ device, onClose, onConfirm, loading }) => {
               <Lock className="w-5 h-5 text-orange-500" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Remote Lock Device</h3>
+              <h3 className="font-bold text-gray-900">
+                {t('mdm.lockModal.title')}
+              </h3>
               <p className="text-xs text-gray-500">{device?.Name}</p>
             </div>
           </div>
@@ -384,34 +399,44 @@ const LockModal = ({ device, onClose, onConfirm, loading }) => {
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 text-sm text-orange-800">
-            This will immediately lock the device and require authentication to unlock.
+            {t('mdm.lockModal.warning')}
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-xs text-gray-500 font-medium">Device ID</p>
+              <p className="text-xs text-gray-500 font-medium">
+                {t('mdm.lockModal.deviceId')}
+              </p>
               <p className="font-semibold text-gray-800 mt-1">
                 DEV-{String(device?.MyDevices_id).padStart(3, '0')}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Status</p>
+              <p className="text-xs text-gray-500 font-medium">
+                {t('mdm.lockModal.status')}
+              </p>
               <p
                 className={`font-semibold mt-1 ${
                   isDeviceOnline(device) ? 'text-green-600' : 'text-red-500'
                 }`}
               >
-                {isDeviceOnline(device) ? 'online' : 'offline'}
+                {isDeviceOnline(device)
+                  ? t('mdm.status.online')
+                  : t('mdm.status.offline')}
               </p>
             </div>
             <div className="col-span-2">
-              <p className="text-xs text-gray-500 font-medium">Location</p>
+              <p className="text-xs text-gray-500 font-medium">
+                {t('mdm.lockModal.location')}
+              </p>
               <p className="font-semibold text-gray-800 mt-1">
-                {device?.location || 'N/A'}
+                {device?.location || t('mdm.na')}
               </p>
             </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-2">Reason</label>
+            <label className="block text-xs font-medium text-gray-700 mb-2">
+              {t('mdm.lockModal.reason')}
+            </label>
             <input
               type="text"
               value={reason}
@@ -425,7 +450,7 @@ const LockModal = ({ device, onClose, onConfirm, loading }) => {
             onClick={onClose}
             className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            {t('mdm.lockModal.cancel')}
           </button>
           <button
             onClick={() => onConfirm(reason)}
@@ -437,7 +462,7 @@ const LockModal = ({ device, onClose, onConfirm, loading }) => {
             ) : (
               <Lock className="w-4 h-4" />
             )}
-            Lock Device
+            {t('mdm.lockModal.lockDevice')}
           </button>
         </div>
       </div>
@@ -449,8 +474,9 @@ const LockModal = ({ device, onClose, onConfirm, loading }) => {
 // Restart Modal
 // ---------------------------------------------------------------------------
 const RestartModal = ({ device, onClose, onConfirm, loading }) => {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
-    Restart_Reason: 'Apply configuration changes',
+    Restart_Reason: t('mdm.restartModal.defaultReason'),
     Scheduled_Restart: new Date(Date.now() + 60 * 60 * 1000)
       .toISOString()
       .slice(0, 16),
@@ -470,7 +496,9 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
               <RotateCcw className="w-5 h-5 text-blue-500" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Remote Restart Device</h3>
+              <h3 className="font-bold text-gray-900">
+                {t('mdm.restartModal.title')}
+              </h3>
               <p className="text-xs text-gray-500">{device?.Name}</p>
             </div>
           </div>
@@ -480,12 +508,12 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-800">
-            This will restart the device. Any unsaved work will be lost.
+            {t('mdm.restartModal.warning')}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Restart Reason
+                {t('mdm.restartModal.restartReason')}
               </label>
               <input
                 type="text"
@@ -496,7 +524,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Schedule Restart
+                {t('mdm.restartModal.scheduleRestart')}
               </label>
               <input
                 type="datetime-local"
@@ -507,7 +535,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Restart Queue
+                {t('mdm.restartModal.restartQueue')}
               </label>
               <input
                 type="text"
@@ -518,7 +546,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1.5">
-                Restart Success Confirmation
+                {t('mdm.restartModal.restartSuccessConfirmation')}
               </label>
               <input
                 type="text"
@@ -532,10 +560,12 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
           </div>
           <div className="flex items-center justify-between pt-2">
             <span className="text-sm font-medium text-gray-700">
-              Auto-recovery mode
+              {t('mdm.restartModal.autoRecoveryMode')}
             </span>
             <button
-              onClick={() => update('Auto_Recovery_Mode', !form.Auto_Recovery_Mode)}
+              onClick={() =>
+                update('Auto_Recovery_Mode', !form.Auto_Recovery_Mode)
+              }
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
                 form.Auto_Recovery_Mode ? 'bg-green-500' : 'bg-gray-300'
               }`}
@@ -553,7 +583,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
             onClick={onClose}
             className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            {t('mdm.restartModal.cancel')}
           </button>
           <button
             onClick={() => onConfirm(form)}
@@ -565,7 +595,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
             ) : (
               <RotateCcw className="w-4 h-4" />
             )}
-            Restart Device
+            {t('mdm.restartModal.restartDevice')}
           </button>
         </div>
       </div>
@@ -577,6 +607,7 @@ const RestartModal = ({ device, onClose, onConfirm, loading }) => {
 // Update Modal
 // ---------------------------------------------------------------------------
 const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
+  const { t } = useTranslation();
   const [version, setVersion] = useState(device?.App_Version || 'v3.2.3');
 
   return (
@@ -588,7 +619,9 @@ const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
               <Download className="w-5 h-5 text-green-500" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Push Update</h3>
+              <h3 className="font-bold text-gray-900">
+                {t('mdm.updateModal.title')}
+              </h3>
               <p className="text-xs text-gray-500">{device?.Name}</p>
             </div>
           </div>
@@ -598,11 +631,11 @@ const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
         </div>
         <div className="p-6 space-y-4">
           <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm text-green-800">
-            This will push the latest app version to the device and install it.
+            {t('mdm.updateModal.warning')}
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-2">
-              App Version
+              {t('mdm.updateModal.appVersion')}
             </label>
             <input
               type="text"
@@ -617,7 +650,7 @@ const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
             onClick={onClose}
             className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
-            Cancel
+            {t('mdm.updateModal.cancel')}
           </button>
           <button
             onClick={() => onConfirm(version)}
@@ -629,7 +662,7 @@ const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
             ) : (
               <Download className="w-4 h-4" />
             )}
-            Push Update
+            {t('mdm.updateModal.pushUpdate')}
           </button>
         </div>
       </div>
@@ -641,6 +674,7 @@ const UpdateModal = ({ device, onClose, onConfirm, loading }) => {
 // Wipe Modal (2-step: Credentials → 6-digit OTP)
 // ---------------------------------------------------------------------------
 const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -687,8 +721,10 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
   const otpComplete = otpValue.length === 6;
 
   const handleNext = async () => {
-    if (!email.trim()) return toast.error('Email is required');
-    if (!password.trim()) return toast.error('Password is required');
+    if (!email.trim())
+      return toast.error(t('mdm.wipeModal.validation.emailRequired'));
+    if (!password.trim())
+      return toast.error(t('mdm.wipeModal.validation.passwordRequired'));
 
     const ok = await onInitiate({ email: email.trim(), password });
     if (ok) {
@@ -699,7 +735,7 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
 
   const handleWipe = async () => {
     if (!otpComplete) {
-      toast.error('Please enter all 6 digits');
+      toast.error(t('mdm.wipeModal.validation.otpRequired'));
       return;
     }
     await onVerify({ otp: otpValue, mode });
@@ -711,7 +747,7 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
     try {
       const ok = await onInitiate({ email: email.trim(), password });
       if (ok) {
-        toast.success('OTP resent to your email');
+        toast.success(t('mdm.wipeModal.toasts.otpResent'));
         inputRefs.current[0]?.focus();
       }
     } finally {
@@ -728,7 +764,9 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
               <Trash2 className="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900">Remote Wipe Device</h3>
+              <h3 className="font-bold text-gray-900">
+                {t('mdm.wipeModal.title')}
+              </h3>
               <p className="text-xs text-gray-500">{device?.Name}</p>
             </div>
           </div>
@@ -745,31 +783,30 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
           {step === 1 ? (
             <>
               <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-800">
-                WARNING: This will erase all data on{' '}
-                <strong>{device?.Name}</strong>. This action cannot be undone.
+                {t('mdm.wipeModal.warning', { name: device?.Name })}
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Email
+                  {t('mdm.wipeModal.email')}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your registered email id"
+                  placeholder={t('mdm.wipeModal.emailPlaceholder')}
                   autoComplete="email"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Password
+                  {t('mdm.wipeModal.password')}
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t('mdm.wipeModal.passwordPlaceholder')}
                   autoComplete="current-password"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                 />
@@ -778,13 +815,12 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
           ) : (
             <>
               <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 text-sm text-gray-700">
-                To wipe the device, you need to enter the 6-digit OTP sent to the
-                registered email address.
+                {t('mdm.wipeModal.otpInstructions')}
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-3">
-                  OTP
+                  {t('mdm.wipeModal.otp')}
                 </label>
                 <div className="flex justify-between gap-2">
                   {otp.map((digit, index) => (
@@ -813,23 +849,31 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
                     disabled={resending || loading}
                     className="text-xs font-semibold text-red-500 hover:text-red-600 transition-colors disabled:opacity-50"
                   >
-                    {resending ? 'Resending…' : 'Resend OTP'}
+                    {resending
+                      ? t('mdm.wipeModal.resending')
+                      : t('mdm.wipeModal.resendOtp')}
                   </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-2">
-                  Wipe Mode
+                  {t('mdm.wipeModal.wipeMode')}
                 </label>
                 <select
                   value={mode}
                   onChange={(e) => setMode(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
-                  <option>Full Factory Reset</option>
-                  <option>Selective Wipe</option>
-                  <option>Enterprise Reset</option>
+                  <option value="Full Factory Reset">
+                    {t('mdm.wipeModal.modeFullReset')}
+                  </option>
+                  <option value="Selective Wipe">
+                    {t('mdm.wipeModal.modeSelective')}
+                  </option>
+                  <option value="Enterprise Reset">
+                    {t('mdm.wipeModal.modeEnterprise')}
+                  </option>
                 </select>
               </div>
             </>
@@ -842,7 +886,7 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
             disabled={loading}
             className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-60"
           >
-            Cancel
+            {t('mdm.wipeModal.cancel')}
           </button>
           <button
             onClick={step === 1 ? handleNext : handleWipe}
@@ -850,7 +894,7 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
             className="px-6 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {step === 1 ? 'Next' : 'Wipe Now'}
+            {step === 1 ? t('mdm.wipeModal.next') : t('mdm.wipeModal.wipeNow')}
           </button>
         </div>
       </div>
@@ -859,11 +903,13 @@ const WipeModal = ({ device, onClose, onInitiate, onVerify, loading }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Session Logs Modal (with working Export)
+// Session Logs Modal
 // ---------------------------------------------------------------------------
 const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
+  const { t, i18n } = useTranslation();
   const logDevice = device || {};
   const [exporting, setExporting] = useState(false);
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
 
   const handleExportClick = async () => {
     if (!onExport) return;
@@ -875,12 +921,21 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
     }
   };
 
+  const getStatusLabel = (status) => {
+    const key = status?.toLowerCase();
+    if (key === 'completed') return t('mdm.sessionLogsModal.status.completed');
+    if (key === 'queued') return t('mdm.sessionLogsModal.status.queued');
+    return status;
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">Session Logs</h3>
+            <h3 className="font-bold text-gray-900 text-lg">
+              {t('mdm.sessionLogsModal.title')}
+            </h3>
             <p className="text-xs text-gray-500 mt-0.5">{logDevice.Name}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
@@ -891,7 +946,7 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
         <div className="grid grid-cols-4 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-100">
           <div>
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-              IP Address
+              {t('mdm.sessionLogsModal.ipAddress')}
             </p>
             <p className="text-sm font-semibold text-gray-800 mt-1">
               {logDevice.IPAddress || '—'}
@@ -899,15 +954,17 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
           </div>
           <div>
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-              Uptime
+              {t('mdm.sessionLogsModal.uptime')}
             </p>
             <p className="text-sm font-semibold text-gray-800 mt-1">
-              {logDevice.Uptime_Days || 0} days
+              {t('mdm.sessionLogsModal.days', {
+                count: logDevice.Uptime_Days || 0,
+              })}
             </p>
           </div>
           <div>
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-              Battery
+              {t('mdm.sessionLogsModal.battery')}
             </p>
             <p className="text-sm font-semibold text-gray-800 mt-1">
               {logDevice.Battery_Percentage ?? '—'}
@@ -916,7 +973,7 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
           </div>
           <div>
             <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-              Storage Used
+              {t('mdm.sessionLogsModal.storageUsed')}
             </p>
             <p className="text-sm font-semibold text-gray-800 mt-1">
               {logDevice.Storage_Used_Percentage ?? '—'}
@@ -929,12 +986,14 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
           {loading ? (
             <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
               <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-              <span className="text-sm">Loading logs…</span>
+              <span className="text-sm">
+                {t('mdm.sessionLogsModal.loading')}
+              </span>
             </div>
           ) : logs.length === 0 ? (
             <div className="p-12 text-center text-gray-400">
               <FileText className="w-8 h-8 mx-auto mb-2" />
-              <p className="text-sm">No session logs</p>
+              <p className="text-sm">{t('mdm.sessionLogsModal.noLogs')}</p>
             </div>
           ) : (
             logs.map((log) => (
@@ -971,10 +1030,14 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
                         : 'bg-gray-100 text-gray-600'
                     }`}
                   >
-                    {log.Status}
+                    {getStatusLabel(log.Status)}
                   </span>
                   <p className="text-xs text-gray-400 whitespace-nowrap">
-                    {formatDate(log.CreateAt)}
+                    {formatDate(
+                      log.CreateAt,
+                      locale,
+                      t('mdm.never')
+                    )}
                   </p>
                 </div>
               </div>
@@ -991,12 +1054,12 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
             {exporting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Exporting…
+                {t('mdm.sessionLogsModal.exporting')}
               </>
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                Export Logs
+                {t('mdm.sessionLogsModal.exportLogs')}
               </>
             )}
           </button>
@@ -1010,11 +1073,12 @@ const SessionLogsModal = ({ device, logs, loading, onClose, onExport }) => {
 // Main Page
 // ---------------------------------------------------------------------------
 const MdmPage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { devices, loading, hasLoaded } = useAppSelector((state) => state.mdm);
   const [actionLoading, setLocalActionLoading] = useState(false);
 
-  const [activeFilter, setActiveFilter] = useState('All Devices');
+  const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const [modal, setModal] = useState(null);
@@ -1035,20 +1099,30 @@ const MdmPage = () => {
       } catch (err) {
         console.error('MDM fetch error:', err);
         dispatch(setMdmError(err?.message || 'Failed to load devices'));
-        toast.error('Failed to load devices', {
-          description: err?.message || 'Please try again.',
+        toast.error(t('common.error'), {
+          description: err?.message || t('mdm.enrollModal.toasts.tryAgain'),
         });
       }
     };
 
     fetchDevices();
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   // Stats
   const totalDevices = devices.length;
   const onlineDevices = devices.filter(isDeviceOnline).length;
   const offlineDevices = totalDevices - onlineDevices;
   const needsUpdate = devices.filter((d) => d.Needs_Update).length;
+
+  // Filter options with i18n
+  const FILTERS = [
+    { id: 'all', label: t('mdm.filters.all') },
+    { id: 'online', label: t('mdm.filters.online') },
+    { id: 'offline', label: t('mdm.filters.offline') },
+    { id: 'active', label: t('mdm.filters.active') },
+    { id: 'idle', label: t('mdm.filters.idle') },
+    { id: 'syncDelay', label: t('mdm.filters.syncDelay') },
+  ];
 
   // Filtered
   const filteredDevices = devices.filter((d) => {
@@ -1061,29 +1135,29 @@ const MdmPage = () => {
       if (!matches) return false;
     }
     const online = isDeviceOnline(d);
-    if (activeFilter === 'All Devices') return true;
-    if (activeFilter === 'Online') return online;
-    if (activeFilter === 'Offline') return !online;
-    if (activeFilter === 'Active') return d.isActive;
-    if (activeFilter === 'Idle') return !d.isActive;
-    if (activeFilter === 'Sync Delay') return d.Needs_Update;
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'online') return online;
+    if (activeFilter === 'offline') return !online;
+    if (activeFilter === 'active') return d.isActive;
+    if (activeFilter === 'idle') return !d.isActive;
+    if (activeFilter === 'syncDelay') return d.Needs_Update;
     return true;
   });
 
   // ---- Enroll ----
   const handleEnroll = async (formData) => {
     setLocalActionLoading(true);
-    const toastId = toast.loading('Enrolling device...');
+    const toastId = toast.loading(t('mdm.enrollModal.toasts.enrolling'));
     try {
       await mdmService.enrollDevice(formData);
-      toast.success('Device enrolled successfully', { id: toastId });
+      toast.success(t('mdm.enrollModal.toasts.enrollSuccess'), { id: toastId });
       setModal(null);
       const result = await mdmService.getAllDevices();
       dispatch(setDevicesData(result));
     } catch (err) {
-      toast.error('Failed to enroll device', {
+      toast.error(t('mdm.enrollModal.toasts.enrollFailed'), {
         id: toastId,
-        description: err?.message || 'Please try again.',
+        description: err?.message || t('mdm.enrollModal.toasts.tryAgain'),
       });
     } finally {
       setLocalActionLoading(false);
@@ -1094,16 +1168,16 @@ const MdmPage = () => {
   const handleLock = async (reason) => {
     setLocalActionLoading(true);
     const id = modal.device.MyDevices_id;
-    const toastId = toast.loading('Locking device...');
+    const toastId = toast.loading(t('mdm.lockModal.toasts.locking'));
     try {
       await mdmService.lockDevice(id, reason);
       dispatch(patchDevice({ id, changes: { isLocked: true } }));
-      toast.success('Device locked', { id: toastId });
+      toast.success(t('mdm.lockModal.toasts.lockSuccess'), { id: toastId });
       setModal(null);
     } catch (err) {
-      toast.error('Failed to lock device', {
+      toast.error(t('mdm.lockModal.toasts.lockFailed'), {
         id: toastId,
-        description: err?.message || 'Please try again.',
+        description: err?.message || t('mdm.lockModal.toasts.tryAgain'),
       });
     } finally {
       setLocalActionLoading(false);
@@ -1114,7 +1188,7 @@ const MdmPage = () => {
   const handleRestart = async (payload) => {
     setLocalActionLoading(true);
     const id = modal.device.MyDevices_id;
-    const toastId = toast.loading('Scheduling restart...');
+    const toastId = toast.loading(t('mdm.restartModal.toasts.scheduling'));
     try {
       await mdmService.restartDevice(id, payload);
       dispatch(
@@ -1126,12 +1200,14 @@ const MdmPage = () => {
           },
         })
       );
-      toast.success('Restart scheduled', { id: toastId });
+      toast.success(t('mdm.restartModal.toasts.restartSuccess'), {
+        id: toastId,
+      });
       setModal(null);
     } catch (err) {
-      toast.error('Failed to schedule restart', {
+      toast.error(t('mdm.restartModal.toasts.restartFailed'), {
         id: toastId,
-        description: err?.message || 'Please try again.',
+        description: err?.message || t('mdm.restartModal.toasts.tryAgain'),
       });
     } finally {
       setLocalActionLoading(false);
@@ -1142,62 +1218,62 @@ const MdmPage = () => {
   const handleUpdate = async (version) => {
     setLocalActionLoading(true);
     const id = modal.device.MyDevices_id;
-    const toastId = toast.loading('Pushing update...');
+    const toastId = toast.loading(t('mdm.updateModal.toasts.pushing'));
     try {
       await mdmService.pushUpdate(id, version);
       dispatch(patchDevice({ id, changes: { Needs_Update: false } }));
-      toast.success('Update pushed', { id: toastId });
+      toast.success(t('mdm.updateModal.toasts.updateSuccess'), { id: toastId });
       setModal(null);
     } catch (err) {
-      toast.error('Failed to push update', {
+      toast.error(t('mdm.updateModal.toasts.updateFailed'), {
         id: toastId,
-        description: err?.message || 'Please try again.',
+        description: err?.message || t('mdm.updateModal.toasts.tryAgain'),
       });
     } finally {
       setLocalActionLoading(false);
     }
   };
 
-  // ---- Wipe Step 1 ----
   const handleWipeInitiate = async ({ email, password }) => {
     setLocalActionLoading(true);
     const id = modal.device.MyDevices_id;
     try {
       await mdmService.wipeDevice(id, { email, password });
-      toast.success('OTP sent to your email');
+      toast.success(t('mdm.wipeModal.toasts.otpSent'));
       return true;
     } catch (err) {
       const backendMsg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         err?.message ||
-        'Please try again.';
-      toast.error('Failed to initiate wipe', { description: backendMsg });
+        t('mdm.wipeModal.toasts.tryAgain');
+      toast.error(t('mdm.wipeModal.toasts.otpFailed'), {
+        description: backendMsg,
+      });
       return false;
     } finally {
       setLocalActionLoading(false);
     }
   };
 
-  // ---- Wipe Step 2 ----
   const handleWipeVerify = async ({ otp, mode }) => {
     setLocalActionLoading(true);
     const id = modal.device.MyDevices_id;
-    const toastId = toast.loading('Wiping device...');
+    const toastId = toast.loading(t('mdm.wipeModal.toasts.wiping'));
     try {
       await mdmService.verifyWipeDevice(id, { otp, mode });
       dispatch(
         patchDevice({ id, changes: { WipedAt: new Date().toISOString() } })
       );
-      toast.success('Device wiped', { id: toastId });
+      toast.success(t('mdm.wipeModal.toasts.wipeSuccess'), { id: toastId });
       setModal(null);
     } catch (err) {
       const backendMsg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         err?.message ||
-        'Please try again.';
-      toast.error('Failed to wipe device', {
+        t('mdm.wipeModal.toasts.tryAgain');
+      toast.error(t('mdm.wipeModal.toasts.wipeFailed'), {
         id: toastId,
         description: backendMsg,
       });
@@ -1217,35 +1293,33 @@ const MdmPage = () => {
       setSessionDevice(result.device || device);
       setSessionLogs(result.logs || []);
     } catch (err) {
-      toast.error('Failed to load session logs', {
-        description: err?.message || 'Please try again.',
+      toast.error(t('mdm.sessionLogsModal.toasts.exportFailed'), {
+        description: err?.message || t('mdm.wipeModal.toasts.tryAgain'),
       });
     } finally {
       setSessionLogsLoading(false);
     }
   };
 
-  // ---- Export Logs (calls the real backend endpoint) ----
+  // ---- Export Logs ----
   const exportLogs = async () => {
     const deviceId = modal?.device?.MyDevices_id;
     if (!deviceId) {
-      toast.error('No device selected');
+      toast.error(t('mdm.sessionLogsModal.toasts.noDevice'));
       return;
     }
 
-    const toastId = toast.loading('Preparing export…');
+    const toastId = toast.loading(t('mdm.sessionLogsModal.toasts.preparing'));
 
     try {
       const blob = await mdmService.exportSessionLogs(deviceId);
 
-      // Build a friendly filename
       const safeName = (modal.device.Name || 'device')
         .replace(/[^a-z0-9-_]/gi, '_')
         .toLowerCase();
       const stamp = new Date().toISOString().slice(0, 10);
       const filename = `session-logs-${safeName}-${stamp}.csv`;
 
-      // Trigger download
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1255,12 +1329,13 @@ const MdmPage = () => {
       a.remove();
       URL.revokeObjectURL(url);
 
-      toast.success('Export downloaded', { id: toastId });
+      toast.success(t('mdm.sessionLogsModal.toasts.exportSuccess'), {
+        id: toastId,
+      });
     } catch (err) {
       console.error('[exportLogs] Failed:', err);
 
-      // Try to extract a friendly message if the error body is JSON-in-a-blob
-      let message = err?.message || 'Failed to export logs';
+      let message = err?.message || t('mdm.sessionLogsModal.toasts.exportFailed');
       if (err?.response?.data instanceof Blob) {
         try {
           const text = await err.response.data.text();
@@ -1271,7 +1346,7 @@ const MdmPage = () => {
         }
       }
 
-      toast.error('Export failed', {
+      toast.error(t('mdm.sessionLogsModal.toasts.exportFailed'), {
         id: toastId,
         description: message,
       });
@@ -1288,16 +1363,16 @@ const MdmPage = () => {
     </button>
   );
 
+  const locale = t('mdm.never') === 'Jamais' ? 'fr-FR' : 'en-US';
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            MDM Device Management
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-800">{t('mdm.title')}</h1>
           <p className="text-xs text-gray-500 mt-1">
-            {totalDevices} device{totalDevices !== 1 ? 's' : ''} in fleet
+            {t('mdm.subtitle', { count: totalDevices })}
           </p>
         </div>
         <button
@@ -1305,7 +1380,7 @@ const MdmPage = () => {
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-purple-200"
         >
           <Plus size={16} />
-          Enroll New Device
+          {t('mdm.enrollNewDevice')}
         </button>
       </div>
 
@@ -1313,7 +1388,9 @@ const MdmPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Total Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              {t('mdm.stats.totalDevices')}
+            </span>
             <Smartphone className="text-gray-400" size={18} />
           </div>
           <div className="text-2xl font-bold text-gray-800 tabular-nums">
@@ -1323,61 +1400,71 @@ const MdmPage = () => {
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Online Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              {t('mdm.stats.onlineDevices')}
+            </span>
             <Wifi className="text-green-500" size={18} />
           </div>
           <div className="text-2xl font-bold text-green-600 tabular-nums">
             {onlineDevices}
           </div>
           <div className="text-xs text-gray-400 mt-1">
-            {totalDevices > 0
-              ? Math.round((onlineDevices / totalDevices) * 100)
-              : 0}
-            % uptime
+            {t('mdm.stats.uptime', {
+              percent:
+                totalDevices > 0
+                  ? Math.round((onlineDevices / totalDevices) * 100)
+                  : 0,
+            })}
           </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Offline Devices</span>
+            <span className="text-sm text-gray-500 font-medium">
+              {t('mdm.stats.offlineDevices')}
+            </span>
             <WifiOff className="text-red-500" size={18} />
           </div>
           <div className="text-2xl font-bold text-red-500 tabular-nums">
             {offlineDevices}
           </div>
-          <div className="text-xs text-gray-400 mt-1">Requires attention</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {t('mdm.stats.requiresAttention')}
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
           <div className="flex justify-between items-start mb-2">
-            <span className="text-sm text-gray-500 font-medium">Needs Update</span>
+            <span className="text-sm text-gray-500 font-medium">
+              {t('mdm.stats.needsUpdate')}
+            </span>
             <Download className="text-orange-500" size={18} />
           </div>
           <div className="text-2xl font-bold text-orange-500 tabular-nums">
             {needsUpdate}
           </div>
-          <div className="text-xs text-gray-400 mt-1">Updates available</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {t('mdm.stats.updatesAvailable')}
+          </div>
         </div>
       </div>
 
       {/* Filter Bar */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
         <div className="flex flex-wrap gap-2">
-          {['All Devices', 'Online', 'Offline', 'Active', 'Idle', 'Sync Delay'].map(
-            (filter) => (
-              <button
-                key={filter}
-                onClick={() => setActiveFilter(filter)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
-                  activeFilter === filter
-                    ? 'bg-purple-600 text-white border-purple-600'
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                {filter}
-              </button>
-            )
-          )}
+          {FILTERS.map((filter) => (
+            <button
+              key={filter.id}
+              onClick={() => setActiveFilter(filter.id)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-full border transition-colors ${
+                activeFilter === filter.id
+                  ? 'bg-purple-600 text-white border-purple-600'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto">
@@ -1390,13 +1477,13 @@ const MdmPage = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search devices..."
+              placeholder={t('mdm.searchPlaceholder')}
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
             />
           </div>
           <button className="flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors">
             <Filter size={14} />
-            Filter
+            {t('mdm.filter')}
           </button>
         </div>
       </div>
@@ -1406,25 +1493,29 @@ const MdmPage = () => {
         {loading && !hasLoaded ? (
           <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading devices…</span>
+            <span className="text-sm">{t('mdm.loading')}</span>
           </div>
         ) : filteredDevices.length === 0 ? (
           <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-2">
             <Smartphone className="w-8 h-8" />
-            <p className="text-sm font-medium text-gray-500">No devices found</p>
-            <p className="text-xs text-gray-400">Try adjusting your filters.</p>
+            <p className="text-sm font-medium text-gray-500">
+              {t('mdm.noDevices')}
+            </p>
+            <p className="text-xs text-gray-400">{t('mdm.noDevicesDesc')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-600">
               <thead className="bg-gray-50 text-xs text-gray-500 uppercase font-medium">
                 <tr>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Device Name</th>
-                  <th className="px-6 py-4">Location</th>
-                  <th className="px-6 py-4">App Version</th>
-                  <th className="px-6 py-4">Last Seen</th>
-                  <th className="px-6 py-4 text-center">Actions</th>
+                  <th className="px-6 py-4">{t('mdm.table.status')}</th>
+                  <th className="px-6 py-4">{t('mdm.table.deviceName')}</th>
+                  <th className="px-6 py-4">{t('mdm.table.location')}</th>
+                  <th className="px-6 py-4">{t('mdm.table.appVersion')}</th>
+                  <th className="px-6 py-4">{t('mdm.table.lastSeen')}</th>
+                  <th className="px-6 py-4 text-center">
+                    {t('mdm.table.actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -1442,7 +1533,7 @@ const MdmPage = () => {
                         <button
                           onClick={() => openSessionLogs(device)}
                           className="flex items-center gap-3 text-left hover:opacity-80"
-                          title="View session logs"
+                          title={t('mdm.actions.viewLogs')}
                         >
                           <div className="p-2 bg-purple-50 rounded-lg">
                             <DeviceIcon type={device.type} />
@@ -1452,14 +1543,14 @@ const MdmPage = () => {
                               {device.Name}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {device.Devices_ModelNo || 'Unknown Model'}
+                              {device.Devices_ModelNo || t('mdm.unknownModel')}
                             </div>
                           </div>
                         </button>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-gray-700">
-                          {device.location || 'N/A'}
+                          {device.location || t('mdm.na')}
                         </div>
                         <div className="text-xs text-gray-400">
                           {device.Merchant_Assignment || ''}
@@ -1470,52 +1561,63 @@ const MdmPage = () => {
                           {device.App_Version || '—'}
                         </div>
                         <div className="text-xs text-gray-400">
-                          {device.Devices_Operating_system || 'Android'}
+                          {device.Devices_Operating_system ||
+                            t('mdm.table.android')}
                         </div>
                         {device.Needs_Update && (
                           <span className="inline-block mt-1 px-2 py-0.5 bg-yellow-100 text-yellow-700 text-[10px] rounded-full font-medium">
-                            Update Available
+                            {t('mdm.table.updateAvailable')}
                           </span>
                         )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-gray-700">
-                          {formatDate(device.Last_Seen)}
+                          {formatDate(
+                            device.Last_Seen,
+                            locale,
+                            t('mdm.never')
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-1">
                           <ActionButton
                             icon={FileText}
-                            label="View Logs"
+                            label={t('mdm.actions.viewLogs')}
                             onClick={() => openSessionLogs(device)}
                             color="text-gray-500"
                             hoverColor="hover:text-gray-700"
                           />
                           <ActionButton
                             icon={device.isLocked ? Unlock : Lock}
-                            label={device.isLocked ? 'Unlock' : 'Lock'}
+                            label={
+                              device.isLocked
+                                ? t('mdm.actions.unlock')
+                                : t('mdm.actions.lock')
+                            }
                             onClick={() => setModal({ type: 'lock', device })}
                             color="text-orange-500"
                             hoverColor="hover:text-orange-700"
                           />
                           <ActionButton
                             icon={RotateCcw}
-                            label="Restart"
-                            onClick={() => setModal({ type: 'restart', device })}
+                            label={t('mdm.actions.restart')}
+                            onClick={() =>
+                              setModal({ type: 'restart', device })
+                            }
                             color="text-blue-500"
                             hoverColor="hover:text-blue-700"
                           />
                           <ActionButton
                             icon={Download}
-                            label="Push Update"
+                            label={t('mdm.actions.pushUpdate')}
                             onClick={() => setModal({ type: 'update', device })}
                             color="text-green-500"
                             hoverColor="hover:text-green-700"
                           />
                           <ActionButton
                             icon={Trash2}
-                            label="Wipe"
+                            label={t('mdm.actions.wipe')}
                             onClick={() => setModal({ type: 'wipe', device })}
                             color="text-red-500"
                             hoverColor="hover:text-red-700"

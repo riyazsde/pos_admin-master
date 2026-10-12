@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FileText,
   FileDown,
@@ -85,10 +86,6 @@ const renderSafe = (value, fallback = '—') => {
   return String(value);
 };
 
-/**
- * Build a compact list of page numbers with ellipsis.
- * e.g. [1, '...', 4, 5, 6, '...', 20]
- */
 const buildPageList = (current, total) => {
   const delta = 1;
   const range = [];
@@ -188,6 +185,7 @@ const FilterSelect = ({ label, value, onChange, options, placeholder }) => (
 );
 
 const ActionBadge = ({ action, label, iconOverride }) => {
+  const { t } = useTranslation();
   const key = String(action || label || '').toLowerCase();
   const matched =
     Object.keys(ACTION_ICONS).find((k) => k !== 'default' && key.includes(k)) ||
@@ -201,7 +199,7 @@ const ActionBadge = ({ action, label, iconOverride }) => {
       )}`}
     >
       <Icon className="w-3.5 h-3.5" />
-      <span>{renderSafe(label || action, 'Activity')}</span>
+      <span>{renderSafe(label || action, t('audits.activity'))}</span>
     </div>
   );
 };
@@ -232,9 +230,6 @@ const SortableHeader = ({ label, sortKey, currentSort, onSort, className = '' })
   );
 };
 
-/**
- * Pagination component.
- */
 const Pagination = ({
   page,
   pages,
@@ -243,6 +238,7 @@ const Pagination = ({
   onPageChange,
   onPageSizeChange,
 }) => {
+  const { t } = useTranslation();
   if (!pages || pages < 1) return null;
 
   const startItem = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -254,16 +250,17 @@ const Pagination = ({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-      {/* Left: range + page size */}
       <div className="flex items-center gap-3 text-xs text-gray-500">
         <span>
-          Showing <span className="font-semibold text-gray-700">{startItem}</span>
-          –<span className="font-semibold text-gray-700">{endItem}</span> of{' '}
-          <span className="font-semibold text-gray-700">{total}</span> logs
+          {t('audits.pagination.showing', {
+            start: startItem,
+            end: endItem,
+            total,
+          })}
         </span>
 
         <div className="hidden sm:flex items-center gap-1.5">
-          <span>Rows:</span>
+          <span>{t('audits.pagination.rows')}</span>
           <select
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -278,14 +275,13 @@ const Pagination = ({
         </div>
       </div>
 
-      {/* Right: page controls */}
       <div className="flex items-center gap-1">
         <button
           type="button"
           onClick={() => onPageChange(1)}
           disabled={page <= 1}
           className={`${btnBase} border-gray-200 text-gray-600 hover:bg-gray-50`}
-          aria-label="First page"
+          aria-label={t('audits.pagination.firstPage')}
         >
           <ChevronsLeft className="w-3.5 h-3.5" />
         </button>
@@ -294,7 +290,7 @@ const Pagination = ({
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
           className={`${btnBase} border-gray-200 text-gray-600 hover:bg-gray-50`}
-          aria-label="Previous page"
+          aria-label={t('audits.pagination.previousPage')}
         >
           <ChevronLeft className="w-3.5 h-3.5" />
         </button>
@@ -328,7 +324,7 @@ const Pagination = ({
           onClick={() => onPageChange(page + 1)}
           disabled={page >= pages}
           className={`${btnBase} border-gray-200 text-gray-600 hover:bg-gray-50`}
-          aria-label="Next page"
+          aria-label={t('audits.pagination.nextPage')}
         >
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
@@ -337,7 +333,7 @@ const Pagination = ({
           onClick={() => onPageChange(pages)}
           disabled={page >= pages}
           className={`${btnBase} border-gray-200 text-gray-600 hover:bg-gray-50`}
-          aria-label="Last page"
+          aria-label={t('audits.pagination.lastPage')}
         >
           <ChevronsRight className="w-3.5 h-3.5" />
         </button>
@@ -347,9 +343,9 @@ const Pagination = ({
 };
 
 // ---------------------------------------------------------------------------
-// Field mapping: API → Screenshot-style columns
+// Field mapping
 // ---------------------------------------------------------------------------
-const mapLog = (log) => {
+const mapLog = (log, unknownLabel = 'Unknown') => {
   const ts = formatDate(log.timestamp || log.created_at || log.CreatedAt);
 
   const userName = renderSafe(
@@ -360,7 +356,7 @@ const mapLog = (log) => {
       log.user?.name ||
       log.employee?.Name ||
       log.employee?.name,
-    'Unknown'
+    unknownLabel
   );
 
   const userRole = renderSafe(
@@ -450,6 +446,7 @@ const mapLog = (log) => {
 // Main Component
 // ---------------------------------------------------------------------------
 const AuditLogTable = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const {
@@ -461,7 +458,6 @@ const AuditLogTable = () => {
     exportLoading,
   } = useAppSelector((state) => state.audits);
 
-  // ---- Filter state (form) ----
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -473,16 +469,13 @@ const AuditLogTable = () => {
 
   const [appliedFilters, setAppliedFilters] = useState(filters);
 
-  // ---- Sort state ----
   const [sort, setSort] = useState({ key: 'timestamp', direction: 'desc' });
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const sortMenuRef = useRef(null);
 
-  // ---- Pagination state ----
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
 
-  // Close sort menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sortMenuRef.current && !sortMenuRef.current.contains(e.target)) {
@@ -493,7 +486,6 @@ const AuditLogTable = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ---- Fetch activity (shared by all triggers) ----
   const fetchActivity = async (params = {}) => {
     dispatch(setActivityLoading(true));
     try {
@@ -513,29 +505,28 @@ const AuditLogTable = () => {
       return result;
     } catch (err) {
       console.error('Audit activity error:', err);
-      toast.error('Failed to load audit activity');
+      toast.error(t('audits.filters.failed'));
       throw err;
     }
   };
 
-  // ---- Initial fetch ----
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
 
     const fetchAll = async () => {
-      // Overview
       dispatch(setOverviewLoading(true));
       try {
         const ov = await auditService.getOverview();
         dispatch(setOverviewData(ov));
       } catch (err) {
         console.error('Audit overview error:', err);
-        dispatch(setAuditsError(err?.message || 'Failed to load audit overview'));
+        dispatch(
+          setAuditsError(err?.message || t('audits.overview.failed'))
+        );
       }
 
-      // Activity
       dispatch(setActivityLoading(true));
       try {
         const result = await auditService.getActivity({
@@ -547,26 +538,26 @@ const AuditLogTable = () => {
         dispatch(setActivityData(result));
       } catch (err) {
         console.error('Audit activity error:', err);
-        dispatch(setAuditsError(err?.message || 'Failed to load activity'));
+        dispatch(
+          setAuditsError(err?.message || t('audits.overview.activityFailed'))
+        );
       }
     };
 
     fetchAll();
-  }, [dispatch]);
+  }, [dispatch, t]);
 
-  // ---- Apply filters (resets to page 1) ----
   const applyFilters = async () => {
     setAppliedFilters(filters);
     setPage(1);
     try {
       await fetchActivity({ page: 1 });
-      toast.success('Filters applied');
+      toast.success(t('audits.filters.applied'));
     } catch {
       /* toast already shown */
     }
   };
 
-  // ---- Clear filters ----
   const clearFilters = async () => {
     const empty = {
       startDate: '',
@@ -586,14 +577,12 @@ const AuditLogTable = () => {
     }
   };
 
-  // ---- Sort handlers ----
   const handleSort = (key) => {
     setSort((prev) => {
       const next =
         prev.key === key
           ? { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
           : { key, direction: 'asc' };
-      // Refetch sorted data from backend
       setPage(1);
       fetchActivity({ page: 1, sortKeyOverride: next.key });
       return next;
@@ -608,7 +597,6 @@ const AuditLogTable = () => {
     fetchActivity({ page: 1 });
   };
 
-  // ---- Pagination handlers ----
   const handlePageChange = (newPage) => {
     const totalPages = activityPagination?.pages ?? 1;
     const clamped = Math.min(Math.max(1, newPage), totalPages);
@@ -623,12 +611,11 @@ const AuditLogTable = () => {
     fetchActivity({ page: 1, limit: newSize });
   };
 
-  // ---- Derived sorted rows (client-side sort for current page) ----
   const sortedActivity = useMemo(() => {
     if (!activity || activity.length === 0) return activity || [];
 
     const mapped = activity.map((log, index) => ({
-      ...mapLog(log),
+      ...mapLog(log, t('audits.unknown')),
       _originalIndex: index,
     }));
 
@@ -677,12 +664,11 @@ const AuditLogTable = () => {
       if (av > bv) return 1 * dir;
       return 0;
     });
-  }, [activity, sort]);
+  }, [activity, sort, t]);
 
-  // ---- Export handlers ----
   const handleExportCSV = async () => {
     dispatch(setExportLoading(true));
-    const toastId = toast.loading('Generating export...');
+    const toastId = toast.loading(t('audits.export.generating'));
     try {
       const summary = await auditService.getExportSummary(
         appliedFilters.startDate || undefined,
@@ -712,12 +698,12 @@ const AuditLogTable = () => {
       a.click();
       URL.revokeObjectURL(url);
 
-      toast.success('CSV exported', { id: toastId, duration: 2000 });
+      toast.success(t('audits.export.csvSuccess'), { id: toastId, duration: 2000 });
     } catch (err) {
       console.error('Export error:', err);
-      toast.error('Failed to export', {
+      toast.error(t('audits.export.failed'), {
         id: toastId,
-        description: err?.message || 'Please try again.',
+        description: err?.message || t('audits.export.tryAgain'),
       });
     } finally {
       dispatch(setExportLoading(false));
@@ -728,12 +714,10 @@ const AuditLogTable = () => {
     window.print();
   };
 
-  // ---- Active filter count ----
   const activeFilterCount = Object.values(appliedFilters).filter(
     (v) => v && String(v).trim() !== ''
   ).length;
 
-  // ---- Derived stats ----
   const totalLogs = overview?.totalAudits ?? 0;
   const todayActivity = overview?.todayAudits ?? 0;
 
@@ -756,22 +740,40 @@ const AuditLogTable = () => {
 
   const isEmpty = !sortedActivity || sortedActivity.length === 0;
 
-  // Pagination values with safe defaults
   const currentPage = activityPagination?.page ?? page;
   const totalPages = Math.max(activityPagination?.pages ?? 1, 1);
   const totalItems =
     activityPagination?.total ?? (isEmpty ? 0 : sortedActivity.length);
   const currentPageSize = activityPagination?.limit ?? pageSize;
 
-  // Sort options for the dropdown
+  // Sort options with i18n
   const sortOptions = [
-    { key: 'timestamp', label: 'Timestamp' },
-    { key: 'user', label: 'User' },
-    { key: 'action', label: 'Action' },
-    { key: 'location', label: 'Location' },
-    { key: 'ip', label: 'IP Address' },
-    { key: 'details', label: 'Details' },
-    { key: 'pos', label: 'Which POS' },
+    { key: 'timestamp', label: t('audits.sort.options.timestamp') },
+    { key: 'user', label: t('audits.sort.options.user') },
+    { key: 'action', label: t('audits.sort.options.action') },
+    { key: 'location', label: t('audits.sort.options.location') },
+    { key: 'ip', label: t('audits.sort.options.ip') },
+    { key: 'details', label: t('audits.sort.options.details') },
+    { key: 'pos', label: t('audits.sort.options.pos') },
+  ];
+
+  // Environment options with i18n
+  const environmentOptions = [
+    { value: 'development', label: t('audits.filters.environments.development') },
+    { value: 'staging', label: t('audits.filters.environments.staging') },
+    { value: 'production', label: t('audits.filters.environments.production') },
+  ];
+
+  // Action options with i18n
+  const actionOptions = [
+    t('audits.filters.actions.login'),
+    t('audits.filters.actions.logout'),
+    t('audits.filters.actions.modify'),
+    t('audits.filters.actions.create'),
+    t('audits.filters.actions.delete'),
+    t('audits.filters.actions.refund'),
+    t('audits.filters.actions.discount'),
+    t('audits.filters.actions.menuPrice'),
   ];
 
   return (
@@ -780,10 +782,14 @@ const AuditLogTable = () => {
         {/* ================== Header ================== */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Audits</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {t('audits.title')}
+            </h1>
             {overview?.lastUpdated && (
               <p className="text-xs text-gray-500 mt-1">
-                Last updated: {new Date(overview.lastUpdated).toLocaleString()}
+                {t('audits.lastUpdated', {
+                  date: new Date(overview.lastUpdated).toLocaleString(),
+                })}
               </p>
             )}
           </div>
@@ -798,14 +804,14 @@ const AuditLogTable = () => {
               ) : (
                 <FileDown className="w-4 h-4" />
               )}
-              Export CSV
+              {t('audits.export.exportCSV')}
             </button>
             <button
               onClick={handleExportPDF}
               className="flex items-center gap-2 px-4 py-2 bg-[#8B1A5E] rounded-md text-sm font-medium text-white hover:bg-[#72134D] transition-colors shadow-sm"
             >
               <FileText className="w-4 h-4" />
-              Export PDF
+              {t('audits.export.exportPDF')}
             </button>
           </div>
         </div>
@@ -823,31 +829,31 @@ const AuditLogTable = () => {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <StatCard
-              title="Total Logs"
+              title={t('audits.stats.totalLogs')}
               value={formatNumber(totalLogs)}
               icon={FileText}
               iconColor="text-gray-400"
             />
             <StatCard
-              title="Today's Activity"
+              title={t('audits.stats.todayActivity')}
               value={formatNumber(todayActivity)}
               icon={Calendar}
               iconColor="text-blue-500"
             />
             <StatCard
-              title="Login Events"
+              title={t('audits.stats.loginEvents')}
               value={formatNumber(loginCount)}
               icon={LogIn}
               iconColor="text-green-500"
             />
             <StatCard
-              title="Order Changes"
+              title={t('audits.stats.orderChanges')}
               value={formatNumber(modifyCount)}
               icon={ShoppingCart}
               iconColor="text-orange-500"
             />
             <StatCard
-              title="Stock Adjustments"
+              title={t('audits.stats.stockAdjustments')}
               value={formatNumber(stockCount)}
               icon={Settings}
               iconColor="text-purple-500"
@@ -860,7 +866,7 @@ const AuditLogTable = () => {
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2 text-gray-600 font-medium">
               <Filter className="w-4 h-4" />
-              <span>Filters</span>
+              <span>{t('audits.filters.title')}</span>
               {activeFilterCount > 0 && (
                 <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-purple-100 text-purple-700 text-[11px] font-semibold">
                   {activeFilterCount}
@@ -877,7 +883,7 @@ const AuditLogTable = () => {
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                 >
                   <ArrowUpDown className="w-3.5 h-3.5" />
-                  Sort
+                  {t('audits.sort.title')}
                   <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
                 </button>
 
@@ -898,7 +904,8 @@ const AuditLogTable = () => {
                                 : 'text-gray-600 hover:bg-gray-100'
                             }`}
                           >
-                            <ArrowUp className="w-3 h-3" /> Asc
+                            <ArrowUp className="w-3 h-3" />
+                            {t('audits.sort.asc')}
                           </button>
                           <button
                             type="button"
@@ -909,7 +916,8 @@ const AuditLogTable = () => {
                                 : 'text-gray-600 hover:bg-gray-100'
                             }`}
                           >
-                            <ArrowDown className="w-3 h-3" /> Desc
+                            <ArrowDown className="w-3 h-3" />
+                            {t('audits.sort.desc')}
                           </button>
                         </div>
                       </div>
@@ -924,7 +932,8 @@ const AuditLogTable = () => {
                   onClick={clearFilters}
                   className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  <X className="w-3.5 h-3.5" /> Clear
+                  <X className="w-3.5 h-3.5" />
+                  {t('audits.filters.clear')}
                 </button>
               )}
 
@@ -939,7 +948,7 @@ const AuditLogTable = () => {
                 ) : (
                   <Filter className="w-3.5 h-3.5" />
                 )}
-                Apply Filters
+                {t('audits.filters.apply')}
               </button>
             </div>
           </div>
@@ -947,7 +956,7 @@ const AuditLogTable = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-gray-500 font-medium">
-                Start Date
+                {t('audits.filters.startDate')}
               </label>
               <input
                 type="date"
@@ -961,7 +970,7 @@ const AuditLogTable = () => {
 
             <div className="flex flex-col gap-1.5">
               <label className="text-xs text-gray-500 font-medium">
-                End Date
+                {t('audits.filters.endDate')}
               </label>
               <input
                 type="date"
@@ -974,43 +983,30 @@ const AuditLogTable = () => {
             </div>
 
             <FilterSelect
-              label="Environment"
-              placeholder="All environments"
+              label={t('audits.filters.environment')}
+              placeholder={t('audits.filters.allEnvironments')}
               value={filters.environment}
               onChange={(v) => setFilters((f) => ({ ...f, environment: v }))}
-              options={[
-                { value: 'development', label: 'Development' },
-                { value: 'staging', label: 'Staging' },
-                { value: 'production', label: 'Production' },
-              ]}
+              options={environmentOptions}
             />
 
             <FilterSelect
-              label="Action"
-              placeholder="All actions"
+              label={t('audits.filters.action')}
+              placeholder={t('audits.filters.allActions')}
               value={filters.action}
               onChange={(v) => setFilters((f) => ({ ...f, action: v }))}
-              options={[
-                'Login',
-                'Logout',
-                'Modify',
-                'Create',
-                'Delete',
-                'Refund',
-                'Discount Applied',
-                'Menu Price Changed',
-              ]}
+              options={actionOptions}
             />
 
             <div className="flex flex-col gap-1.5 w-full">
               <label className="text-xs text-gray-500 font-medium">
-                Search
+                {t('audits.filters.search')}
               </label>
               <div className="relative">
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search logs..."
+                  placeholder={t('audits.filters.searchPlaceholder')}
                   value={filters.search}
                   onChange={(e) =>
                     setFilters((f) => ({ ...f, search: e.target.value }))
@@ -1031,43 +1027,43 @@ const AuditLogTable = () => {
             <thead className="bg-[#F9FAFB] border-b border-gray-200 text-gray-500 font-medium text-xs">
               <tr>
                 <SortableHeader
-                  label="Timestamp"
+                  label={t('audits.table.timestamp')}
                   sortKey="timestamp"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="User"
+                  label={t('audits.table.user')}
                   sortKey="user"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="Action"
+                  label={t('audits.table.action')}
                   sortKey="action"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="Location"
+                  label={t('audits.table.location')}
                   sortKey="location"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="IP Address"
+                  label={t('audits.table.ip')}
                   sortKey="ip"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="Details"
+                  label={t('audits.table.details')}
                   sortKey="details"
                   currentSort={sort}
                   onSort={handleSort}
                 />
                 <SortableHeader
-                  label="Which POS"
+                  label={t('audits.table.pos')}
                   sortKey="pos"
                   currentSort={sort}
                   onSort={handleSort}
@@ -1082,7 +1078,7 @@ const AuditLogTable = () => {
                     className="px-4 py-12 text-center text-gray-400"
                   >
                     <Loader2 className="w-5 h-5 animate-spin text-purple-500 mx-auto mb-2" />
-                    <span className="text-sm">Loading audit logs…</span>
+                    <span className="text-sm">{t('audits.loading')}</span>
                   </td>
                 </tr>
               ) : isEmpty ? (
@@ -1096,10 +1092,10 @@ const AuditLogTable = () => {
                         <Inbox className="w-6 h-6 text-purple-400" />
                       </div>
                       <p className="text-sm font-medium text-gray-500">
-                        No audit logs found
+                        {t('audits.noData')}
                       </p>
                       <p className="text-xs text-gray-400">
-                        Try adjusting your filters or date range
+                        {t('audits.noDataDesc')}
                       </p>
                     </div>
                   </td>
@@ -1110,7 +1106,6 @@ const AuditLogTable = () => {
                     key={m.key || `audit-log-${index}`}
                     className="hover:bg-gray-50/50 transition-colors"
                   >
-                    {/* Timestamp */}
                     <td className="px-4 py-3">
                       <div className="flex items-start gap-2">
                         <Calendar className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
@@ -1123,7 +1118,6 @@ const AuditLogTable = () => {
                       </div>
                     </td>
 
-                    {/* User */}
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
                         <span className="text-gray-900 font-medium">
@@ -1137,12 +1131,10 @@ const AuditLogTable = () => {
                       </div>
                     </td>
 
-                    {/* Action */}
                     <td className="px-4 py-3">
                       <ActionBadge action={m.actionKey} label={m.actionLabel} />
                     </td>
 
-                    {/* Location */}
                     <td className="px-4 py-3">
                       <div className="flex items-start gap-2">
                         <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
@@ -1159,12 +1151,10 @@ const AuditLogTable = () => {
                       </div>
                     </td>
 
-                    {/* IP */}
                     <td className="px-4 py-3">
                       <span className="text-gray-900 tabular-nums">{m.ip}</span>
                     </td>
 
-                    {/* Details */}
                     <td className="px-4 py-3">
                       <div className="flex flex-col max-w-[240px]">
                         <span
@@ -1184,7 +1174,6 @@ const AuditLogTable = () => {
                       </div>
                     </td>
 
-                    {/* Which POS */}
                     <td className="px-4 py-3 text-gray-600 text-xs">
                       {m.pos}
                     </td>

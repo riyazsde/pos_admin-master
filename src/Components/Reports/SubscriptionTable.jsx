@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2, ShoppingBag, ChevronRight } from 'lucide-react';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
@@ -28,6 +29,7 @@ const formatAmount = (amount, currency = 'XOF') => {
 };
 
 function SubscriptionTable() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -35,7 +37,6 @@ function SubscriptionTable() {
     (state) => state.reports
   );
 
-  // ✅ Fetch once (same endpoint as the chart — shared cache)
   const hasFetched = useRef(false);
   useEffect(() => {
     if (subscriptionSales || hasFetched.current) return;
@@ -59,7 +60,6 @@ function SubscriptionTable() {
     fetchSales();
   }, [dispatch, subscriptionSales]);
 
-  // ✅ Prefer topSales; fall back to topPlans
   const rawRows =
     subscriptionSales?.topSales?.length > 0
       ? subscriptionSales.topSales
@@ -69,7 +69,8 @@ function SubscriptionTable() {
     id: String(index + 1).padStart(2, '0'),
     businessName:
       item.businessName || item.companyName || item.name || '—',
-    planPurchased: item.planName || item.planPurchased || 'No Plan',
+    planPurchased:
+      item.planName || item.planPurchased || t('common.noPlan'),
     purchasedDate: formatDate(item.purchasedDate || item.date || item.createdAt),
     amount: item.amount
       ? formatAmount(item.amount, item.currency)
@@ -86,17 +87,17 @@ function SubscriptionTable() {
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            Subscription Sales
+            {t('reports.subscriptionTable.title')}
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Latest subscription purchases
+            {t('reports.subscriptionTable.subtitle')}
           </p>
         </div>
         <button
           onClick={() => navigate('/subscription-list')}
           className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors"
         >
-          See all
+          {t('common.seeAll')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -106,7 +107,9 @@ function SubscriptionTable() {
         {subscriptionSalesLoading && !hasData ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading subscriptions…</span>
+            <span className="text-sm">
+              {t('reports.subscriptionTable.loading')}
+            </span>
           </div>
         ) : !hasData ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3 p-8">
@@ -114,10 +117,10 @@ function SubscriptionTable() {
               <ShoppingBag className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No subscription sales
+              {t('reports.subscriptionTable.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              Subscription purchases will appear here.
+              {t('reports.subscriptionTable.noDataDesc')}
             </p>
           </div>
         ) : (
@@ -127,11 +130,13 @@ function SubscriptionTable() {
               className="shrink-0 grid [grid-template-columns:56px_1.4fr_1.2fr_1fr_110px] items-center gap-3 px-5 py-3
                          bg-gradient-to-r from-purple-50 to-red-50 text-gray-600 text-xs font-semibold uppercase tracking-wider"
             >
-              <span>#</span>
-              <span>Business</span>
-              <span>Plan</span>
-              <span>Date</span>
-              <span className="text-right">Amount</span>
+              <span>{t('reports.subscriptionTable.table.hash')}</span>
+              <span>{t('reports.subscriptionTable.table.business')}</span>
+              <span>{t('reports.subscriptionTable.table.plan')}</span>
+              <span>{t('reports.subscriptionTable.table.date')}</span>
+              <span className="text-right">
+                {t('reports.subscriptionTable.table.amount')}
+              </span>
             </div>
 
             {/* Scrollable body */}

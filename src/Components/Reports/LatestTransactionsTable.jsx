@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Receipt, ChevronRight } from 'lucide-react';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
@@ -9,11 +10,11 @@ import {
 } from '../../Store/Features/reports/reportsSlice';
 import { reportService } from '../../Services/apiService';
 
-// Format ISO date → "Mar 01, 2025"
-const formatDate = (iso) => {
+// Format ISO date → localized
+const formatDate = (iso, locale = 'en-US') => {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('en-US', {
+    return new Date(iso).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
@@ -23,13 +24,11 @@ const formatDate = (iso) => {
   }
 };
 
-// Format number
 const formatNumber = (n) => {
   if (n === null || n === undefined) return '0';
   return Number(n).toLocaleString('en-US');
 };
 
-// Status pill styles
 const getStatusStyle = (status) => {
   switch (status?.toLowerCase()) {
     case 'success':
@@ -56,16 +55,15 @@ const getStatusDot = (status) => {
   }
 };
 
-// Grid template — min widths trigger horizontal scroll when needed
 const GRID_COLS =
   '56px minmax(200px,1.4fr) minmax(120px,0.9fr) minmax(140px,1fr) minmax(120px,0.9fr) minmax(110px,0.9fr) minmax(100px,0.8fr)';
 
-// ✅ Show exactly 5 rows by default; the rest scroll
-const ROW_HEIGHT_PX = 48;       // height of each data row
-const VISIBLE_ROWS = 8;         // number of rows to show
-const BODY_HEIGHT = ROW_HEIGHT_PX * VISIBLE_ROWS; // = 240px
+const ROW_HEIGHT_PX = 48;
+const VISIBLE_ROWS = 8;
+const BODY_HEIGHT = ROW_HEIGHT_PX * VISIBLE_ROWS;
 
 function LatestTransactionsTable() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -75,7 +73,6 @@ function LatestTransactionsTable() {
     latestTransactionsLoading,
   } = useAppSelector((state) => state.reports);
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -98,25 +95,30 @@ function LatestTransactionsTable() {
   const hasData = latestTransactions.length > 0;
   const totalCount = latestTransactionsSummary?.totalTransactions || 0;
 
+  // Determine locale from i18n language
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+
   return (
     <div className="w-full h-full flex flex-col font-poppins">
       {/* ---------- Header ---------- */}
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            Latest Transactions
+            {t('reports.latestTransactions.title')}
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Showing {Math.min(VISIBLE_ROWS, latestTransactions.length)} of{' '}
-            {totalCount} transaction{totalCount !== 1 ? 's' : ''} ·{' '}
-            {formatNumber(latestTransactionsSummary?.totalAmount || 0)} XOF
+            {t('reports.latestTransactions.subtitle', {
+              shown: Math.min(VISIBLE_ROWS, latestTransactions.length),
+              total: totalCount,
+              amount: formatNumber(latestTransactionsSummary?.totalAmount || 0),
+            })}
           </p>
         </div>
         <button
           onClick={() => navigate('/report')}
           className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors"
         >
-          See all
+          {t('common.seeAll')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -129,7 +131,9 @@ function LatestTransactionsTable() {
             style={{ height: BODY_HEIGHT + 44 }}
           >
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading transactions…</span>
+            <span className="text-sm">
+              {t('reports.latestTransactions.loading')}
+            </span>
           </div>
         ) : !hasData ? (
           <div
@@ -140,19 +144,17 @@ function LatestTransactionsTable() {
               <Receipt className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No transactions yet
+              {t('reports.latestTransactions.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              Recent transactions will appear here.
+              {t('reports.latestTransactions.noDataDesc')}
             </p>
           </div>
         ) : (
-          /* ✅ Two-axis scroll container with FIXED BODY HEIGHT = 5 rows */
           <div
             className="overflow-auto reports-scroll"
-            style={{ height: BODY_HEIGHT + 44 }} // body height + header height
+            style={{ height: BODY_HEIGHT + 44 }}
           >
-            {/* Inner min-width forces horizontal scroll on small screens */}
             <div className="min-w-[900px]">
               {/* ---- Sticky header row ---- */}
               <div
@@ -163,20 +165,25 @@ function LatestTransactionsTable() {
                 style={{ gridTemplateColumns: GRID_COLS, height: 44 }}
               >
                 <span className="sticky left-0 z-30 -mx-2 px-2 bg-gradient-to-r from-purple-50 to-purple-50">
-                  #
+                  {t('reports.latestTransactions.table.hash')}
                 </span>
-                <span>Reference</span>
-                <span>Date</span>
-                <span>Type</span>
-                <span>Method</span>
-                <span className="text-right">Amount</span>
-                <span className="text-center">Status</span>
+                <span>{t('reports.latestTransactions.table.reference')}</span>
+                <span>{t('reports.latestTransactions.table.date')}</span>
+                <span>{t('reports.latestTransactions.table.type')}</span>
+                <span>{t('reports.latestTransactions.table.method')}</span>
+                <span className="text-right">
+                  {t('reports.latestTransactions.table.amount')}
+                </span>
+                <span className="text-center">
+                  {t('reports.latestTransactions.table.status')}
+                </span>
               </div>
 
               {/* ---- Rows ---- */}
               {latestTransactions.map((txn, index) => {
                 const id = String(index + 1).padStart(2, '0');
                 const isEven = index % 2 === 0;
+                const statusKey = txn.status?.toLowerCase();
 
                 return (
                   <div
@@ -190,7 +197,6 @@ function LatestTransactionsTable() {
                       height: ROW_HEIGHT_PX,
                     }}
                   >
-                    {/* Frozen # column body */}
                     <span
                       className={`sticky left-0 z-10 -mx-2 px-2 h-full flex items-center tabular-nums text-gray-500 font-medium
                                   ${isEven ? 'bg-white' : 'bg-gray-50'}
@@ -207,7 +213,10 @@ function LatestTransactionsTable() {
                     </span>
 
                     <span className="text-gray-600 tabular-nums truncate">
-                      {formatDate(txn.transaction_date || txn.created_at)}
+                      {formatDate(
+                        txn.transaction_date || txn.created_at,
+                        locale
+                      )}
                     </span>
 
                     <span className="text-gray-600 truncate">
@@ -236,7 +245,12 @@ function LatestTransactionsTable() {
                             txn.status
                           )}`}
                         ></span>
-                        {txn.status || '—'}
+                        {txn.status
+                          ? t(
+                              `reports.latestTransactions.status.${statusKey}`,
+                              txn.status
+                            )
+                          : '—'}
                       </span>
                     </span>
                   </div>

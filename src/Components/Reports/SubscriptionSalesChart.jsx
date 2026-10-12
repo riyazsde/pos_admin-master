@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart,
   Bar,
@@ -24,7 +25,6 @@ const CustomBar = (props) => {
 
   return (
     <g>
-      {/* Grey background track */}
       <rect
         x={x}
         y={props.backgroundTop || 0}
@@ -34,7 +34,6 @@ const CustomBar = (props) => {
         rx="3"
         ry="3"
       />
-      {/* Actual data bar */}
       <rect x={x} y={y} width={width} height={height} fill={fill} rx="3" ry="3" />
     </g>
   );
@@ -57,13 +56,13 @@ const getDay = (iso) => {
 // Main component
 // ---------------------------------------------------------------------------
 const SubscriptionSalesChart = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const { subscriptionSales, subscriptionSalesLoading } = useAppSelector(
     (state) => state.reports
   );
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -72,7 +71,6 @@ const SubscriptionSalesChart = () => {
     const fetchSales = async () => {
       dispatch(setSubscriptionSalesLoading(true));
       try {
-        // Use current month/year; adjust if you have a period selector
         const now = new Date();
         const data = await reportService.getSubscriptionSales(
           now.getMonth() + 1,
@@ -88,7 +86,6 @@ const SubscriptionSalesChart = () => {
     fetchSales();
   }, [dispatch]);
 
-  // ✅ Transform salesByDay object → array for Recharts
   const salesByDay = subscriptionSales?.chartData?.salesByDay || {};
   const data = Object.values(salesByDay).map((item) => ({
     name: getDay(item.date),
@@ -122,8 +119,10 @@ const SubscriptionSalesChart = () => {
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="text-2xl font-bold text-[#2E2E30]">
-            Subscription Sales{' '}
-            <span className="text-gray-400 font-medium">(Report)</span>
+            {t('reports.subscriptionSalesChart.title')}{' '}
+            <span className="text-gray-400 font-medium">
+              {t('reports.subscriptionSalesChart.reportLabel')}
+            </span>
           </h2>
           {periodLabel && (
             <p className="text-xs text-gray-500 mt-1">{periodLabel}</p>
@@ -136,7 +135,9 @@ const SubscriptionSalesChart = () => {
         {subscriptionSalesLoading && !subscriptionSales ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading sales data…</span>
+            <span className="text-sm">
+              {t('reports.subscriptionSalesChart.loading')}
+            </span>
           </div>
         ) : (
           <>
@@ -152,7 +153,9 @@ const SubscriptionSalesChart = () => {
                 <TrendingUp className="h-4 w-4 text-[#34C759]" />
                 <span className="text-[#34C759] text-sm font-medium">
                   {formatNumber(totalSales)}{' '}
-                  <span className="text-gray-500">total sales</span>
+                  <span className="text-gray-500">
+                    {t('reports.subscriptionSalesChart.totalSales')}
+                  </span>
                 </span>
               </div>
             </div>
@@ -161,7 +164,7 @@ const SubscriptionSalesChart = () => {
             <div className="flex-1 min-h-0 w-full">
               {data.length === 0 ? (
                 <div className="h-full flex items-center justify-center text-gray-400 text-sm">
-                  No sales data for this period
+                  {t('reports.subscriptionSalesChart.noData')}
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
@@ -204,9 +207,13 @@ const SubscriptionSalesChart = () => {
                       }}
                       formatter={(value, name) => [
                         `${formatNumber(value)}`,
-                        name === 'sales' ? 'Sales' : 'Revenue',
+                        name === 'sales'
+                          ? t('reports.subscriptionSalesChart.sales')
+                          : t('reports.subscriptionSalesChart.revenue'),
                       ]}
-                      labelFormatter={(label) => `Day ${label}`}
+                      labelFormatter={(label) =>
+                        t('reports.subscriptionSalesChart.day', { day: label })
+                      }
                     />
                     <Bar
                       dataKey="sales"

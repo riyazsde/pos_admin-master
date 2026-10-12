@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 import withAdminLayout from '../AdminPanel/withAdminLayout';
@@ -84,46 +85,102 @@ const FilterIcon = () => (
 /* ------------------------------------------------------------------ */
 /*  SHARED TOGGLE COMPONENT                                            */
 /* ------------------------------------------------------------------ */
-const ViewToggle = ({ activeTab, setActiveTab }) => (
-  <div className="flex items-center bg-gray-100 rounded-lg p-1">
-    <button
-      type="button"
-      onClick={() => setActiveTab('reports')}
-      className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
-        activeTab === 'reports'
-          ? 'bg-purple-600 text-white shadow'
-          : 'text-gray-600 hover:text-gray-900'
-      }`}
-    >
-      Reports
-    </button>
-    <button
-      type="button"
-      onClick={() => setActiveTab('analytics')}
-      className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
-        activeTab === 'analytics'
-          ? 'bg-purple-600 text-white shadow'
-          : 'text-gray-600 hover:text-gray-900'
-      }`}
-    >
-      Analytics
-    </button>
-  </div>
-);
+const ViewToggle = ({ activeTab, setActiveTab }) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex items-center bg-gray-100 rounded-lg p-1">
+      <button
+        type="button"
+        onClick={() => setActiveTab('reports')}
+        className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+          activeTab === 'reports'
+            ? 'bg-purple-600 text-white shadow'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+      >
+        {t('reports.tabs.reports')}
+      </button>
+      <button
+        type="button"
+        onClick={() => setActiveTab('analytics')}
+        className={`px-5 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
+          activeTab === 'analytics'
+            ? 'bg-purple-600 text-white shadow'
+            : 'text-gray-600 hover:text-gray-900'
+        }`}
+      >
+        {t('reports.tabs.analytics')}
+      </button>
+    </div>
+  );
+};
 
 /* ------------------------------------------------------------------ */
 /*  ANALYTICS VIEW                                                     */
 /* ------------------------------------------------------------------ */
 const AnalyticsView = ({ activeTab, setActiveTab }) => {
+  const { t } = useTranslation();
   const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   const revenueData = [
-    { location: 'Downtown Bistro', revenue: '$89,450', orders: '1,245', avgOrder: '$71.85', growth: '+15.2%', isPositive: true },
-    { location: 'Ocean View Cafe', revenue: '$78,230', orders: '1,089', avgOrder: '$71.83', growth: '+8.5%', isPositive: true },
-    { location: 'Mountain Lodge', revenue: '$62,340', orders: '856', avgOrder: '$72.80', growth: '+22.1%', isPositive: true },
-    { location: 'City Square Diner', revenue: '$58,920', orders: '978', avgOrder: '$60.25', growth: '+6.3%', isPositive: true },
-    { location: 'Harbor Grill', revenue: '$32,450', orders: '534', avgOrder: '$60.77', growth: '-3.2%', isPositive: false },
-    { location: 'Sunset Restaurant', revenue: '$21,500', orders: '412', avgOrder: '$52.18', growth: '+18.7%', isPositive: true },
+    { 
+      location: t('reports.analyticsView.revenueData.downtownBistro'), 
+      revenue: '$89,450', 
+      orders: '1,245', 
+      avgOrder: '$71.85', 
+      growth: '+15.2%', 
+      isPositive: true 
+    },
+    { 
+      location: t('reports.analyticsView.revenueData.oceanViewCafe'), 
+      revenue: '$78,230', 
+      orders: '1,089', 
+      avgOrder: '$71.83', 
+      growth: '+8.5%', 
+      isPositive: true 
+    },
+    { 
+      location: t('reports.analyticsView.revenueData.mountainLodge'), 
+      revenue: '$62,340', 
+      orders: '856', 
+      avgOrder: '$72.80', 
+      growth: '+22.1%', 
+      isPositive: true 
+    },
+    { 
+      location: t('reports.analyticsView.revenueData.citySquareDiner'), 
+      revenue: '$58,920', 
+      orders: '978', 
+      avgOrder: '$60.25', 
+      growth: '+6.3%', 
+      isPositive: true 
+    },
+    { 
+      location: t('reports.analyticsView.revenueData.harborGrill'), 
+      revenue: '$32,450', 
+      orders: '534', 
+      avgOrder: '$60.77', 
+      growth: '-3.2%', 
+      isPositive: false 
+    },
+    { 
+      location: t('reports.analyticsView.revenueData.sunsetRestaurant'), 
+      revenue: '$21,500', 
+      orders: '412', 
+      avgOrder: '$52.18', 
+      growth: '+18.7%', 
+      isPositive: true 
+    },
+  ];
+
+  const quickActions = [
+    { icon: <DollarIcon />, label: t('reports.quickActions.revenueReports'), color: 'text-emerald-600 bg-emerald-50' },
+    { icon: <UsersIcon />, label: t('reports.quickActions.subscriptionReports'), color: 'text-blue-600 bg-blue-50' },
+    { icon: <CartIcon />, label: t('reports.quickActions.marketplaceSales'), color: 'text-purple-600 bg-purple-50' },
+    { icon: <CubeIcon />, label: t('reports.quickActions.inventoryReports'), color: 'text-orange-600 bg-orange-50' },
+    { icon: <AlertIcon />, label: t('reports.quickActions.lowStockAlerts'), color: 'text-red-600 bg-red-50' },
+    { icon: <LocationIcon />, label: t('reports.quickActions.locationComparison'), color: 'text-cyan-600 bg-cyan-50' },
   ];
 
   return (
@@ -131,14 +188,14 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
       {/* Top Bar — Title changes based on tab */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          {activeTab === 'analytics' ? 'Reports & Analytics' : 'Reports'}
+          {t('reports.titleAnalytics')}
         </h1>
         <div className="flex flex-wrap items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <DownloadIcon /> Export CSV
+            <DownloadIcon /> {t('common.exportCSV')}
           </button>
           <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors">
-            <DownloadIcon /> Export PDF
+            <DownloadIcon /> {t('common.exportPDF')}
           </button>
           <ViewToggle activeTab={activeTab} setActiveTab={setActiveTab} />
         </div>
@@ -146,14 +203,7 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
 
       {/* Quick Action Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {[
-          { icon: <DollarIcon />, label: 'Revenue Reports', color: 'text-emerald-600 bg-emerald-50' },
-          { icon: <UsersIcon />, label: 'Subscription Reports', color: 'text-blue-600 bg-blue-50' },
-          { icon: <CartIcon />, label: 'Marketplace Sales', color: 'text-purple-600 bg-purple-50' },
-          { icon: <CubeIcon />, label: 'Inventory Reports', color: 'text-orange-600 bg-orange-50' },
-          { icon: <AlertIcon />, label: 'Low-Stock Alerts', color: 'text-red-600 bg-red-50' },
-          { icon: <LocationIcon />, label: 'Location Comparison', color: 'text-cyan-600 bg-cyan-50' },
-        ].map((item, idx) => (
+        {quickActions.map((item, idx) => (
           <button
             key={idx}
             className="flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all text-center gap-2"
@@ -172,43 +222,43 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
           className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-1"
         >
           <FilterIcon />
-          Filters
+          {t('common.filters')}
           <ChevronDownIcon className={`transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
         </button>
 
         {isFilterOpen && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Date Range</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.filters.dateRange')}</label>
               <div className="relative">
                 <select className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option>Select one...</option>
-                  <option>Last 7 days</option>
-                  <option>Last 30 days</option>
-                  <option>Last 90 days</option>
+                  <option>{t('common.selectOne')}</option>
+                  <option>{t('reports.filters.last7Days')}</option>
+                  <option>{t('reports.filters.last30Days')}</option>
+                  <option>{t('reports.filters.last90Days')}</option>
                 </select>
                 <div className="absolute right-3 top-2.5 pointer-events-none"><ChevronDownIcon /></div>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Location</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{t('reports.filters.location')}</label>
               <div className="relative">
                 <select className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
-                  <option>Select one...</option>
-                  <option>Downtown Bistro</option>
-                  <option>Ocean View Cafe</option>
-                  <option>Mountain Lodge</option>
+                  <option>{t('common.selectOne')}</option>
+                  <option>{t('reports.analyticsView.revenueData.downtownBistro')}</option>
+                  <option>{t('reports.analyticsView.revenueData.oceanViewCafe')}</option>
+                  <option>{t('reports.analyticsView.revenueData.mountainLodge')}</option>
                 </select>
                 <div className="absolute right-3 top-2.5 pointer-events-none"><ChevronDownIcon /></div>
               </div>
             </div>
             <div className="lg:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Search</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">{t('common.search')}</label>
               <div className="relative">
                 <div className="absolute left-3 top-2.5"><SearchIcon /></div>
                 <input
                   type="text"
-                  placeholder="Search..."
+                  placeholder={t('common.searchPlaceholder')}
                   className="w-full bg-white border border-gray-200 rounded-lg pl-10 pr-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
@@ -220,25 +270,25 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <div className="bg-emerald-500 rounded-xl p-5 text-white shadow-md">
-          <p className="text-sm font-medium opacity-90">Total Revenue</p>
+          <p className="text-sm font-medium opacity-90">{t('reports.kpi.totalRevenue')}</p>
           <p className="text-3xl font-bold mt-1">$342,890</p>
           <div className="flex items-center gap-1 mt-2 text-sm opacity-90">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
             </svg>
-            +12.5% vs last period
+            +12.5% {t('common.vsLastPeriod')}
           </div>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <p className="text-sm font-medium text-gray-500">Total Orders</p>
+          <p className="text-sm font-medium text-gray-500">{t('reports.kpi.totalOrders')}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">5114</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <p className="text-sm font-medium text-gray-500">Average Order Value</p>
+          <p className="text-sm font-medium text-gray-500">{t('reports.kpi.averageOrderValue')}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">$67.42</p>
         </div>
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <p className="text-sm font-medium text-gray-500">Active Locations</p>
+          <p className="text-sm font-medium text-gray-500">{t('reports.kpi.activeLocations')}</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">6</p>
         </div>
       </div>
@@ -246,17 +296,17 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
       {/* Revenue by Location Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">Revenue by Location</h2>
+          <h2 className="text-base font-semibold text-gray-900">{t('reports.analytics.revenueByLocation')}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-gray-50 text-gray-500 font-medium text-xs uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-3">Location</th>
-                <th className="px-6 py-3">Revenue</th>
-                <th className="px-6 py-3">Orders</th>
-                <th className="px-6 py-3">Avg Order</th>
-                <th className="px-6 py-3">Growth</th>
+                <th className="px-6 py-3">{t('reports.analytics.location')}</th>
+                <th className="px-6 py-3">{t('reports.analytics.revenue')}</th>
+                <th className="px-6 py-3">{t('reports.analytics.orders')}</th>
+                <th className="px-6 py-3">{t('reports.analytics.avgOrder')}</th>
+                <th className="px-6 py-3">{t('reports.analytics.growth')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -297,6 +347,7 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
 /*  REPORTS VIEW (default)                                             */
 /* ------------------------------------------------------------------ */
 const ReportsView = ({ activeTab, setActiveTab }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const { kpiMetrics, loading, hasLoaded } = useAppSelector(
@@ -316,7 +367,7 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
       } catch (err) {
         console.error('Reports fetch error:', err);
         dispatch(setReportsError(err?.message || 'Failed to load reports'));
-        toast.error('Failed to load reports', {
+        toast.error(t('common.error'), {
           description:
             err?.response?.data?.message ||
             err?.message ||
@@ -326,7 +377,7 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
     };
 
     fetchReports();
-  }, [dispatch, hasLoaded]);
+  }, [dispatch, hasLoaded, t]);
 
   const formatNumber = (num) => {
     if (num === null || num === undefined) return '0';
@@ -335,20 +386,20 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
 
   const metrics = [
     {
-      title: 'Total Active Clients',
+      title: t('reports.metrics.totalActiveClients'),
       value: formatNumber(kpiMetrics?.totalActiveClients),
       imageSrc: money,
       bgColor: 'bg-orange-100',
     },
     {
-      title: 'Total Inactive Clients',
+      title: t('reports.metrics.totalInactiveClients'),
       value: formatNumber(kpiMetrics?.totalInactiveClients),
       imageSrc: bill,
       bgColor: 'bg-pink-100',
       valueColor: 'text-red-500',
     },
     {
-      title: 'Total Renewal Rate',
+      title: t('reports.metrics.totalRenewalRate'),
       value: `${kpiMetrics?.totalRenewalRate ?? 0}%`,
       imageSrc: global,
       bgColor: 'bg-green-100',
@@ -361,7 +412,7 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
       {/* Topbar — Title changes based on tab */}
       <div className="flex justify-between items-center flex-wrap mb-8 gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-          {activeTab === 'reports' ? 'Reports' : 'Reports & Analytics'}
+          {t('reports.title')}
         </h1>
         <ViewToggle activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>

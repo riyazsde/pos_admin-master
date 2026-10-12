@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import {
   AreaChart,
@@ -10,7 +11,6 @@ import {
 
 import { useAppSelector } from '../../Store/hooks';
 
-// ⚠️ Placeholder for the trend chart — API doesn't return weekly data yet
 const MOCK_CHART_DATA = [
   { name: 'Week 1', value: 40 },
   { name: 'Week 2', value: 30 },
@@ -21,6 +21,7 @@ const MOCK_CHART_DATA = [
 ];
 
 const TicketsReportCard = () => {
+  const { t } = useTranslation();
   const {
     supportTicketsReport,
     supportTicketsReportPagination,
@@ -30,7 +31,6 @@ const TicketsReportCard = () => {
   const totalTickets =
     supportTicketsReportPagination?.total || supportTicketsReport.length || 0;
 
-  // Placeholder trend — replace with API data when available
   const trendPercent = 2;
   const isPositive = true;
 
@@ -39,11 +39,18 @@ const TicketsReportCard = () => {
     return String(n).padStart(2, '0');
   };
 
+  const trendLabel = isPositive
+    ? t('reports.ticketsReportCard.lessThanLastMonth')
+    : t('reports.ticketsReportCard.moreThanLastMonth');
+
   return (
     <div className="w-full h-[368px] flex flex-col gap-4 font-[Poppins]">
       {/* Header */}
       <div className="text-[24px] font-bold text-black leading-[36px]">
-        Tickets <span className="text-gray-500 font-normal">(Report)</span>
+        {t('reports.ticketsReportCard.title')}{' '}
+        <span className="text-gray-500 font-normal">
+          {t('reports.ticketsReportCard.reportLabel')}
+        </span>
       </div>
 
       {/* Card */}
@@ -58,15 +65,15 @@ const TicketsReportCard = () => {
           ) : (
             <>
               <h2 className="text-[30px] font-bold text-[#34C759] tabular-nums">
-                {formatNumber(totalTickets)} Tickets
+                {t('reports.ticketsReportCard.ticketsLabel', {
+                  count: formatNumber(totalTickets),
+                })}
               </h2>
               <div className="flex items-center gap-1 text-[#34C759] text-[16px]">
                 {isPositive ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 <span>
                   {trendPercent}%{' '}
-                  <span className="text-[#00000099]">
-                    Less ticket than last month
-                  </span>
+                  <span className="text-[#00000099]">{trendLabel}</span>
                 </span>
               </div>
             </>
@@ -101,7 +108,7 @@ const TicketsReportCard = () => {
                   padding: '10px 12px',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 }}
-                formatter={(value) => [`${value} tickets`, 'Value']}
+                formatter={(value) => [`${value}`, t('reports.ticketsReportCard.title')]}
               />
               <Area
                 type="monotone"

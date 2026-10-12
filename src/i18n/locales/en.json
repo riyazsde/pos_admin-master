@@ -21,7 +21,21 @@
     "noData": "No data available",
     "error": "Something went wrong",
     "total": "Total",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "details": "Details",
+    "export": "Export",
+    "exportCSV": "Export CSV",
+    "exportPDF": "Export PDF",
+    "filters": "Filters",
+    "searchPlaceholder": "Search...",
+    "selectOne": "Select one...",
+    "showing": "Showing",
+    "of": "of",
+    "page": "Page",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noPlan": "No Plan",
+    "vsLastPeriod": "vs last period"
   },
 
   "nav": {
@@ -175,6 +189,267 @@
       "low": "Low",
       "normal": "Normal",
       "medium": "Medium"
+    }
+  },
+
+  "reports": {
+    "title": "Reports",
+    "titleAnalytics": "Reports & Analytics",
+    "tabs": {
+      "reports": "Reports",
+      "analytics": "Analytics"
+    },
+    "metrics": {
+      "totalActiveClients": "Total Active Clients",
+      "totalInactiveClients": "Total Inactive Clients",
+      "totalRenewalRate": "Total Renewal Rate"
+    },
+    "quickActions": {
+      "revenueReports": "Revenue Reports",
+      "subscriptionReports": "Subscription Reports",
+      "marketplaceSales": "Marketplace Sales",
+      "inventoryReports": "Inventory Reports",
+      "lowStockAlerts": "Low-Stock Alerts",
+      "locationComparison": "Location Comparison"
+    },
+    "filters": {
+      "dateRange": "Date Range",
+      "location": "Location",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days"
+    },
+    "kpi": {
+      "totalRevenue": "Total Revenue",
+      "totalOrders": "Total Orders",
+      "averageOrderValue": "Average Order Value",
+      "activeLocations": "Active Locations"
+    },
+    "analytics": {
+      "revenueByLocation": "Revenue by Location",
+      "location": "Location",
+      "revenue": "Revenue",
+      "orders": "Orders",
+      "avgOrder": "Avg Order",
+      "growth": "Growth"
+    },
+    "activeClients": {
+      "title": "Active Clients",
+      "subtitle": "{{count}} client{{count, plural}} active",
+      "subtitle_one": "{{count}} client active",
+      "subtitle_other": "{{count}} clients active",
+      "loading": "Loading active clients…",
+      "noData": "No active clients",
+      "noDataDesc": "Active clients will appear here.",
+      "table": {
+        "hash": "#",
+        "businessName": "Business Name",
+        "plan": "Plan",
+        "purchased": "Purchased",
+        "status": "Status"
+      }
+    },
+    "activeClientsReport": {
+      "title": "Active Clients",
+      "reportLabel": "(Report)",
+      "subtitle": "Distribution of active clients",
+      "details": "Details",
+      "active": "Active",
+      "inactive": "Inactive",
+      "newClients": "New Clients",
+      "renewedClients": "Renewed Clients",
+      "noData": "No data",
+      "periods": {
+        "1W": "1W",
+        "1M": "1M",
+        "6M": "6M",
+        "1Y": "1Y"
+      }
+    },
+    "inactiveClientsChart": {
+      "title": "Inactive Clients",
+      "reportLabel": "(Report)",
+      "subtitle": "Trend of inactive clients",
+      "details": "Details",
+      "inactive": "Inactive",
+      "inactiveLastMonth": "{{percent}}% inactive in last 1M",
+      "noData": "No inactive",
+      "noDataDesc": "clients yet",
+      "january": "January",
+      "months": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dec"
+      },
+      "periods": {
+        "1M": "1M",
+        "3M": "3M",
+        "6M": "6M",
+        "1Y": "1Y"
+      }
+    },
+    "inactiveClients": {
+      "title": "Inactive Clients",
+      "subtitle": "{{count}} client{{count, plural}} inactive",
+      "subtitle_one": "{{count}} client inactive",
+      "subtitle_other": "{{count}} clients inactive",
+      "loading": "Loading inactive clients…",
+      "noData": "No inactive clients",
+      "noDataDesc": "All your clients are currently active. Inactive ones will appear here.",
+      "table": {
+        "hash": "#",
+        "businessName": "Business Name",
+        "plan": "Plan",
+        "purchased": "Purchased",
+        "status": "Status"
+      }
+    },
+    "analyticsView": {
+      "revenueData": {
+        "downtownBistro": "Downtown Bistro",
+        "oceanViewCafe": "Ocean View Cafe",
+        "mountainLodge": "Mountain Lodge",
+        "citySquareDiner": "City Square Diner",
+        "harborGrill": "Harbor Grill",
+        "sunsetRestaurant": "Sunset Restaurant"
+      }
+    },
+    "subscriptionSalesChart": {
+      "title": "Subscription Sales",
+      "reportLabel": "(Report)",
+      "loading": "Loading sales data…",
+      "noData": "No sales data for this period",
+      "totalSales": "total sales",
+      "sales": "Sales",
+      "revenue": "Revenue",
+      "day": "Day {{day}}"
+    },
+    "subscriptionTable": {
+      "title": "Subscription Sales",
+      "subtitle": "Latest subscription purchases",
+      "loading": "Loading subscriptions…",
+      "noData": "No subscription sales",
+      "noDataDesc": "Subscription purchases will appear here.",
+      "table": {
+        "hash": "#",
+        "business": "Business",
+        "plan": "Plan",
+        "date": "Date",
+        "amount": "Amount"
+      }
+    },
+    "latestTransactions": {
+      "title": "Latest Transactions",
+      "subtitle": "Showing {{shown}} of {{total}} transaction{{total, plural}} · {{amount}} XOF",
+      "subtitle_one": "Showing {{shown}} of {{total}} transaction · {{amount}} XOF",
+      "subtitle_other": "Showing {{shown}} of {{total}} transactions · {{amount}} XOF",
+      "loading": "Loading transactions…",
+      "noData": "No transactions yet",
+      "noDataDesc": "Recent transactions will appear here.",
+      "table": {
+        "hash": "#",
+        "reference": "Reference",
+        "date": "Date",
+        "type": "Type",
+        "method": "Method",
+        "amount": "Amount",
+        "status": "Status"
+      },
+      "status": {
+        "success": "Success",
+        "pending": "Pending",
+        "failed": "Failed"
+      }
+    },
+    "transactionGraph": {
+      "title": "Transaction Graph",
+      "reportLabel": "(Report)",
+      "subtitle": "Last 12 months · {{count}} transaction{{count, plural}}",
+      "subtitle_one": "Last 12 months · {{count}} transaction",
+      "subtitle_other": "Last 12 months · {{count}} transactions",
+      "loading": "Loading graph…",
+      "totalTransactions": "Total Transactions",
+      "topMethod": "Top method:",
+      "transactions": "transactions",
+      "noData": "No transactions",
+      "noDataDesc": "in this period",
+      "topMethodLabel": "Top Method",
+      "used": "Used",
+      "remaining": "Remaining"
+    },
+    "ticketsReportCard": {
+      "title": "Tickets",
+      "reportLabel": "(Report)",
+      "ticketsLabel": "{{count}} Tickets",
+      "lessThanLastMonth": "Less ticket than last month",
+      "moreThanLastMonth": "More ticket than last month",
+      "sameAsLastMonth": "Same as last month"
+    },
+    "supportTickets": {
+      "title": "Support Tickets",
+      "subtitle": "{{count}} open ticket{{count, plural}}",
+      "subtitle_one": "{{count}} open ticket",
+      "subtitle_other": "{{count}} open tickets",
+      "loading": "Loading support tickets…",
+      "noData": "No open tickets",
+      "noDataDesc": "You're all caught up! New tickets will appear here.",
+      "resolveSuccess": "Ticket marked for resolution",
+      "resolveSuccessDesc": "Ticket #{{id}} — {{business}}",
+      "loadFailed": "Failed to load support tickets",
+      "loadFailedDesc": "Please try again later.",
+      "table": {
+        "hash": "#",
+        "businessName": "Business Name",
+        "issue": "Issue",
+        "date": "Date",
+        "priority": "Priority",
+        "status": "Status"
+      },
+      "noSubject": "No subject",
+      "resolve": "Resolve",
+      "status": {
+        "open": "Open",
+        "resolved": "Resolved",
+        "closed": "Closed",
+        "pending": "Pending"
+      },
+      "priority": {
+        "high": "High",
+        "critical": "Critical",
+        "low": "Low",
+        "medium": "Medium",
+        "normal": "Normal"
+      }
+    },
+    "cityWiseUsage": {
+      "title": "City Wise Usage",
+      "reportLabel": "(Report)",
+      "subtitle": "{{cities}} cit{{cities, plural}} · {{restaurants}} restaurants · avg {{avg}}/city",
+      "subtitle_one": "{{cities}} city · {{restaurants}} restaurants · avg {{avg}}/city",
+      "subtitle_other": "{{cities}} cities · {{restaurants}} restaurants · avg {{avg}}/city",
+      "loading": "Loading city data…",
+      "noData": "No city data available",
+      "noDataDesc": "City-wise usage will appear here once restaurants are onboarded.",
+      "unknown": "Unknown",
+      "legend": {
+        "low": "Low consumption",
+        "good": "Good consumption"
+      },
+      "summary": {
+        "totalRestaurants": "Total restaurants:",
+        "good": "Good:",
+        "low": "Low:"
+      },
+      "tooltip": "{{city}}: {{count}} restaurants, {{active}} active subscriptions"
     }
   },
 
@@ -403,7 +678,6 @@
 
   "accountSettings": {
     "title": "Account Settings",
-
     "common": {
       "loading": "Loading data...",
       "close": "Close",
@@ -411,20 +685,17 @@
       "copy": "Copy",
       "unknown": "Unknown"
     },
-
     "accountDetails": {
       "title": "Account Details",
       "password": "Password",
       "manageAdmin": "Manage {{role}}"
     },
-
     "regionalPreference": {
       "title": "Regional Preference",
       "languages": "Languages",
       "dateTime": "Date & Time",
       "currency": "Currency"
     },
-
     "security": {
       "title": "Security",
       "twoFactor": "Two-Factor Authentication",
@@ -438,7 +709,6 @@
       "passwordResetLogs": "Password Reset Logs",
       "apiKeys": "API Keys"
     },
-
     "twoFactor": {
       "title": "Two-Factor Authentication",
       "status": "Status",
@@ -456,7 +726,6 @@
       "backupCodeDescription": "Save this code in a secure place. You can use it to access your account if you lose your device.",
       "disableButton": "Disable 2FA"
     },
-
     "sessions": {
       "title": "Active Sessions",
       "description": "These devices are currently signed in to your account. Revoke any sessions you don't recognize.",
@@ -468,7 +737,6 @@
       "revoke": "Revoke",
       "revokeAllOther": "Revoke All Other Sessions"
     },
-
     "trustedDevices": {
       "title": "Trusted Devices",
       "description": "Trusted devices won't require 2FA verification. Remove any devices you don't recognize.",
@@ -480,7 +748,6 @@
       "addedOn": "Added {{date}}",
       "lastUsed": "Last used {{date}}"
     },
-
     "addDevice": {
       "title": "Add New Device",
       "deviceName": "Device Name",
@@ -494,7 +761,6 @@
       "addButton": "Add Device",
       "adding": "Adding..."
     },
-
     "loginHistory": {
       "title": "Login History",
       "description": "Review all login attempts to your account. Report any suspicious activity immediately.",
@@ -504,7 +770,6 @@
       "method": "Method",
       "password": "Password"
     },
-
     "suspiciousActivity": {
       "title": "Suspicious Activity",
       "description": "We monitor your account for suspicious activity. Review and resolve any alerts below.",
@@ -517,7 +782,6 @@
         "reviewSessions": "Regularly review your active sessions and trusted devices"
       }
     },
-
     "passwordResetLogs": {
       "title": "Password Reset Logs",
       "description": "View all password reset attempts for your account. If you see any unauthorized resets, contact support immediately.",
@@ -528,7 +792,6 @@
       "noticeDescription": "If you notice any password reset attempts that you didn't initiate, your account may be compromised. Please change your password immediately and enable two-factor authentication.",
       "changePasswordNow": "Change Password Now"
     },
-
     "apiKeys": {
       "title": "API Keys",
       "description": "Manage API keys for accessing TRIAXX services programmatically.",
@@ -542,7 +805,6 @@
       "createdOn": "Created {{date}}",
       "lastUsed": "Last used {{date}}"
     },
-
     "createApiKey": {
       "title": "Create New Key",
       "keyNameLabel": "API Key Name",
@@ -571,7 +833,6 @@
         }
       }
     },
-
     "apiKeyCreated": {
       "title": "API Key Created",
       "successTitle": "API Key Created Successfully",
@@ -579,7 +840,6 @@
       "importantDescription": "This key will only be shown once. Make sure to copy and store it securely.",
       "doneButton": "Done"
     },
-
     "toasts": {
       "backupCodeCopied": "Backup code copied to clipboard",
       "sessionRevoked": "Session revoked successfully",
@@ -801,6 +1061,465 @@
     "onGoing": "On-Going",
     "resolved": "Resolved",
     "closed": "Closed"
+  },
+  
+  "ham": {
+    "title": "Hardware Asset Management (HAM)",
+    "subtitle": "{{count}} device{{count, plural}} in inventory",
+    "subtitle_one": "{{count}} device in inventory",
+    "subtitle_other": "{{count}} devices in inventory",
+    "addDevice": "Add Device",
+    "loading": "Loading devices…",
+    "noData": "No devices found",
+    "noDataAddFirst": "Add your first device to get started.",
+    "noDataFilter": "No devices match this filter.",
+    "tabs": {
+      "all": "All Devices",
+      "assigned": "Assigned Devices",
+      "out": "Out of Stock"
+    },
+    "table": {
+      "deviceType": "Device Type",
+      "totalStock": "Total Stock",
+      "available": "Available",
+      "assigned": "Assigned",
+      "manufacturerWarranty": "Manufacturer Warranty",
+      "extendedWarranty": "Extended Warranty",
+      "slaCoverage": "SLA Coverage",
+      "swapEligibility": "Swap Eligibility",
+      "replacementCycle": "Replacement Cycle"
+    },
+    "deviceTypes": {
+      "posTerminal": "Payment Terminal",
+      "printer": "Receipt Printer",
+      "scanner": "Barcode scanner",
+      "cashDrawer": "Cash Drawer",
+      "kds": "KDS Display",
+      "tablet": "Tablet",
+      "default": "Device"
+    },
+    "row": {
+      "exp": "Exp: {{date}}",
+      "purchased": "Purchased {{date}}",
+      "noCoverage": "No Coverage",
+      "notEligible": "Not Eligible",
+      "eligible": "Eligible",
+      "swapNow": "Swap Now",
+      "nextBusinessDay": "Next Business Day",
+      "months": "months"
+    },
+    "modal": {
+      "title": "Add New Devices",
+      "deviceName": "Device Name",
+      "deviceNamePlaceholder": "Enter device name",
+      "serialNumber": "Serial Number",
+      "serialNumberPlaceholder": "Enter",
+      "hardwareModel": "Hardware Model",
+      "hardwareModelPlaceholder": "Enter",
+      "manufacturer": "Manufacturer",
+      "manufacturerPlaceholder": "Enter",
+      "imei": "IMEI",
+      "imeiPlaceholder": "Enter",
+      "deviceType": "Device Type",
+      "adding": "Adding...",
+      "addDevice": "Add Device",
+      "validation": {
+        "nameRequired": "Device Name is required",
+        "serialRequired": "Serial Number is required",
+        "typeRequired": "Device Type is required"
+      },
+      "options": {
+        "printer": "Printer",
+        "posTerminal": "POS Terminal",
+        "scanner": "Scanner",
+        "cashDrawer": "Cash Drawer",
+        "kds": "KDS",
+        "tablet": "Tablet"
+      },
+      "toasts": {
+        "adding": "Adding device...",
+        "addSuccess": "Device added successfully!",
+        "addSuccessDesc": "\"{{name}}\" is now in inventory.",
+        "addFailed": "Failed to add device",
+        "addFailedDesc": "Please try again."
+      }
+    }
+  },
+  "mdm": {
+    "title": "MDM Device Management",
+    "subtitle": "{{count}} device{{count, plural}} in fleet",
+    "subtitle_one": "{{count}} device in fleet",
+    "subtitle_other": "{{count}} devices in fleet",
+    "enrollNewDevice": "Enroll New Device",
+    "loading": "Loading devices…",
+    "noDevices": "No devices found",
+    "noDevicesDesc": "Try adjusting your filters.",
+    "searchPlaceholder": "Search devices...",
+    "filter": "Filter",
+    "unknownModel": "Unknown Model",
+    "na": "N/A",
+    "never": "Never",
+    "stats": {
+      "totalDevices": "Total Devices",
+      "onlineDevices": "Online Devices",
+      "offlineDevices": "Offline Devices",
+      "needsUpdate": "Needs Update",
+      "uptime": "{{percent}}% uptime",
+      "requiresAttention": "Requires attention",
+      "updatesAvailable": "Updates available"
+    },
+    "filters": {
+      "all": "All Devices",
+      "online": "Online",
+      "offline": "Offline",
+      "active": "Active",
+      "idle": "Idle",
+      "syncDelay": "Sync Delay"
+    },
+    "table": {
+      "status": "Status",
+      "deviceName": "Device Name",
+      "location": "Location",
+      "appVersion": "App Version",
+      "lastSeen": "Last Seen",
+      "actions": "Actions",
+      "updateAvailable": "Update Available",
+      "android": "Android"
+    },
+    "status": {
+      "online": "Online",
+      "offline": "Offline"
+    },
+    "actions": {
+      "viewLogs": "View Logs",
+      "lock": "Lock",
+      "unlock": "Unlock",
+      "restart": "Restart",
+      "pushUpdate": "Push Update",
+      "wipe": "Wipe"
+    },
+    "enrollModal": {
+      "title": "Enroll New Device",
+      "subtitle": "Lorem ipsum is simply dummy text of the printing and typesetting industry",
+      "information": "Information",
+      "deviceName": "Device Name",
+      "totalStocks": "Total Stocks",
+      "serialNumber": "Serial Number",
+      "imei": "IMEI",
+      "androidId": "Android ID",
+      "hardwareModel": "Hardware Model",
+      "merchantAssignment": "Merchant Assignment",
+      "enrollmentToken": "Enrollment Token",
+      "provisioningType": "Provisioning Type",
+      "deviceOwnership": "Device Ownership",
+      "kioskProfile": "Kiosk Profile",
+      "mdmPolicyAssignment": "MDM Policy Assignment",
+      "location": "Location",
+      "enrollmentMode": "Enrollment Mode",
+      "selectOne": "Select one...",
+      "modeToken": "Token",
+      "modeManual": "Manual",
+      "modeAuto": "Auto",
+      "modeQrCode": "QR Code",
+      "status": "Status",
+      "placeholder": "Enter",
+      "cancel": "Cancel",
+      "enroll": "Enroll",
+      "validation": {
+        "nameRequired": "Device Name is required",
+        "serialRequired": "Serial Number is required"
+      },
+      "toasts": {
+        "enrolling": "Enrolling device...",
+        "enrollSuccess": "Device enrolled successfully",
+        "enrollFailed": "Failed to enroll device",
+        "tryAgain": "Please try again."
+      }
+    },
+    "lockModal": {
+      "title": "Remote Lock Device",
+      "warning": "This will immediately lock the device and require authentication to unlock.",
+      "deviceId": "Device ID",
+      "status": "Status",
+      "location": "Location",
+      "reason": "Reason",
+      "defaultReason": "Device reported lost",
+      "cancel": "Cancel",
+      "lockDevice": "Lock Device",
+      "toasts": {
+        "locking": "Locking device...",
+        "lockSuccess": "Device locked",
+        "lockFailed": "Failed to lock device",
+        "tryAgain": "Please try again."
+      }
+    },
+    "restartModal": {
+      "title": "Remote Restart Device",
+      "warning": "This will restart the device. Any unsaved work will be lost.",
+      "restartReason": "Restart Reason",
+      "defaultReason": "Apply configuration changes",
+      "scheduleRestart": "Schedule Restart",
+      "restartQueue": "Restart Queue",
+      "restartSuccessConfirmation": "Restart Success Confirmation",
+      "autoRecoveryMode": "Auto-recovery mode",
+      "cancel": "Cancel",
+      "restartDevice": "Restart Device",
+      "toasts": {
+        "scheduling": "Scheduling restart...",
+        "restartSuccess": "Restart scheduled",
+        "restartFailed": "Failed to schedule restart",
+        "tryAgain": "Please try again."
+      }
+    },
+    "updateModal": {
+      "title": "Push Update",
+      "warning": "This will push the latest app version to the device and install it.",
+      "appVersion": "App Version",
+      "cancel": "Cancel",
+      "pushUpdate": "Push Update",
+      "toasts": {
+        "pushing": "Pushing update...",
+        "updateSuccess": "Update pushed",
+        "updateFailed": "Failed to push update",
+        "tryAgain": "Please try again."
+      }
+    },
+    "wipeModal": {
+      "title": "Remote Wipe Device",
+      "warning": "WARNING: This will erase all data on {{name}}. This action cannot be undone.",
+      "email": "Email",
+      "emailPlaceholder": "Enter your registered email id",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "otpInstructions": "To wipe the device, you need to enter the 6-digit OTP sent to the registered email address.",
+      "otp": "OTP",
+      "resendOtp": "Resend OTP",
+      "resending": "Resending…",
+      "wipeMode": "Wipe Mode",
+      "modeFullReset": "Full Factory Reset",
+      "modeSelective": "Selective Wipe",
+      "modeEnterprise": "Enterprise Reset",
+      "cancel": "Cancel",
+      "next": "Next",
+      "wipeNow": "Wipe Now",
+      "validation": {
+        "emailRequired": "Email is required",
+        "passwordRequired": "Password is required",
+        "otpRequired": "Please enter all 6 digits"
+      },
+      "toasts": {
+        "otpSent": "OTP sent to your email",
+        "otpResent": "OTP resent to your email",
+        "otpFailed": "Failed to send OTP",
+        "wiping": "Wiping device...",
+        "wipeSuccess": "Device wiped",
+        "wipeFailed": "Failed to wipe device",
+        "tryAgain": "Please try again."
+      }
+    },
+    "sessionLogsModal": {
+      "title": "Session Logs",
+      "ipAddress": "IP Address",
+      "uptime": "Uptime",
+      "battery": "Battery",
+      "storageUsed": "Storage Used",
+      "days": "{{count}} days",
+      "loading": "Loading logs…",
+      "noLogs": "No session logs",
+      "exportLogs": "Export Logs",
+      "exporting": "Exporting…",
+      "toasts": {
+        "preparing": "Preparing export…",
+        "exportSuccess": "Export downloaded",
+        "exportFailed": "Export failed",
+        "noDevice": "No device selected"
+      },
+      "status": {
+        "completed": "Completed",
+        "queued": "Queued"
+      }
+    }
+  },
+
+  "audits": {
+    "title": "Audits",
+    "lastUpdated": "Last updated: {{date}}",
+    "loading": "Loading audit logs…",
+    "noData": "No audit logs found",
+    "noDataDesc": "Try adjusting your filters or date range",
+    "unknown": "Unknown",
+    "na": "—",
+    "never": "Never",
+    "activity": "Activity",
+    "export": {
+      "exportCSV": "Export CSV",
+      "exportPDF": "Export PDF",
+      "generating": "Generating export...",
+      "csvSuccess": "CSV exported",
+      "failed": "Failed to export",
+      "tryAgain": "Please try again."
+    },
+    "stats": {
+      "totalLogs": "Total Logs",
+      "todayActivity": "Today's Activity",
+      "loginEvents": "Login Events",
+      "orderChanges": "Order Changes",
+      "stockAdjustments": "Stock Adjustments"
+    },
+    "filters": {
+      "title": "Filters",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "environment": "Environment",
+      "action": "Action",
+      "search": "Search",
+      "searchPlaceholder": "Search logs...",
+      "allEnvironments": "All environments",
+      "allActions": "All actions",
+      "clear": "Clear",
+      "apply": "Apply Filters",
+      "applied": "Filters applied",
+      "failed": "Failed to load audit activity",
+      "environments": {
+        "development": "Development",
+        "staging": "Staging",
+        "production": "Production"
+      },
+      "actions": {
+        "login": "Login",
+        "logout": "Logout",
+        "modify": "Modify",
+        "create": "Create",
+        "delete": "Delete",
+        "refund": "Refund",
+        "discount": "Discount Applied",
+        "menuPrice": "Menu Price Changed"
+      }
+    },
+    "sort": {
+      "title": "Sort",
+      "asc": "Asc",
+      "desc": "Desc",
+      "options": {
+        "timestamp": "Timestamp",
+        "user": "User",
+        "action": "Action",
+        "location": "Location",
+        "ip": "IP Address",
+        "details": "Details",
+        "pos": "Which POS"
+      }
+    },
+    "table": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "action": "Action",
+      "location": "Location",
+      "ip": "IP Address",
+      "details": "Details",
+      "pos": "Which POS"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}–{{end}} of {{total}} logs",
+      "rows": "Rows:",
+      "firstPage": "First page",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "lastPage": "Last page"
+    },
+    "overview": {
+      "failed": "Failed to load audit overview",
+      "activityFailed": "Failed to load activity"
+    }
+  },
+
+  "posHardware": {
+    "pageTitle": "POS Hardware Devices",
+    "lastUpdated": "Last updated: {{date}}",
+    "metrics": {
+      "totalClients": "Total Clients",
+      "totalPrinters": "Total Printers",
+      "totalSystems": "Total POS Systems"
+    },
+    "devicesSection": {
+      "title": "All Hardware Devices",
+      "subtitle": "Manage and track all hardware devices across locations",
+      "loading": "Loading hardware devices...",
+      "noData": "No hardware devices found.",
+      "table": {
+        "device": "Device",
+        "serialNumber": "Serial Number",
+        "warranty": "Warranty",
+        "condition": "Condition"
+      },
+      "warranty": {
+        "exp": "Exp: {{date}}",
+        "purchase": "Purchase: {{date}}"
+      },
+      "toasts": {
+        "fetchFailed": "Failed to load POS hardware data",
+        "fetchFailedDesc": "Please try again later.",
+        "devicesFailed": "Failed to load hardware devices list"
+      }
+    },
+    "hardwareChart": {
+      "title": "Hardware Sold",
+      "units": "units",
+      "changeFromLastMonth": "change from last month",
+      "sold": "Sold",
+      "unitsLabel": "{{count}} units"
+    },
+    "history": {
+      "title": "POS Hardware Devices History",
+      "records": "{{count}} record{{count, plural}}",
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "refresh": "Refresh",
+      "filter": {
+        "all": "All Devices",
+        "printer": "Printer",
+        "system": "System",
+        "kds": "KDS",
+        "tablet": "Tablet"
+      },
+      "loading": "Loading history…",
+      "noData": "No hardware history yet",
+      "noDataDesc": "Hardware purchases will appear here.",
+      "table": {
+        "hash": "#",
+        "businessName": "Business Name",
+        "planPurchased": "Plan Purchased",
+        "renewalDate": "Renewal Date",
+        "transactionId": "Transaction ID",
+        "devicePurchased": "Device Purchased"
+      }
+    },
+    "hardwareSold": {
+      "title": "Hardware Sold",
+      "records": "{{count}} record{{count, plural}}",
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "loading": "Loading hardware sales…",
+      "noData": "No hardware sold yet",
+      "noDataDesc": "Purchased hardware will appear here once sales are recorded.",
+      "table": {
+        "hash": "#",
+        "businessName": "Business Name",
+        "planPurchased": "Plan Purchased",
+        "purchasedDate": "Purchased Date",
+        "device": "Device"
+      }
+    },
+    "conditions": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "new": "New",
+      "unknown": "Unknown"
+    },
+    "deviceLabels": {
+      "device": "Device",
+      "sold": "{{count}} sold"
+    }
   },
 
   "notifications": {

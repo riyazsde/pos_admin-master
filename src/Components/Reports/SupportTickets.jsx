@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Loader2, LifeBuoy, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,7 +14,7 @@ import { reportService } from '../../Services/apiService';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const formatDate = (iso) => {
+const formatDate = (iso, locale = 'en-US') => {
   if (!iso) return '—';
   try {
     const d = new Date(iso);
@@ -25,7 +26,6 @@ const formatDate = (iso) => {
   }
 };
 
-// Priority → pill color
 const getPriorityStyle = (priority) => {
   switch (priority?.toLowerCase()) {
     case 'high':
@@ -41,7 +41,6 @@ const getPriorityStyle = (priority) => {
   }
 };
 
-// Status → pill color
 const getStatusStyle = (status) => {
   switch (status?.toLowerCase()) {
     case 'open':
@@ -56,23 +55,15 @@ const getStatusStyle = (status) => {
   }
 };
 
-// Compact issue preview
-const getIssuePreview = (ticket) => {
-  const text = ticket.subject || ticket.issue || 'No subject';
-  const cleaned = text.replace(/\n+/g, ' ').trim();
-  return cleaned.length > 30 ? `${cleaned.slice(0, 30)}...` : cleaned;
-};
-
-// Grid columns — total ≈ 860px
 const GRID_COLS =
   '56px minmax(180px,1.4fr) minmax(200px,1.5fr) minmax(120px,0.9fr) minmax(100px,0.8fr) minmax(110px,0.8fr)';
 
-// ✅ Fixed height: 5 rows × 52px + header 44px = 304px
 const ROW_HEIGHT_PX = 52;
 const VISIBLE_ROWS = 5;
-const BODY_HEIGHT = ROW_HEIGHT_PX * VISIBLE_ROWS; // 260px
+const BODY_HEIGHT = ROW_HEIGHT_PX * VISIBLE_ROWS;
 
 const SupportTickets = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -82,7 +73,6 @@ const SupportTickets = () => {
     supportTicketsReportLoading,
   } = useAppSelector((state) => state.reports);
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -96,28 +86,53 @@ const SupportTickets = () => {
       } catch (err) {
         console.error('Support tickets fetch error:', err);
         dispatch(setSupportTicketsReportLoading(false));
-        toast.error('Failed to load support tickets', {
+        toast.error(t('reports.supportTickets.loadFailed'), {
           description:
             err?.response?.data?.message ||
             err?.message ||
-            'Please try again later.',
+            t('reports.supportTickets.loadFailedDesc'),
         });
       }
     };
 
     fetchTickets();
-  }, [dispatch]);
+  }, [dispatch, t]);
 
   const hasData = supportTicketsReport.length > 0;
   const totalCount =
     supportTicketsReportPagination?.total || supportTicketsReport.length || 0;
 
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+
+  // Issue preview with localized "no subject"
+  const getIssuePreview = (ticket) => {
+    const text =
+      ticket.subject || ticket.issue || t('reports.supportTickets.noSubject');
+    const cleaned = text.replace(/\n+/g, ' ').trim();
+    return cleaned.length > 30 ? `${cleaned.slice(0, 30)}...` : cleaned;
+  };
+
+  // Localized priority label
+  const getPriorityLabel = (priority) => {
+    const key = priority?.toLowerCase();
+    if (!key) return '—';
+    return t(`reports.supportTickets.priority.${key}`, priority);
+  };
+
+  // Localized status label
+  const getStatusLabel = (status) => {
+    const key = status?.toLowerCase();
+    if (!key) return '—';
+    return t(`reports.supportTickets.status.${key}`, status);
+  };
+
   const handleResolve = (ticket) => {
-    toast.success('Ticket marked for resolution', {
-      description: `Ticket #${ticket.ticketId} — ${ticket.businessName}`,
+    toast.success(t('reports.supportTickets.resolveSuccess'), {
+      description: t('reports.supportTickets.resolveSuccessDesc', {
+        id: ticket.ticketId,
+        business: ticket.businessName,
+      }),
     });
-    // TODO: call resolve API when available
-    // await reportService.resolveTicket(ticket.ticketId);
   };
 
   return (
@@ -125,16 +140,18 @@ const SupportTickets = () => {
       {/* ---------- Header ---------- */}
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-black">Support Tickets</h2>
+          <h2 className="text-2xl font-bold text-black">
+            {t('reports.supportTickets.title')}
+          </h2>
           <p className="text-xs text-gray-500 mt-1">
-            {totalCount} open ticket{totalCount !== 1 ? 's' : ''}
+            {t('reports.supportTickets.subtitle', { count: totalCount })}
           </p>
         </div>
         <button
           onClick={() => navigate('/supports')}
           className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors"
         >
-          See all
+          {t('common.seeAll')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -147,7 +164,9 @@ const SupportTickets = () => {
             style={{ height: BODY_HEIGHT + 44 }}
           >
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading support tickets…</span>
+            <span className="text-sm">
+              {t('reports.supportTickets.loading')}
+            </span>
           </div>
         ) : !hasData ? (
           <div
@@ -158,14 +177,13 @@ const SupportTickets = () => {
               <LifeBuoy className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No open tickets
+              {t('reports.supportTickets.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              You're all caught up! New tickets will appear here.
+              {t('reports.supportTickets.noDataDesc')}
             </p>
           </div>
         ) : (
-          /* ✅ Two-axis scroll with fixed 5-row height */
           <div
             className="overflow-auto reports-scroll"
             style={{ height: BODY_HEIGHT + 44 }}
@@ -180,13 +198,17 @@ const SupportTickets = () => {
                 style={{ gridTemplateColumns: GRID_COLS, height: 44 }}
               >
                 <span className="sticky left-0 z-30 -mx-2 px-2 bg-gradient-to-r from-purple-50 to-purple-50">
-                  #
+                  {t('reports.supportTickets.table.hash')}
                 </span>
-                <span>Business Name</span>
-                <span>Issue</span>
-                <span>Date</span>
-                <span className="text-center">Priority</span>
-                <span className="text-center">Status</span>
+                <span>{t('reports.supportTickets.table.businessName')}</span>
+                <span>{t('reports.supportTickets.table.issue')}</span>
+                <span>{t('reports.supportTickets.table.date')}</span>
+                <span className="text-center">
+                  {t('reports.supportTickets.table.priority')}
+                </span>
+                <span className="text-center">
+                  {t('reports.supportTickets.table.status')}
+                </span>
               </div>
 
               {/* ---- Rows ---- */}
@@ -206,7 +228,6 @@ const SupportTickets = () => {
                       height: ROW_HEIGHT_PX,
                     }}
                   >
-                    {/* Frozen # */}
                     <span
                       className={`sticky left-0 z-10 -mx-2 px-2 h-full flex items-center tabular-nums text-gray-500 font-medium
                                   ${isEven ? 'bg-white' : 'bg-gray-50'}
@@ -230,7 +251,7 @@ const SupportTickets = () => {
                     </span>
 
                     <span className="text-gray-600 tabular-nums">
-                      {formatDate(ticket.createdDate)}
+                      {formatDate(ticket.createdDate, locale)}
                     </span>
 
                     <span className="flex justify-center">
@@ -239,7 +260,7 @@ const SupportTickets = () => {
                           ticket.priority
                         )}`}
                       >
-                        {ticket.priority || '—'}
+                        {getPriorityLabel(ticket.priority)}
                       </span>
                     </span>
 
@@ -250,7 +271,9 @@ const SupportTickets = () => {
                           ticket.status
                         )}`}
                       >
-                        {ticket.status === 'Open' ? 'Resolve' : ticket.status}
+                        {ticket.status === 'Open'
+                          ? t('reports.supportTickets.resolve')
+                          : getStatusLabel(ticket.status)}
                       </button>
                     </span>
                   </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Plus, X, Loader2, Package, PackageCheck, PackageX } from 'lucide-react';
+import { Plus, X, Loader2, Package } from 'lucide-react';
 
 import withAdminLayout from '../AdminPanel/withAdminLayout';
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
@@ -18,20 +19,10 @@ import { hamService } from '../../Services/apiService';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const TYPE_LABELS = {
-  'POS Terminal': 'Payment Terminal',
-  Printer: 'Receipt Printer',
-  Scanner: 'Barcode scanner',
-  'Cash Drawer': 'Cash Drawer',
-  KDS: 'KDS Display',
-  Tablet: 'Tablet',
-  default: 'Device',
-};
-
-const formatDate = (iso) => {
+const formatDate = (iso, locale = 'en-US') => {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('en-US', {
+    return new Date(iso).toLocaleDateString(locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -41,25 +32,11 @@ const formatDate = (iso) => {
   }
 };
 
-const formatDateRange = (start, end) => {
-  if (!start) return '—';
-  const s = formatDate(start);
-  return `${s}`;
-};
-
-// ---------------------------------------------------------------------------
-// Tabs
-// ---------------------------------------------------------------------------
-const TABS = [
-  { id: 'all', label: 'All Devices' },
-  { id: 'assigned', label: 'Assigned Devices' },
-  { id: 'out', label: 'Out of Stock' },
-];
-
 // ---------------------------------------------------------------------------
 // Add Device Modal
 // ---------------------------------------------------------------------------
 const AddDeviceModal = ({ onClose, onCreated }) => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const [form, setForm] = useState({
@@ -84,9 +61,11 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));
 
   const validate = () => {
-    if (!form.Name.trim()) return 'Device Name is required';
-    if (!form.Serial_Number.trim()) return 'Serial Number is required';
-    if (!form.type.trim()) return 'Device Type is required';
+    if (!form.Name.trim())
+      return t('ham.modal.validation.nameRequired');
+    if (!form.Serial_Number.trim())
+      return t('ham.modal.validation.serialRequired');
+    if (!form.type.trim()) return t('ham.modal.validation.typeRequired');
     return null;
   };
 
@@ -101,10 +80,9 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
 
     setIsSubmitting(true);
     dispatch(setCreating(true));
-    const toastId = toast.loading('Adding device...');
+    const toastId = toast.loading(t('ham.modal.toasts.adding'));
 
     try {
-      // Payload maps UI → backend field names
       const payload = {
         Name: form.Name.trim(),
         type: form.type,
@@ -125,9 +103,11 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
 
       const created = await hamService.createDevice(payload);
 
-      toast.success('Device added successfully!', {
+      toast.success(t('ham.modal.toasts.addSuccess'), {
         id: toastId,
-        description: `"${created?.Name || form.Name}" is now in inventory.`,
+        description: t('ham.modal.toasts.addSuccessDesc', {
+          name: created?.Name || form.Name,
+        }),
         duration: 2500,
       });
 
@@ -136,13 +116,13 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
       onClose();
     } catch (error) {
       console.error('Create device error:', error);
-      toast.error('Failed to add device', {
+      toast.error(t('ham.modal.toasts.addFailed'), {
         id: toastId,
         description:
           error?.response?.data?.errors?.[0]?.msg ||
           error?.response?.data?.message ||
           error?.message ||
-          'Please try again.',
+          t('ham.modal.toasts.addFailedDesc'),
       });
       dispatch(setHamError(error?.message || 'Failed to create device'));
     } finally {
@@ -156,7 +136,9 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Add New Devices</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            {t('ham.modal.title')}
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -173,13 +155,13 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
           {/* Device Name */}
           <div>
             <label className="block text-sm font-medium text-gray-800 mb-2">
-              Device Name
+              {t('ham.modal.deviceName')}
             </label>
             <input
               type="text"
               value={form.Name}
               onChange={(e) => update('Name', e.target.value)}
-              placeholder="Enter device name"
+              placeholder={t('ham.modal.deviceNamePlaceholder')}
               disabled={isSubmitting}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
@@ -189,26 +171,26 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
-                Serial Number
+                {t('ham.modal.serialNumber')}
               </label>
               <input
                 type="text"
                 value={form.Serial_Number}
                 onChange={(e) => update('Serial_Number', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('ham.modal.serialNumberPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
-                Hardware Model
+                {t('ham.modal.hardwareModel')}
               </label>
               <input
                 type="text"
                 value={form.Hardware_Model}
                 onChange={(e) => update('Hardware_Model', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('ham.modal.hardwareModelPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
@@ -219,26 +201,26 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
-                Manufacturer
+                {t('ham.modal.manufacturer')}
               </label>
               <input
                 type="text"
                 value={form.Manufacturer}
                 onChange={(e) => update('Manufacturer', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('ham.modal.manufacturerPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-800 mb-2">
-                IMEI
+                {t('ham.modal.imei')}
               </label>
               <input
                 type="text"
                 value={form.IMEI}
                 onChange={(e) => update('IMEI', e.target.value)}
-                placeholder="Enter"
+                placeholder={t('ham.modal.imeiPlaceholder')}
                 disabled={isSubmitting}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
@@ -248,7 +230,7 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
           {/* Device Type */}
           <div>
             <label className="block text-sm font-medium text-gray-800 mb-2">
-              Device Type
+              {t('ham.modal.deviceType')}
             </label>
             <select
               value={form.type}
@@ -256,12 +238,16 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
               disabled={isSubmitting}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              <option value="Printer">Printer</option>
-              <option value="POS Terminal">POS Terminal</option>
-              <option value="Scanner">Scanner</option>
-              <option value="Cash Drawer">Cash Drawer</option>
-              <option value="KDS">KDS</option>
-              <option value="Tablet">Tablet</option>
+              <option value="Printer">{t('ham.modal.options.printer')}</option>
+              <option value="POS Terminal">
+                {t('ham.modal.options.posTerminal')}
+              </option>
+              <option value="Scanner">{t('ham.modal.options.scanner')}</option>
+              <option value="Cash Drawer">
+                {t('ham.modal.options.cashDrawer')}
+              </option>
+              <option value="KDS">{t('ham.modal.options.kds')}</option>
+              <option value="Tablet">{t('ham.modal.options.tablet')}</option>
             </select>
           </div>
         </form>
@@ -276,10 +262,10 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Adding...
+                {t('ham.modal.adding')}
               </>
             ) : (
-              'Add Device'
+              t('ham.modal.addDevice')
             )}
           </button>
         </div>
@@ -292,6 +278,9 @@ const AddDeviceModal = ({ onClose, onCreated }) => {
 // Table Row
 // ---------------------------------------------------------------------------
 const DeviceRow = ({ device, index }) => {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+
   const type = device.type || 'default';
   const stock = device.Total_Stocks ?? 0;
   const active = stock > 0;
@@ -300,12 +289,28 @@ const DeviceRow = ({ device, index }) => {
   const swapEligible = device.Swap_Eligibility || false;
   const replacementCycle = device.Replacement_Cycle || 24;
 
+  // Type label with i18n fallback
+  const getTypeLabel = () => {
+    const keyMap = {
+      'POS Terminal': 'ham.deviceTypes.posTerminal',
+      Printer: 'ham.deviceTypes.printer',
+      Scanner: 'ham.deviceTypes.scanner',
+      'Cash Drawer': 'ham.deviceTypes.cashDrawer',
+      KDS: 'ham.deviceTypes.kds',
+      Tablet: 'ham.deviceTypes.tablet',
+    };
+    const key = keyMap[type];
+    return key ? t(key) : t('ham.deviceTypes.default');
+  };
+
+  const notEligibleLabel = t('ham.row.notEligible');
+
   return (
     <tr className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
       {/* Device Type */}
       <td className="px-5 py-4">
         <span className="text-sm font-semibold text-gray-800">
-          {TYPE_LABELS[type] || type}
+          {getTypeLabel()}
         </span>
       </td>
 
@@ -334,10 +339,17 @@ const DeviceRow = ({ device, index }) => {
       <td className="px-5 py-4">
         <div className="flex flex-col text-xs">
           <span className="text-gray-800 font-medium">
-            Exp: {formatDate(device.Warranty_End || '2027-01-15')}
+            {t('ham.row.exp', {
+              date: formatDate(device.Warranty_End || '2027-01-15', locale),
+            })}
           </span>
           <span className="text-gray-400">
-            Purchased {formatDate(device.Purchase_Date || '2024-01-15')}
+            {t('ham.row.purchased', {
+              date: formatDate(
+                device.Purchase_Date || '2024-01-15',
+                locale
+              ),
+            })}
           </span>
         </div>
       </td>
@@ -348,14 +360,21 @@ const DeviceRow = ({ device, index }) => {
           {warranty ? (
             <>
               <span className="text-gray-800 font-medium">
-                Exp: {formatDate(warranty)}
+                {t('ham.row.exp', { date: formatDate(warranty, locale) })}
               </span>
               <span className="text-gray-400">
-                Purchased {formatDate(device.Purchase_Date || '2024-01-15')}
+                {t('ham.row.purchased', {
+                  date: formatDate(
+                    device.Purchase_Date || '2024-01-15',
+                    locale
+                  ),
+                })}
               </span>
             </>
           ) : (
-            <span className="text-gray-400">No Coverage</span>
+            <span className="text-gray-400">
+              {t('ham.row.noCoverage')}
+            </span>
           )}
         </div>
       </td>
@@ -363,9 +382,13 @@ const DeviceRow = ({ device, index }) => {
       {/* SLA Coverage */}
       <td className="px-5 py-4">
         <div className="flex flex-col text-xs">
-          <span className="text-gray-800 font-medium">{sla}</span>
+          <span className="text-gray-800 font-medium">
+            {sla === 'Not Eligible' ? notEligibleLabel : sla}
+          </span>
           <span className="text-gray-400">
-            {sla === 'Not Eligible' ? 'Not Eligible' : 'Next Business Day'}
+            {sla === 'Not Eligible'
+              ? notEligibleLabel
+              : t('ham.row.nextBusinessDay')}
           </span>
         </div>
       </td>
@@ -374,13 +397,17 @@ const DeviceRow = ({ device, index }) => {
       <td className="px-5 py-4">
         {swapEligible ? (
           <div className="flex flex-col text-xs">
-            <span className="text-green-600 font-bold">Eligible</span>
-            <span className="text-green-600">Swap Now</span>
+            <span className="text-green-600 font-bold">
+              {t('ham.row.eligible')}
+            </span>
+            <span className="text-green-600">{t('ham.row.swapNow')}</span>
           </div>
         ) : (
           <div className="flex flex-col text-xs">
-            <span className="text-red-500 font-bold">Not Eligible</span>
-            <span className="text-red-500">Not Eligible</span>
+            <span className="text-red-500 font-bold">
+              {t('ham.row.notEligible')}
+            </span>
+            <span className="text-red-500">{t('ham.row.notEligible')}</span>
           </div>
         )}
       </td>
@@ -391,7 +418,7 @@ const DeviceRow = ({ device, index }) => {
           <span className="text-gray-800 font-bold tabular-nums">
             {replacementCycle}
           </span>
-          <span className="text-gray-400">months</span>
+          <span className="text-gray-400">{t('ham.row.months')}</span>
         </div>
       </td>
     </tr>
@@ -402,6 +429,7 @@ const DeviceRow = ({ device, index }) => {
 // Main Page
 // ---------------------------------------------------------------------------
 const HamPage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const [activeTab, setActiveTab] = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -425,7 +453,7 @@ const HamPage = () => {
       } catch (err) {
         console.error('Devices fetch error:', err);
         dispatch(setHamError(err?.message || 'Failed to load devices'));
-        toast.error('Failed to load devices', {
+        toast.error(t('common.error'), {
           description: err?.message || 'Please try again.',
         });
       }
@@ -448,14 +476,21 @@ const HamPage = () => {
     };
 
     fetchAll();
-  }, [dispatch]);
+  }, [dispatch, t]);
+
+  // ✅ Tabs with i18n labels
+  const TABS = [
+    { id: 'all', label: t('ham.tabs.all') },
+    { id: 'assigned', label: t('ham.tabs.assigned') },
+    { id: 'out', label: t('ham.tabs.out') },
+  ];
 
   // ✅ Filter devices by tab
   const filteredDevices = devices.filter((d) => {
     const stock = d.Total_Stocks ?? 0;
     if (activeTab === 'assigned') return d.Merchant_Assignment;
     if (activeTab === 'out') return stock === 0;
-    return true; // all
+    return true;
   });
 
   const isEmpty = filteredDevices.length === 0;
@@ -466,10 +501,10 @@ const HamPage = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Hardware Asset Management (HAM)
+            {t('ham.title')}
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            {totalDevices} device{totalDevices !== 1 ? 's' : ''} in inventory
+            {t('ham.subtitle', { count: totalDevices })}
           </p>
         </div>
 
@@ -478,7 +513,7 @@ const HamPage = () => {
           className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] text-white text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity shadow-sm"
         >
           <Plus className="w-4 h-4" />
-          Add Device
+          {t('ham.addDevice')}
         </button>
       </div>
 
@@ -491,7 +526,9 @@ const HamPage = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`pb-3 text-sm font-semibold transition-colors relative ${
-                isActive ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                isActive
+                  ? 'text-gray-900'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
               {tab.label}
@@ -508,7 +545,7 @@ const HamPage = () => {
         {loading && !hasLoaded ? (
           <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading devices…</span>
+            <span className="text-sm">{t('ham.loading')}</span>
           </div>
         ) : isEmpty ? (
           <div className="p-12 flex flex-col items-center justify-center text-gray-400 gap-3">
@@ -516,12 +553,12 @@ const HamPage = () => {
               <Package className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No devices found
+              {t('ham.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
               {activeTab === 'all'
-                ? 'Add your first device to get started.'
-                : 'No devices match this filter.'}
+                ? t('ham.noDataAddFirst')
+                : t('ham.noDataFilter')}
             </p>
           </div>
         ) : (
@@ -530,31 +567,31 @@ const HamPage = () => {
               <thead className="bg-gradient-to-r from-purple-50 to-red-50 border-b border-gray-100">
                 <tr>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Device Type
+                    {t('ham.table.deviceType')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Total Stock
+                    {t('ham.table.totalStock')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Available
+                    {t('ham.table.available')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Assigned
+                    {t('ham.table.assigned')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Manufacturer Warranty
+                    {t('ham.table.manufacturerWarranty')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Extended Warranty
+                    {t('ham.table.extendedWarranty')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    SLA Coverage
+                    {t('ham.table.slaCoverage')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Swap Eligibility
+                    {t('ham.table.swapEligibility')}
                   </th>
                   <th className="px-5 py-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Replacement Cycle
+                    {t('ham.table.replacementCycle')}
                   </th>
                 </tr>
               </thead>

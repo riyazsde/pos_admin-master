@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, Package, Filter, RefreshCw } from 'lucide-react';
 
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
@@ -12,10 +13,10 @@ import { posHardwareService } from '../../Services/apiService';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const formatDate = (iso) => {
+const formatDate = (iso, locale = 'en-US') => {
   if (!iso) return '—';
   try {
-    return new Date(iso).toLocaleDateString('en-US', {
+    return new Date(iso).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
@@ -25,18 +26,11 @@ const formatDate = (iso) => {
   }
 };
 
-const getDeviceLabel = (d) => {
-  if (!d) return 'Device';
-  if (typeof d.device === 'string') return d.device;
-  if (typeof d.deviceName === 'string') return d.deviceName;
-  if (typeof d.hardwareType === 'string') return d.hardwareType;
-  return 'Device';
-};
-
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 function HardwareDeviceHistory() {
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const [selectedDevice, setSelectedDevice] = useState('All');
 
@@ -44,7 +38,17 @@ function HardwareDeviceHistory() {
     (state) => state.posHardware
   );
 
-  // ✅ Ensure dashboard data is loaded (in case user landed here directly)
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+
+  const getDeviceLabel = (d) => {
+    if (!d) return t('posHardware.deviceLabels.device');
+    if (typeof d.device === 'string') return d.device;
+    if (typeof d.deviceName === 'string') return d.deviceName;
+    if (typeof d.hardwareType === 'string') return d.hardwareType;
+    return t('posHardware.deviceLabels.device');
+  };
+
+  // ✅ Ensure dashboard data is loaded
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasLoaded || hasFetched.current) return;
@@ -77,7 +81,8 @@ function HardwareDeviceHistory() {
         planPurchased:
           d.planPurchased || d.planName || d.Plan?.PlanName || '—',
         renewalDate: formatDate(
-          d.renewalDate || d.Renewal_Date || d.purchasedDate || null
+          d.renewalDate || d.Renewal_Date || d.purchasedDate || null,
+          locale
         ),
         transactionId:
           d.transactionId || d.reference_number || d.referenceNumber || '—',
@@ -85,7 +90,6 @@ function HardwareDeviceHistory() {
       }));
     }
 
-    // Fallback: summary row per month
     const monthLabel =
       item.month || item.monthName || `Month ${monthIdx + 1}`;
     const count = item.count ?? item.sales ?? 0;
@@ -97,7 +101,7 @@ function HardwareDeviceHistory() {
         planPurchased: '—',
         renewalDate: '—',
         transactionId: '—',
-        device: `${count} sold`,
+        device: t('posHardware.deviceLabels.sold', { count }),
       },
     ];
   });
@@ -118,10 +122,10 @@ function HardwareDeviceHistory() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-black">
-            POS Hardware Devices History
+            {t('posHardware.history.title')}
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            {totalCount} record{totalCount !== 1 ? 's' : ''}
+            {t('posHardware.history.records', { count: totalCount })}
           </p>
         </div>
 
@@ -139,7 +143,7 @@ function HardwareDeviceHistory() {
             className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            {t('posHardware.history.refresh')}
           </button>
 
           {/* Filter */}
@@ -150,11 +154,21 @@ function HardwareDeviceHistory() {
               value={selectedDevice}
               onChange={(e) => setSelectedDevice(e.target.value)}
             >
-              <option value="All">All Devices</option>
-              <option value="Printer">Printer</option>
-              <option value="System">System</option>
-              <option value="KDS">KDS</option>
-              <option value="Tablet">Tablet</option>
+              <option value="All">
+                {t('posHardware.history.filter.all')}
+              </option>
+              <option value="Printer">
+                {t('posHardware.history.filter.printer')}
+              </option>
+              <option value="System">
+                {t('posHardware.history.filter.system')}
+              </option>
+              <option value="KDS">
+                {t('posHardware.history.filter.kds')}
+              </option>
+              <option value="Tablet">
+                {t('posHardware.history.filter.tablet')}
+              </option>
             </select>
             <svg
               className="w-4 h-4 absolute right-3 top-2.5 text-gray-400 pointer-events-none"
@@ -179,12 +193,24 @@ function HardwareDeviceHistory() {
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="sticky top-0 z-10 bg-gradient-to-r from-purple-50 to-red-50">
               <tr className="text-left text-gray-600 text-xs uppercase tracking-wider">
-                <th className="px-4 py-3 font-semibold">#</th>
-                <th className="px-4 py-3 font-semibold">Business Name</th>
-                <th className="px-4 py-3 font-semibold">Plan Purchased</th>
-                <th className="px-4 py-3 font-semibold">Renewal Date</th>
-                <th className="px-4 py-3 font-semibold">Transaction ID</th>
-                <th className="px-4 py-3 font-semibold">Device Purchased</th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.hash')}
+                </th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.businessName')}
+                </th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.planPurchased')}
+                </th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.renewalDate')}
+                </th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.transactionId')}
+                </th>
+                <th className="px-4 py-3 font-semibold">
+                  {t('posHardware.history.table.devicePurchased')}
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -195,7 +221,9 @@ function HardwareDeviceHistory() {
                     className="px-4 py-16 text-center text-gray-400"
                   >
                     <Loader2 className="w-6 h-6 animate-spin text-purple-500 mx-auto mb-2" />
-                    <span className="text-sm">Loading history…</span>
+                    <span className="text-sm">
+                      {t('posHardware.history.loading')}
+                    </span>
                   </td>
                 </tr>
               ) : filteredData.length === 0 ? (
@@ -209,10 +237,10 @@ function HardwareDeviceHistory() {
                         <Package className="w-6 h-6 text-purple-400" />
                       </div>
                       <p className="text-sm font-medium text-gray-500">
-                        No hardware history yet
+                        {t('posHardware.history.noData')}
                       </p>
                       <p className="text-xs text-gray-400">
-                        Hardware purchases will appear here.
+                        {t('posHardware.history.noDataDesc')}
                       </p>
                     </div>
                   </td>

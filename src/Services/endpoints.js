@@ -27,8 +27,9 @@ export const ENDPOINTS = {
   ADMIN: {
     // ✅ SINGLE consolidated ACCOUNT_SETTINGS block (only declared ONCE)
 ACCOUNT_SETTINGS: {
-  DATE_TIME: '/api/v1/admin/account-settings/date-time',                    // GET
-  DATE_TIME_UPDATE: '/api/v1/admin/account-settings/date-time/update', 
+  // Date & Time — GET to read, PUT to update (same URL, different verb)
+  DATE_TIME: '/api/v1/admin/account-settings/date-time',
+
   PROFILE: '/api/v1/user/getbyauth',
   SESSIONS: '/api/v1/admin/account-settings/sessions',
   REVOKE_SESSION: (id) => `/api/v1/admin/account-settings/sessions/${id}`,
@@ -38,8 +39,6 @@ ACCOUNT_SETTINGS: {
   API_KEYS: '/api/v1/admin/account-settings/api-keys',
   REVOKE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}/revoke`,
   DELETE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}`,
-
-  // ✅ ADD THESE TWO LINES:
   TRUSTED_DEVICES: '/api/v1/admin/account-settings/trusted-devices',
   REMOVE_TRUSTED_DEVICE: (id) => `/api/v1/admin/account-settings/trusted-devices/${id}`,
 },
@@ -126,17 +125,20 @@ ACCOUNT_SETTINGS: {
     },
 
     MDM: {
-      GET_ALL: '/api/v1/master/myDevices/getall',
-      GET_BY_AUTH: '/api/v1/master/myDevices/getbyauth',
-      SESSION_LOGS: (id) => `/api/v1/master/myDevices/${id}/session-logs`,
-      SESSION_LOGS_EXPORT: (id) =>
-        `/api/v1/master/myDevices/${id}/session-logs/export`,
-      LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
-      RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
-      PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
-      WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
-      WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`,
-    },
+  GET_ALL: '/api/v1/master/myDevices/getall',
+  GET_BY_AUTH: '/api/v1/master/myDevices/getbyauth',
+  SESSION_LOGS: (id) => `/api/v1/master/myDevices/${id}/session-logs`,
+  SESSION_LOGS_EXPORT: (id) =>
+    `/api/v1/master/myDevices/${id}/session-logs/export`,
+  LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
+  RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
+  PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
+
+  // ✅ NEW: two separate wipe endpoints
+  WIPE_SEND_OTP: (id) => `/api/v1/master/myDevices/${id}/wipe/send-otp`,
+  WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
+  WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`, // same URL, different body
+},
 
     PAYMENT_OPTIONS: {
       GET_ALL: '/api/v1/admin/payment_options/getall',

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, MapPin, Building2 } from 'lucide-react';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
@@ -11,22 +12,17 @@ import { reportService } from '../../Services/apiService';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-// Format number
 const formatNumber = (n) => {
   if (n === null || n === undefined) return '0';
   return Number(n).toLocaleString('en-US');
 };
 
-// Classify consumption level based on restaurants count
-// You can tweak the thresholds based on your business logic
 const getConsumptionType = (count, maxCount) => {
   if (maxCount <= 0) return 'Low';
   const ratio = count / maxCount;
   return ratio >= 0.6 ? 'Good' : 'Low';
 };
 
-// Compute bar height (pixels) — max height = 140px
 const getBarHeight = (count, maxCount) => {
   if (maxCount <= 0) return 15;
   const MIN_H = 15;
@@ -35,16 +31,11 @@ const getBarHeight = (count, maxCount) => {
   return Math.max(MIN_H, ratio * MAX_H);
 };
 
-// Human-readable city label
-const getCityLabel = (city) => {
-  if (!city) return 'Unknown';
-  return String(city).trim();
-};
-
 // ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 const CityWiseUsage = () => {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
   const {
@@ -53,7 +44,6 @@ const CityWiseUsage = () => {
     cityWiseUsageLoading,
   } = useAppSelector((state) => state.reports);
 
-  // ✅ Fetch once
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasFetched.current) return;
@@ -73,7 +63,11 @@ const CityWiseUsage = () => {
     fetchUsage();
   }, [dispatch]);
 
-  // ✅ Build chart data from API response
+  const getCityLabel = (city) => {
+    if (!city) return t('reports.cityWiseUsage.unknown');
+    return String(city).trim();
+  };
+
   const data = (cityWiseUsage || []).map((item) => ({
     city: getCityLabel(item.cityName),
     value: item.totalRestaurants ?? 0,
@@ -84,7 +78,6 @@ const CityWiseUsage = () => {
 
   const maxValue = data.length ? Math.max(...data.map((d) => d.value), 1) : 1;
 
-  // Enrich with type
   const enriched = data.map((d) => ({
     ...d,
     type: getConsumptionType(d.value, maxValue),
@@ -99,15 +92,18 @@ const CityWiseUsage = () => {
         <div className="flex justify-between items-start flex-wrap gap-2">
           <div>
             <h2 className="text-2xl font-bold text-black">
-              City Wise Usage{' '}
-              <span className="text-gray-400 font-medium">(Report)</span>
+              {t('reports.cityWiseUsage.title')}{' '}
+              <span className="text-gray-400 font-medium">
+                {t('reports.cityWiseUsage.reportLabel')}
+              </span>
             </h2>
             {cityWiseUsageSummary && (
               <p className="text-xs text-gray-500 mt-1">
-                {cityWiseUsageSummary.totalCities} cit
-                {cityWiseUsageSummary.totalCities !== 1 ? 'ies' : 'y'} ·{' '}
-                {cityWiseUsageSummary.totalRestaurants} restaurants · avg{' '}
-                {cityWiseUsageSummary.avgRestaurantsPerCity}/city
+                {t('reports.cityWiseUsage.subtitle', {
+                  cities: cityWiseUsageSummary.totalCities,
+                  restaurants: cityWiseUsageSummary.totalRestaurants,
+                  avg: cityWiseUsageSummary.avgRestaurantsPerCity,
+                })}
               </p>
             )}
           </div>
@@ -120,13 +116,13 @@ const CityWiseUsage = () => {
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-sm bg-[#FF955A]"></div>
               <span className="text-xs sm:text-sm font-medium text-gray-700">
-                Low consumption
+                {t('reports.cityWiseUsage.legend.low')}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-sm bg-[#344BFD]"></div>
               <span className="text-xs sm:text-sm font-medium text-gray-700">
-                Good consumption
+                {t('reports.cityWiseUsage.legend.good')}
               </span>
             </div>
           </div>
@@ -135,7 +131,9 @@ const CityWiseUsage = () => {
           {cityWiseUsageLoading && !hasData ? (
             <div className="mt-20 h-[200px] flex flex-col items-center justify-center text-gray-400 gap-3">
               <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-              <span className="text-sm">Loading city data…</span>
+              <span className="text-sm">
+                {t('reports.cityWiseUsage.loading')}
+              </span>
             </div>
           ) : !hasData ? (
             <div className="mt-20 h-[200px] flex flex-col items-center justify-center text-gray-400 gap-3">
@@ -143,14 +141,13 @@ const CityWiseUsage = () => {
                 <MapPin className="w-6 h-6 text-purple-400" />
               </div>
               <p className="text-sm font-medium text-gray-500">
-                No city data available
+                {t('reports.cityWiseUsage.noData')}
               </p>
               <p className="text-xs text-gray-400 text-center max-w-xs">
-                City-wise usage will appear here once restaurants are onboarded.
+                {t('reports.cityWiseUsage.noDataDesc')}
               </p>
             </div>
           ) : (
-            /* Scrollable bar chart */
             <div className="mt-20 w-full overflow-x-auto reports-scroll">
               <div className="min-w-fit flex items-end gap-4 px-2 pb-2">
                 {enriched.map((item, index) => {
@@ -161,14 +158,16 @@ const CityWiseUsage = () => {
                     <div
                       key={`${item.city}-${index}`}
                       className="flex flex-col items-center w-12 shrink-0 group"
-                      title={`${item.city}: ${item.value} restaurants, ${item.activeSubscriptions} active subscriptions`}
+                      title={t('reports.cityWiseUsage.tooltip', {
+                        city: item.city,
+                        count: item.value,
+                        active: item.activeSubscriptions,
+                      })}
                     >
-                      {/* Value */}
                       <div className="text-sm mb-1 font-semibold text-gray-800 tabular-nums">
                         {formatNumber(item.value)}
                       </div>
 
-                      {/* Bar */}
                       <div
                         className={`w-4 rounded-md transition-all duration-300 group-hover:opacity-80 ${
                           isGood ? 'bg-[#344BFD]' : 'bg-[#FF955A]'
@@ -176,7 +175,6 @@ const CityWiseUsage = () => {
                         style={{ height: `${barHeight}px` }}
                       ></div>
 
-                      {/* City label */}
                       <div
                         className="mt-2 text-[11px] font-semibold text-gray-700 truncate w-full text-center"
                         title={item.city}
@@ -190,13 +188,13 @@ const CityWiseUsage = () => {
             </div>
           )}
 
-          {/* Bottom summary (optional) */}
+          {/* Bottom summary */}
           {hasData && (
             <div className="mt-6 pt-4 border-t border-gray-100 flex flex-wrap gap-6 text-xs text-gray-600">
               <div className="flex items-center gap-2">
                 <Building2 className="w-3.5 h-3.5 text-purple-500" />
                 <span>
-                  Total restaurants:{' '}
+                  {t('reports.cityWiseUsage.summary.totalRestaurants')}{' '}
                   <span className="font-bold text-gray-800">
                     {formatNumber(
                       enriched.reduce((sum, d) => sum + d.value, 0)
@@ -207,7 +205,7 @@ const CityWiseUsage = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#344BFD]" />
                 <span>
-                  Good:{' '}
+                  {t('reports.cityWiseUsage.summary.good')}{' '}
                   <span className="font-bold text-gray-800">
                     {enriched.filter((d) => d.type === 'Good').length}
                   </span>
@@ -216,7 +214,7 @@ const CityWiseUsage = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#FF955A]" />
                 <span>
-                  Low:{' '}
+                  {t('reports.cityWiseUsage.summary.low')}{' '}
                   <span className="font-bold text-gray-800">
                     {enriched.filter((d) => d.type === 'Low').length}
                   </span>

@@ -44,22 +44,18 @@ const supportTicketsSlice = createSlice({
     setChartFilter: (s, a) => { s.chartFilter = a.payload; },
     setUpdating: (s, a) => { s.updating = a.payload; },
 
-    /**
-     * `status` MUST be the BACKEND value ("Open" | "Process" | "Solve"
-     * | "Pending" | "Close"). The mapper handles UI conversion on read.
-     */
+    // ⚠️ MUST write to Ticket_status (backend string) — NOT Status (boolean)
     patchTicketStatus: (s, a) => {
       const { id, status } = a.payload;
-      const ticket = s.tickets.find(
-        (t) =>
-          t.Support_Ticket_id === id ||
-          t.support_ticket_id === id ||
-          t.id === id
+      const t = s.tickets.find(
+        (x) =>
+          x.Support_Ticket_id === id ||
+          x.support_ticket_id === id ||
+          x.id === id
       );
-      if (!ticket) return;
-      if ('Ticket_status' in ticket) ticket.Ticket_status = status;
-      else if ('status' in ticket) ticket.status = status;
-      else ticket.Ticket_status = status;
+      if (!t) return;
+      t.Ticket_status = status;         // overwrite the field the mapper reads
+      if ('Status' in t) t.Status = true;
     },
 
     setSupportTicketsError: (s, a) => {

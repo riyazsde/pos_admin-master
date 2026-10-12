@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -9,6 +10,7 @@ import { useAppSelector } from '../../Store/hooks';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const ActiveClientsReport = () => {
+  const { t } = useTranslation();
   const { kpiMetrics, charts } = useAppSelector((state) => state.reports);
 
   const totalActive = kpiMetrics?.totalActiveClients || 0;
@@ -22,7 +24,10 @@ const ActiveClientsReport = () => {
   const renewedPct = total > 0 ? Math.round((renewedClients / total) * 100) : 0;
 
   const data = {
-    labels: ['New Clients', 'Renewed Clients'],
+    labels: [
+      t('reports.activeClientsReport.newClients'),
+      t('reports.activeClientsReport.renewedClients'),
+    ],
     datasets: [
       {
         data: [newPct, renewedPct],
@@ -64,20 +69,25 @@ const ActiveClientsReport = () => {
     },
   };
 
+  const periods = ['1W', '1M', '6M', '1Y'];
+
   return (
     <div className="w-full h-full flex flex-col font-sans">
       {/* Header */}
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="text-2xl font-bold text-black">
-            Active Clients <span className="text-gray-400 font-medium">(Report)</span>
+            {t('reports.activeClientsReport.title')}{' '}
+            <span className="text-gray-400 font-medium">
+              {t('reports.activeClientsReport.reportLabel')}
+            </span>
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Distribution of active clients
+            {t('reports.activeClientsReport.subtitle')}
           </p>
         </div>
         <button className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors">
-          Details
+          {t('reports.activeClientsReport.details')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -90,7 +100,7 @@ const ActiveClientsReport = () => {
             <div className="text-3xl font-bold text-green-500 mb-1">
               {totalActive}{' '}
               <span className="text-base font-medium text-gray-500">
-                Active
+                {t('reports.activeClientsReport.active')}
               </span>
             </div>
             <div className="flex items-center text-green-600 text-sm">
@@ -105,15 +115,21 @@ const ActiveClientsReport = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              {totalInactive} Inactive
+              {totalInactive} {t('reports.activeClientsReport.inactive')}
             </div>
           </div>
 
           <div className="flex bg-gradient-to-b from-purple-100 to-red-100 rounded-l-2xl px-4 py-1 space-x-3">
-            <span className="text-xs font-semibold text-gray-900">1W</span>
-            <span className="text-xs font-semibold text-gray-400">1M</span>
-            <span className="text-xs font-semibold text-gray-400">6M</span>
-            <span className="text-xs font-semibold text-gray-400">1Y</span>
+            {periods.map((period) => (
+              <span
+                key={period}
+                className={`text-xs font-semibold ${
+                  period === '1W' ? 'text-gray-900' : 'text-gray-400'
+                }`}
+              >
+                {period}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -124,7 +140,7 @@ const ActiveClientsReport = () => {
               <Doughnut data={data} options={options} />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm rounded-full border border-dashed border-gray-200">
-                No data
+                {t('reports.activeClientsReport.noData')}
               </div>
             )}
           </div>
@@ -133,14 +149,14 @@ const ActiveClientsReport = () => {
             <div className="flex items-center">
               <div className="w-10 h-5 bg-green-500 rounded-sm mr-4"></div>
               <span className="text-gray-900 font-medium">
-                New Clients{' '}
+                {t('reports.activeClientsReport.newClients')}{' '}
                 <span className="text-gray-500">({newPct}%)</span>
               </span>
             </div>
             <div className="flex items-center">
               <div className="w-10 h-5 bg-green-200 rounded-sm mr-4"></div>
               <span className="text-gray-900 font-medium">
-                Renewed Clients{' '}
+                {t('reports.activeClientsReport.renewedClients')}{' '}
                 <span className="text-gray-500">({renewedPct}%)</span>
               </span>
             </div>

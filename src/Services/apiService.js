@@ -769,52 +769,38 @@ export const mdmService = {
   // WIPE FLOW — 2 steps on the SAME endpoint
   // -------------------------------------------------------------------------
 
-  // STEP 1: POST /api/v1/master/myDevices/:id/wipe
-  // Body: { Email, password }   ← capital E, lowercase p (matches backend)
-  // Sends OTP to the admin's email
- // STEP 1: Sends OTP to admin's email
+ // -------------------------------------------------------------------------
+// WIPE FLOW — Two separate endpoints
+// -------------------------------------------------------------------------
+
+// STEP 1: Send OTP
+// POST /api/v1/master/myDevices/:id/wipe/send-otp
 wipeDevice: async (id, { email, password }) => {
-  try {
-    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE(id), {
-      Email: email,
-      password: password,
-    });
-    const data = response.data;
-    if (data?.success === false) {
-      throw new Error(data?.message || 'Failed to initiate wipe');
-    }
-    return data?.data || null;
-  } catch (err) {
-    // Preserve backend message
-    const backendMsg =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      err.message;
-    throw new Error(backendMsg);
+  const response = await apiClient.post(
+    ENDPOINTS.ADMIN.MDM.WIPE_SEND_OTP(id),
+    { Email: email, password }   // keep the body — backend may still want creds
+  );
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to send OTP');
   }
+  return data?.data || null;
 },
 
-// STEP 2: Verifies OTP and executes wipe
+// STEP 2: Verify OTP and wipe
+// POST /api/v1/master/myDevices/:id/wipe
+// Body: { otp, wipeMode }  ← lowercase keys as per your backend
 verifyWipeDevice: async (id, { otp, mode }) => {
-  try {
-    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id), {
-      OTP: String(otp).trim(),
-      Wipe_Mode: mode,
-    });
-    const data = response.data;
-    if (data?.success === false) {
-      throw new Error(data?.message || 'Failed to verify wipe');
-    }
-    return data?.data || null;
-  } catch (err) {
-    const backendMsg =
-      err?.response?.data?.message ||
-      err?.response?.data?.error ||
-      err.message;
-    throw new Error(backendMsg);
+  const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id), {
+    otp: String(otp).trim(),   // ✅ lowercase otp
+    wipeMode: mode,            // ✅ camelCase wipeMode
+  });
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to verify wipe');
   }
+  return data?.data || null;
 },
-
   // -------------------------------------------------------------------------
   // ENROLL (Create new device)
   // POST /api/v1/master/myDevices/create
@@ -890,15 +876,15 @@ export const subadminService = {
   },
 
   remove: async (id) => {
-    const response = await apiClient.delete(
-      ENDPOINTS.ADMIN.SUBADMIN.DELETE(id)
-    );
-    const data = response.data;
-    if (data?.success === false) {
-      throw new Error(data?.message || 'Failed to delete subadmin');
-    }
-    return data?.data || null;
-  },
+  const response = await apiClient.delete(
+    ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)  // ✅ Correct endpoint
+  );
+  const data = response.data;
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to delete payment option');
+  }
+  return data?.data || null;
+},
 
   deactivate: async (id) => {
     const response = await apiClient.patch(
@@ -953,16 +939,19 @@ export const accountSettingsService = {
     return payload?.data || null;
   },
 updateDateTime: async (payload) => {
-  console.log(' updateDateTime URL:', ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME);
-  console.log('🟢 updateDateTime baseURL:', apiClient.defaults.baseURL);
-  console.log(' updateDateTime FULL URL:', `${apiClient.defaults.baseURL}${ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME}`);
-  console.log(' updateDateTime payload:', payload);
+  const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME;
 
-  const response = await apiClient.post(
-    ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME,
-    payload
-  );
-  // ...
+  console.log('🟢 updateDateTime PUT URL:', `${apiClient.defaults.baseURL}${url}`);
+  console.log('🟢 updateDateTime payload:', payload);
+
+  const response = await apiClient.put(url, payload); // ✅ PUT, not POST
+  const data = response.data;
+
+  if (data?.success === false) {
+    throw new Error(data?.message || 'Failed to update date/time settings');
+  }
+
+  return data?.data || null;
 },
 
   // ---------- Active Sessions ----------

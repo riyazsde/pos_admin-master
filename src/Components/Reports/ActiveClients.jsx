@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Users, Search, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Loader2, Users, ChevronRight } from 'lucide-react';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
@@ -22,6 +23,7 @@ const formatDate = (iso) => {
 };
 
 const ActiveClients = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -55,17 +57,17 @@ const ActiveClients = () => {
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="font-poppins font-bold text-2xl text-black">
-            Active Clients
+            {t('reports.activeClients.title')}
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            {totalCount} client{totalCount !== 1 ? 's' : ''} active
+            {t('reports.activeClients.subtitle', { count: totalCount })}
           </p>
         </div>
         <button
           onClick={() => navigate('/clients')}
           className="group flex items-center gap-1 font-poppins font-semibold text-sm text-gray-700 hover:text-black transition-colors"
         >
-          See all
+          {t('common.seeAll')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -75,7 +77,7 @@ const ActiveClients = () => {
         {activeClientsLoading && activeClients.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading active clients…</span>
+            <span className="text-sm">{t('reports.activeClients.loading')}</span>
           </div>
         ) : activeClients.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3 p-8">
@@ -83,10 +85,10 @@ const ActiveClients = () => {
               <Users className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No active clients
+              {t('reports.activeClients.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              Active clients will appear here.
+              {t('reports.activeClients.noDataDesc')}
             </p>
           </div>
         ) : (
@@ -96,11 +98,11 @@ const ActiveClients = () => {
               className="shrink-0 grid [grid-template-columns:56px_1.4fr_1.2fr_1fr_90px] items-center gap-3 px-5 py-3
                          bg-gradient-to-r from-purple-50 to-red-50 text-gray-600 text-xs font-semibold uppercase tracking-wider"
             >
-              <span>#</span>
-              <span>Business Name</span>
-              <span>Plan</span>
-              <span>Purchased</span>
-              <span className="text-center">Status</span>
+              <span>{t('reports.activeClients.table.hash')}</span>
+              <span>{t('reports.activeClients.table.businessName')}</span>
+              <span>{t('reports.activeClients.table.plan')}</span>
+              <span>{t('reports.activeClients.table.purchased')}</span>
+              <span className="text-center">{t('reports.activeClients.table.status')}</span>
             </div>
 
             {/* ---------- Scrollable body ---------- */}
@@ -124,7 +126,7 @@ const ActiveClients = () => {
                       {client.businessName || '—'}
                     </span>
                     <span className="text-gray-600 truncate">
-                      {client.planPurchased || 'No Plan'}
+                      {client.planPurchased || t('common.noPlan')}
                     </span>
                     <span className="text-gray-600 tabular-nums">
                       {formatDate(client.purchasedDate)}
@@ -132,7 +134,7 @@ const ActiveClients = () => {
                     <span className="text-center">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                        {client.status || 'Active'}
+                        {client.status || t('common.active')}
                       </span>
                     </span>
                   </div>

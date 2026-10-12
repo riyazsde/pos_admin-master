@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -9,6 +10,7 @@ import { useAppSelector } from '../../Store/hooks';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const InactiveClientsChart = () => {
+  const { t } = useTranslation();
   const totalInactive = useAppSelector(
     (state) => state.reports.kpiMetrics.totalInactiveClients
   );
@@ -52,20 +54,25 @@ const InactiveClientsChart = () => {
     animation: false,
   };
 
+  const periods = ['1M', '3M', '6M', '1Y'];
+
   return (
     <div className="w-full h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-start w-full shrink-0 mb-4">
         <div>
           <h2 className="font-poppins font-bold text-2xl text-black">
-            Inactive Clients <span className="text-gray-400 font-medium">(Report)</span>
+            {t('reports.inactiveClientsChart.title')}{' '}
+            <span className="text-gray-400 font-medium">
+              {t('reports.inactiveClientsChart.reportLabel')}
+            </span>
           </h2>
           <p className="text-xs text-gray-500 mt-1">
-            Trend of inactive clients
+            {t('reports.inactiveClientsChart.subtitle')}
           </p>
         </div>
         <button className="group flex items-center gap-1 font-semibold text-sm text-gray-700 hover:text-black transition-colors">
-          Details
+          {t('reports.inactiveClientsChart.details')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -78,22 +85,21 @@ const InactiveClientsChart = () => {
             <div className="text-[26px] font-bold text-red-500 tabular-nums">
               {String(totalInactive).padStart(2, '0')}{' '}
               <span className="text-base font-medium text-gray-500">
-                Inactive
+                {t('reports.inactiveClientsChart.inactive')}
               </span>
             </div>
             <div className="flex items-center gap-1 text-red-500 text-sm">
               <span>↑</span>
               <span>
-                12%{' '}
-                <span className="text-gray-500">
-                  inactive in last 1M
-                </span>
+                {t('reports.inactiveClientsChart.inactiveLastMonth', {
+                  percent: 12,
+                })}
               </span>
             </div>
           </div>
 
           <div className="flex items-center py-1 px-3 gap-2 bg-gradient-to-b from-purple-700/[.08] to-red-600/[.08] rounded-full">
-            {['1M', '3M', '6M', '1Y'].map((label, idx) => (
+            {periods.map((label, idx) => (
               <span
                 key={label}
                 className={`font-semibold text-xs px-1 ${
@@ -119,14 +125,18 @@ const InactiveClientsChart = () => {
                     {totalInactive}
                   </div>
                   <div className="font-poppins text-xs font-medium text-gray-500">
-                    Jan
+                    {t('reports.inactiveClientsChart.months.jan')}
                   </div>
                 </div>
               </>
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2 rounded-full border border-dashed border-gray-200">
-                <span className="text-sm font-medium">No inactive</span>
-                <span className="text-xs">clients yet</span>
+                <span className="text-sm font-medium">
+                  {t('reports.inactiveClientsChart.noData')}
+                </span>
+                <span className="text-xs">
+                  {t('reports.inactiveClientsChart.noDataDesc')}
+                </span>
               </div>
             )}
           </div>
@@ -136,7 +146,7 @@ const InactiveClientsChart = () => {
         <div className="shrink-0 flex gap-3 items-center justify-center mt-4">
           <div className="w-4 h-4 rounded bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F]" />
           <span className="font-poppins text-sm text-gray-700 font-medium">
-            January
+            {t('reports.inactiveClientsChart.january')}
           </span>
         </div>
       </div>

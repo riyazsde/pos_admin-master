@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Package, ChevronRight, Loader2 } from 'lucide-react';
 
 import { useAppSelector } from '../../Store/hooks';
@@ -7,7 +8,7 @@ import { useAppSelector } from '../../Store/hooks';
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-const formatDate = (iso) => {
+const formatDate = (iso, locale = 'en-US') => {
   if (!iso) return '—';
   try {
     const d = new Date(iso);
@@ -19,14 +20,6 @@ const formatDate = (iso) => {
   }
 };
 
-const getDeviceLabel = (d) => {
-  if (!d) return 'Device';
-  if (typeof d.device === 'string') return d.device;
-  if (typeof d.deviceName === 'string') return d.deviceName;
-  if (typeof d.hardwareType === 'string') return d.hardwareType;
-  return 'Device';
-};
-
 const GRID_COLS =
   '56px minmax(180px,1.6fr) minmax(160px,1.4fr) minmax(130px,1fr) minmax(120px,1fr)';
 
@@ -34,11 +27,22 @@ const GRID_COLS =
 // Main Component
 // ---------------------------------------------------------------------------
 function HardwareSold() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
   const { monthlyBreakdown, loading, hasLoaded } = useAppSelector(
     (state) => state.posHardware
   );
+
+  const locale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
+
+  const getDeviceLabel = (d) => {
+    if (!d) return t('posHardware.deviceLabels.device');
+    if (typeof d.device === 'string') return d.device;
+    if (typeof d.deviceName === 'string') return d.deviceName;
+    if (typeof d.hardwareType === 'string') return d.hardwareType;
+    return t('posHardware.deviceLabels.device');
+  };
 
   const rows = (monthlyBreakdown || []).flatMap((item, monthIdx) => {
     const detailed =
@@ -52,7 +56,8 @@ function HardwareSold() {
         planPurchased:
           d.planPurchased || d.planName || d.Plan?.PlanName || '—',
         purchasedDate: formatDate(
-          d.purchasedDate || d.date || d.Purchase_Date || null
+          d.purchasedDate || d.date || d.Purchase_Date || null,
+          locale
         ),
         device: getDeviceLabel(d),
       }));
@@ -68,7 +73,7 @@ function HardwareSold() {
         businessName: monthLabel,
         planPurchased: '—',
         purchasedDate: '—',
-        device: `${count} sold`,
+        device: t('posHardware.deviceLabels.sold', { count }),
       },
     ];
   });
@@ -82,17 +87,17 @@ function HardwareSold() {
       <div className="flex justify-between items-start w-full mb-4 px-1 shrink-0">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold text-black">
-            Hardware Sold
+            {t('posHardware.hardwareSold.title')}
           </h2>
           <p className="text-xs text-gray-500 mt-0.5">
-            {totalCount} record{totalCount !== 1 ? 's' : ''}
+            {t('posHardware.hardwareSold.records', { count: totalCount })}
           </p>
         </div>
         <button
           onClick={() => navigate('/pos-device-history')}
           className="group flex items-center gap-1 text-sm sm:text-base font-semibold text-black hover:underline"
         >
-          See all
+          {t('common.seeAll')}
           <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
@@ -102,7 +107,9 @@ function HardwareSold() {
         {loading && !hasLoaded ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
-            <span className="text-sm">Loading hardware sales…</span>
+            <span className="text-sm">
+              {t('posHardware.hardwareSold.loading')}
+            </span>
           </div>
         ) : !hasData ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3 p-8">
@@ -110,10 +117,10 @@ function HardwareSold() {
               <Package className="w-6 h-6 text-purple-400" />
             </div>
             <p className="text-sm font-medium text-gray-500">
-              No hardware sold yet
+              {t('posHardware.hardwareSold.noData')}
             </p>
             <p className="text-xs text-gray-400 text-center max-w-xs">
-              Purchased hardware will appear here once sales are recorded.
+              {t('posHardware.hardwareSold.noDataDesc')}
             </p>
           </div>
         ) : (
@@ -127,12 +134,14 @@ function HardwareSold() {
               style={{ gridTemplateColumns: GRID_COLS, height: 48 }}
             >
               <span className="sticky left-0 z-30 -mx-2 px-2 bg-gradient-to-r from-purple-50 to-purple-50">
-                #
+                {t('posHardware.hardwareSold.table.hash')}
               </span>
-              <span>Business Name</span>
-              <span>Plan Purchased</span>
-              <span>Purchased Date</span>
-              <span className="text-right pr-2">Device</span>
+              <span>{t('posHardware.hardwareSold.table.businessName')}</span>
+              <span>{t('posHardware.hardwareSold.table.planPurchased')}</span>
+              <span>{t('posHardware.hardwareSold.table.purchasedDate')}</span>
+              <span className="text-right pr-2">
+                {t('posHardware.hardwareSold.table.device')}
+              </span>
             </div>
 
             {/* Rows */}
