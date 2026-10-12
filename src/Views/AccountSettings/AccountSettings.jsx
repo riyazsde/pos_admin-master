@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Settings,
   Briefcase,
@@ -21,34 +22,47 @@ import AdminSection from '../../Components/Settings/AdminSection';
 import LogsSection from '../../Components/Settings/LogsSection';
 import PaymentSection from '../../Components/Settings/PaymentSection';
 
-const sidebarItems = [
-  { id: 'account', icon: Settings, label: 'Account Settings' },
-  { id: 'business', icon: Briefcase, label: 'Business Settings' },
-  { id: 'admins', icon: Users, label: 'Sub Admins', route: '/sub-admin' },
-  { id: 'logs', icon: FileText, label: 'Audit Logs' },
-  { id: 'support', icon: LifeBuoy, label: 'Support Tickets', route: '/supports' },
-  { id: 'payments', icon: CreditCard, label: 'Payments' },
+// ---------------------------------------------------------------------------
+// Sidebar items — keys only, labels resolved via t()
+// ---------------------------------------------------------------------------
+const SIDEBAR_ITEMS = [
+  { id: 'account', icon: Settings, labelKey: 'accountSettings.sidebar.account' },
+  { id: 'business', icon: Briefcase, labelKey: 'accountSettings.sidebar.business' },
+  { id: 'admins', icon: Users, labelKey: 'accountSettings.sidebar.admins', route: '/sub-admin' },
+  { id: 'logs', icon: FileText, labelKey: 'accountSettings.sidebar.logs' },
+  { id: 'support', icon: LifeBuoy, labelKey: 'accountSettings.sidebar.support', route: '/supports' },
+  { id: 'payments', icon: CreditCard, labelKey: 'accountSettings.sidebar.payments' },
 ];
 
-const SidebarItem = ({ item, isActive, onClick }) => (
-  <li
-    className={`flex items-center py-3 px-4 cursor-pointer rounded-lg transition-colors ${
-      isActive ? 'text-white' : 'text-gray-700 hover:bg-gray-100'
-    }`}
-    style={
-      isActive
-        ? {
-            background: 'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
-          }
-        : {}
-    }
-    onClick={() => onClick(item.id)}
-  >
-    <item.icon className="w-5 h-5 mr-3" />
-    <span className="font-medium">{item.label}</span>
-  </li>
-);
+// ---------------------------------------------------------------------------
+// Sidebar Item
+// ---------------------------------------------------------------------------
+const SidebarItem = ({ item, isActive, onClick }) => {
+  const { t } = useTranslation();
 
+  return (
+    <li
+      className={`flex items-center py-3 px-4 cursor-pointer rounded-lg transition-colors ${
+        isActive ? 'text-white' : 'text-gray-700 hover:bg-gray-100'
+      }`}
+      style={
+        isActive
+          ? {
+              background: 'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
+            }
+          : {}
+      }
+      onClick={() => onClick(item.id)}
+    >
+      <item.icon className="w-5 h-5 mr-3" />
+      <span className="font-medium">{t(item.labelKey)}</span>
+    </li>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Settings Row
+// ---------------------------------------------------------------------------
 const SettingsRow = ({ label, hasChevron = false }) => (
   <div className="flex justify-between items-center py-4 border-b border-gray-200 last:border-b-0">
     <p className="text-gray-800 font-medium">{label}</p>
@@ -64,12 +78,11 @@ const SettingsRow = ({ label, hasChevron = false }) => (
   </div>
 );
 
-/**
- * ✅ Reusable Back Button
- * - If `onBack` is provided, uses that handler.
- * - Otherwise falls back to browser history (navigate(-1)).
- */
-const BackButton = ({ onBack, label = 'Back' }) => {
+// ---------------------------------------------------------------------------
+// Reusable Back Button
+// ---------------------------------------------------------------------------
+const BackButton = ({ onBack, label }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -90,12 +103,16 @@ const BackButton = ({ onBack, label = 'Back' }) => {
       <div className="w-8 h-8 rounded-full bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center transition-colors">
         <ChevronLeft className="w-5 h-5" />
       </div>
-      <span>{label}</span>
+      <span>{label || t('accountSettings.back')}</span>
     </button>
   );
 };
 
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
 const AccountSettings = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeSection, setActiveSection] = useState('account');
@@ -103,14 +120,14 @@ const AccountSettings = () => {
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const currentItem = sidebarItems.find(item => item.route === currentPath);
+    const currentItem = SIDEBAR_ITEMS.find((item) => item.route === currentPath);
     if (currentItem?.id === 'support') {
       setActiveSection(currentItem.id);
     }
   }, [location.pathname]);
 
   const handleSidebarClick = (sectionId) => {
-    const selectedItem = sidebarItems.find(item => item.id === sectionId);
+    const selectedItem = SIDEBAR_ITEMS.find((item) => item.id === sectionId);
     if (selectedItem) {
       setActiveSection(sectionId);
       if (selectedItem.route) {
@@ -120,15 +137,9 @@ const AccountSettings = () => {
     }
   };
 
-  /**
-   * ✅ Back button handler used inside each section.
-   * For sections with a dedicated route (sub-admin, supports) it navigates back.
-   * For in-page sections, it returns to the default "account" section.
-   */
   const handleSectionBack = (sectionId) => {
-    const item = sidebarItems.find((i) => i.id === sectionId);
+    const item = SIDEBAR_ITEMS.find((i) => i.id === sectionId);
 
-    // If the section has its own route → use browser back / fallback
     if (item?.route) {
       if (window.history.length > 1) {
         navigate(-1);
@@ -138,7 +149,6 @@ const AccountSettings = () => {
       return;
     }
 
-    // In-page section → return to Account section
     setActiveSection('account');
   };
 
@@ -185,7 +195,11 @@ const AccountSettings = () => {
         );
 
       default:
-        return <div>Select a section from the sidebar</div>;
+        return (
+          <div className="text-gray-500">
+            {t('accountSettings.selectSection')}
+          </div>
+        );
     }
   };
 
@@ -210,7 +224,7 @@ const AccountSettings = () => {
         >
           <nav>
             <ul className="space-y-2">
-              {sidebarItems.map(item => (
+              {SIDEBAR_ITEMS.map((item) => (
                 <SidebarItem
                   key={item.id}
                   item={item}
@@ -239,7 +253,7 @@ const AccountSettings = () => {
             }`}
           >
             <Settings className="w-5 h-5 mb-1" />
-            Settings
+            {t('accountSettings.mobileSettings')}
           </button>
 
           <button
@@ -249,7 +263,7 @@ const AccountSettings = () => {
             className="flex flex-col items-center text-sm text-gray-500"
           >
             <Menu className="w-5 h-5 mb-1" />
-            Menu
+            {t('accountSettings.mobileMenu')}
           </button>
         </div>
       </div>

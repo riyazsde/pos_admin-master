@@ -678,6 +678,18 @@
 
   "accountSettings": {
     "title": "Paramètres du Compte",
+    "sidebar": {
+      "account": "Paramètres du Compte",
+      "business": "Paramètres de l'Entreprise",
+      "admins": "Sous-Admins",
+      "logs": "Journaux d'Audit",
+      "support": "Tickets de Support",
+      "payments": "Paiements"
+    },
+    "back": "Retour",
+    "selectSection": "Sélectionnez une section dans la barre latérale",
+    "mobileMenu": "Menu",
+    "mobileSettings": "Paramètres",
     "common": {
       "loading": "Chargement des données...",
       "close": "Fermer",
@@ -1062,6 +1074,7 @@
     "resolved": "Résolu",
     "closed": "Fermé"
   },
+
   "ham": {
     "title": "Gestion des Actifs Matériels (HAM)",
     "subtitle": "{{count}} appareil{{count, plural}} en inventaire",
@@ -1144,6 +1157,7 @@
       }
     }
   },
+
   "mdm": {
     "title": "Gestion des Appareils MDM",
     "subtitle": "{{count}} appareil{{count, plural}} dans la flotte",
@@ -1339,6 +1353,7 @@
       }
     }
   },
+
   "audits": {
     "title": "Audits",
     "lastUpdated": "Dernière mise à jour : {{date}}",
@@ -1519,6 +1534,7 @@
       "sold": "{{count}} vendus"
     }
   },
+
   "notifications": {
     "searchPlaceholder": "Rechercher des notifications..."
   }

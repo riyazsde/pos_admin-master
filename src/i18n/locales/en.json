@@ -678,6 +678,18 @@
 
   "accountSettings": {
     "title": "Account Settings",
+    "sidebar": {
+      "account": "Account Settings",
+      "business": "Business Settings",
+      "admins": "Sub Admins",
+      "logs": "Audit Logs",
+      "support": "Support Tickets",
+      "payments": "Payments"
+    },
+    "back": "Back",
+    "selectSection": "Select a section from the sidebar",
+    "mobileMenu": "Menu",
+    "mobileSettings": "Settings",
     "common": {
       "loading": "Loading data...",
       "close": "Close",
@@ -1062,7 +1074,7 @@
     "resolved": "Resolved",
     "closed": "Closed"
   },
-  
+
   "ham": {
     "title": "Hardware Asset Management (HAM)",
     "subtitle": "{{count}} device{{count, plural}} in inventory",
@@ -1145,6 +1157,7 @@
       }
     }
   },
+
   "mdm": {
     "title": "MDM Device Management",
     "subtitle": "{{count}} device{{count, plural}} in fleet",
