@@ -1,3 +1,4 @@
+// src/Pages/Admin/Report.jsx
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -25,7 +26,8 @@ import {
   setReportsData,
   setReportsError,
 } from '../../Store/Features/reports/reportsSlice';
-import { reportService } from '../../Services/apiService';
+
+import { reportService } from "../../Services/apiService";
 
 /* ------------------------------------------------------------------ */
 /*  ICONS                                                              */
@@ -61,8 +63,8 @@ const LocationIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
   </svg>
 );
-const ChevronDownIcon = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+const ChevronDownIcon = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
   </svg>
 );
@@ -90,7 +92,7 @@ const fmtCurrency = (n) =>
 const fmtNumber = (n) => Number(n || 0).toLocaleString('en-US');
 
 /* ------------------------------------------------------------------ */
-/*  SHARED TOGGLE                                                      */
+/*  VIEW TOGGLE                                                        */
 /* ------------------------------------------------------------------ */
 const ViewToggle = ({ activeTab, setActiveTab }) => {
   const { t } = useTranslation();
@@ -182,11 +184,7 @@ const KpiTile = ({ label, value, color = 'white', trend, footnote }) => {
         </div>
       )}
       {footnote && (
-        <p
-          className={`text-xs mt-2 ${
-            isColored ? 'text-white/80' : 'text-gray-400'
-          }`}
-        >
+        <p className={`text-xs mt-2 ${isColored ? 'text-white/80' : 'text-gray-400'}`}>
           {footnote}
         </p>
       )}
@@ -210,8 +208,8 @@ const RevenuePanel = ({ filters }) => {
       try {
         const res = await reportService.getRevenueReport(filters);
         if (cancelled) return;
-        setRows(res.data || []);
-        setSummary(res.summary || {});
+        setRows(res.data);
+        setSummary(res.summary);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -226,34 +224,27 @@ const RevenuePanel = ({ filters }) => {
     };
   }, [filters, t]);
 
-  const totalRevenue =
-    summary.totalRevenue ?? rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
-  const totalOrders =
-    summary.totalOrders ?? rows.reduce((s, r) => s + (Number(r.orders) || 0), 0);
-  const avgOrder = summary.averageOrderValue ?? 0;
-  const growth = summary.revenueGrowth ?? 0;
-
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <KpiTile
           label={t('reports.kpi.totalRevenue')}
-          value={loading ? '—' : fmtCurrency(totalRevenue)}
+          value={loading ? '—' : fmtCurrency(summary.totalRevenue)}
           color="bg-emerald-500"
-          trend={growth}
+          trend={summary.revenueGrowth || null}
           footnote={t('common.vsLastPeriod')}
         />
         <KpiTile
           label={t('reports.kpi.totalOrders')}
-          value={loading ? '—' : fmtNumber(totalOrders)}
+          value={loading ? '—' : fmtNumber(summary.totalOrders)}
         />
         <KpiTile
           label={t('reports.kpi.averageOrderValue')}
-          value={loading ? '—' : fmtCurrency(avgOrder)}
+          value={loading ? '—' : fmtCurrency(summary.averageOrderValue)}
         />
         <KpiTile
           label={t('reports.kpi.activeLocations')}
-          value={loading ? '—' : fmtNumber(rows.length)}
+          value={loading ? '—' : fmtNumber(summary.activeLocations)}
         />
       </div>
 
@@ -282,15 +273,12 @@ const RevenuePanel = ({ filters }) => {
               <tbody className="divide-y divide-gray-100">
                 {rows.map((row, idx) => {
                   const isPositive =
-                    row.isPositive ??
-                    (typeof row.growth === 'string'
-                      ? !row.growth.trim().startsWith('-')
-                      : Number(row.growth) >= 0);
+                    row.isPositive != null ? row.isPositive : true;
                   return (
                     <tr key={idx} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                          <span className="w-2 h-2 rounded-full bg-gray-300" />
                           {row.location}
                         </div>
                       </td>
@@ -308,8 +296,14 @@ const RevenuePanel = ({ filters }) => {
                           isPositive ? 'text-emerald-600' : 'text-red-500'
                         }`}
                       >
-                        {isPositive ? '+' : ''}
-                        {row.growth}
+                        {row.growth != null ? (
+                          <>
+                            {isPositive ? '+' : ''}
+                            {row.growth}
+                          </>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
                       </td>
                     </tr>
                   );
@@ -339,8 +333,8 @@ const SubscriptionsPanel = ({ filters }) => {
       try {
         const res = await reportService.getSubscriptionReport(filters);
         if (cancelled) return;
-        setRows(res.data || []);
-        setSummary(res.summary || {});
+        setRows(res.data);
+        setSummary(res.summary);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -368,15 +362,15 @@ const SubscriptionsPanel = ({ filters }) => {
         />
         <KpiTile
           label={t('reports.subscriptionReports.totalSubscriptions')}
-          value={loading ? '—' : fmtNumber(summary.total ?? 0)}
+          value={loading ? '—' : fmtNumber(summary.total)}
         />
         <KpiTile
           label={t('reports.subscriptionReports.active')}
-          value={loading ? '—' : fmtNumber(summary.active ?? 0)}
+          value={loading ? '—' : fmtNumber(summary.active)}
         />
         <KpiTile
           label={t('reports.subscriptionReports.inactive')}
-          value={loading ? '—' : fmtNumber(summary.inactive ?? 0)}
+          value={loading ? '—' : fmtNumber(summary.inactive)}
         />
       </div>
 
@@ -405,7 +399,7 @@ const SubscriptionsPanel = ({ filters }) => {
                   {rows.map((row, idx) => (
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">
-                        {row.planName || row.plan}
+                        {row.planName}
                       </td>
                       <td className="px-6 py-4 text-gray-600">
                         {fmtNumber(row.count)}
@@ -485,8 +479,8 @@ const HardwarePanel = () => {
           year: now.getFullYear(),
         });
         if (cancelled) return;
-        setRows(res.data || []);
-        setSummary(res.summary || {});
+        setRows(res.data);
+        setSummary(res.summary);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -501,31 +495,24 @@ const HardwarePanel = () => {
     };
   }, [t]);
 
-  const totalSales =
-    summary.totalSales ?? rows.reduce((s, r) => s + (Number(r.revenue) || 0), 0);
-  const unitsSold =
-    summary.unitsSold ?? rows.reduce((s, r) => s + (Number(r.units) || 0), 0);
-  const avgUnitPrice =
-    summary.avgUnitPrice ?? (unitsSold ? totalSales / unitsSold : 0);
-
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
         <KpiTile
           label={t('reports.hardwareSales.totalHardwareSales')}
-          value={loading ? '—' : fmtCurrency(totalSales)}
+          value={loading ? '—' : fmtCurrency(summary.totalSales)}
           color="bg-purple-500"
           footnote={t('reports.hardwareSales.unitsSoldFootnote', {
-            count: unitsSold,
+            count: summary.unitsSold ?? 0,
           })}
         />
         <KpiTile
           label={t('reports.hardwareSales.unitsSold')}
-          value={loading ? '—' : fmtNumber(unitsSold)}
+          value={loading ? '—' : fmtNumber(summary.unitsSold)}
         />
         <KpiTile
           label={t('reports.hardwareSales.avgUnitPrice')}
-          value={loading ? '—' : fmtCurrency(avgUnitPrice)}
+          value={loading ? '—' : fmtCurrency(summary.avgUnitPrice)}
         />
       </div>
 
@@ -554,7 +541,7 @@ const HardwarePanel = () => {
                 {rows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {row.category || row.deviceType}
+                      {row.category}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {fmtNumber(row.units)}
@@ -590,10 +577,14 @@ const InventoryPanel = () => {
     (async () => {
       setLoading(true);
       try {
-        const res = await reportService.getInventoryStatus({});
+        const res = await reportService.getInventoryStatus({
+          threshold: 10,
+          location: 'all',
+          search: '',
+        });
         if (cancelled) return;
-        setRows(res.data || []);
-        setSummary(res.summary || {});
+        setRows(res.data);
+        setSummary(res.summary);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -608,37 +599,28 @@ const InventoryPanel = () => {
     };
   }, [t]);
 
-  const totalItems =
-    summary.totalItems ?? rows.reduce((s, r) => s + (Number(r.total) || 0), 0);
-  const lowStock =
-    summary.lowStock ?? rows.reduce((s, r) => s + (Number(r.lowStock) || 0), 0);
-  const outOfStock =
-    summary.outOfStock ??
-    rows.reduce((s, r) => s + (Number(r.outOfStock) || 0), 0);
-  const totalValue =
-    summary.totalValue ??
-    rows.reduce((s, r) => s + (Number(r.totalValue) || 0), 0);
-
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <KpiTile
           label={t('reports.inventory.totalItems')}
-          value={loading ? '—' : fmtNumber(totalItems)}
+          value={loading ? '—' : fmtNumber(summary.totalItems)}
           color="bg-orange-500"
-          footnote={t('reports.inventory.acrossLocations')}
+          footnote={t('reports.inventory.acrossLocations', {
+            count: summary.totalLocations ?? 0,
+          })}
         />
         <KpiTile
           label={t('reports.inventory.lowStock')}
-          value={loading ? '—' : fmtNumber(lowStock)}
+          value={loading ? '—' : fmtNumber(summary.lowStock)}
         />
         <KpiTile
           label={t('reports.inventory.outOfStock')}
-          value={loading ? '—' : fmtNumber(outOfStock)}
+          value={loading ? '—' : fmtNumber(summary.outOfStock)}
         />
         <KpiTile
           label={t('reports.inventory.totalValue')}
-          value={loading ? '—' : fmtCurrency(totalValue)}
+          value={loading ? '—' : fmtCurrency(summary.totalValue)}
         />
       </div>
 
@@ -670,7 +652,7 @@ const InventoryPanel = () => {
                   <tr key={idx} className="hover:bg-gray-50">
                     <td className="px-6 py-4 font-medium text-gray-900">
                       <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                        <span className="w-2 h-2 rounded-full bg-gray-300" />
                         {row.location}
                       </div>
                     </td>
@@ -722,8 +704,8 @@ const LowStockPanel = () => {
           search: '',
         });
         if (cancelled) return;
-        setRows(res.data || []);
-        setSummary(res.summary || {});
+        setRows(res.data);
+        setSummary(res.summary);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -789,7 +771,7 @@ const LowStockPanel = () => {
                     <tr key={idx} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-600">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
                           {row.status || t('reports.lowStock.critical')}
                         </span>
                       </td>
@@ -798,8 +780,8 @@ const LowStockPanel = () => {
                       </td>
                       <td className="px-6 py-4 text-gray-600">
                         <div className="flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                          {row.location}
+                          <span className="w-2 h-2 rounded-full bg-gray-300" />
+                          {row.location ?? '—'}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-red-600 font-bold">
@@ -838,7 +820,7 @@ const LocationsPanel = ({ filters }) => {
       try {
         const res = await reportService.getRevenueReport(filters);
         if (cancelled) return;
-        setRows(res.data || []);
+        setRows(res.data);
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -868,59 +850,33 @@ const LocationsPanel = ({ filters }) => {
               <th className="px-6 py-3">{t('reports.analytics.revenue')}</th>
               <th className="px-6 py-3">{t('reports.analytics.orders')}</th>
               <th className="px-6 py-3">{t('reports.analytics.avgOrder')}</th>
-              <th className="px-6 py-3">{t('reports.inventory.totalValue')}</th>
-              <th className="px-6 py-3">{t('reports.inventory.lowStock')}</th>
-              <th className="px-6 py-3">{t('reports.locationComparison.performance')}</th>
             </tr>
           </thead>
           {loading ? (
-            <TableSkeleton cols={7} />
+            <TableSkeleton cols={4} />
           ) : rows.length === 0 ? (
-            <EmptyRow colSpan={7} />
+            <EmptyRow colSpan={4} />
           ) : (
             <tbody className="divide-y divide-gray-100">
-              {rows.map((row, idx) => {
-                const isPositive =
-                  row.isPositive ??
-                  (typeof row.growth === 'string'
-                    ? !row.growth.trim().startsWith('-')
-                    : Number(row.growth) >= 0);
-                return (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-gray-300"></span>
-                        {row.location}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-900 font-semibold">
-                      {fmtCurrency(row.revenue)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {fmtNumber(row.orders)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {fmtCurrency(row.avgOrder)}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {fmtCurrency(row.inventoryValue)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700">
-                        {fmtNumber(row.lowStock)}
-                      </span>
-                    </td>
-                    <td
-                      className={`px-6 py-4 font-semibold ${
-                        isPositive ? 'text-emerald-600' : 'text-red-500'
-                      }`}
-                    >
-                      {isPositive ? '+' : ''}
-                      {row.growth}
-                    </td>
-                  </tr>
-                );
-              })}
+              {rows.map((row, idx) => (
+                <tr key={idx} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-gray-300" />
+                      {row.location}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-gray-900 font-semibold">
+                    {fmtCurrency(row.revenue)}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {fmtNumber(row.orders)}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {fmtCurrency(row.avgOrder)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           )}
         </table>
@@ -930,13 +886,11 @@ const LocationsPanel = ({ filters }) => {
 };
 
 /* ------------------------------------------------------------------ */
-/*  ANALYTICS VIEW — cards switch the panel in-place                   */
+/*  ANALYTICS VIEW                                                     */
 /* ------------------------------------------------------------------ */
 const AnalyticsView = ({ activeTab, setActiveTab }) => {
   const { t } = useTranslation();
   const [isFilterOpen, setIsFilterOpen] = useState(true);
-
-  /* Which report panel is currently shown — first card is default. */
   const [activeAction, setActiveAction] = useState('revenue');
 
   const [filters, setFilters] = useState({
@@ -993,7 +947,6 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
     [t]
   );
 
-  /* Which panel content to render below the filters. */
   const renderPanel = () => {
     switch (activeAction) {
       case 'revenue':
@@ -1031,7 +984,7 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
         </div>
       </div>
 
-      {/* Quick Actions — clicking changes which panel is shown below */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
         {quickActions.map((item) => {
           const isActive = activeAction === item.key;
@@ -1155,7 +1108,6 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
         )}
       </div>
 
-      {/* Panel content — swapped based on the active card */}
       <div key={activeAction}>{renderPanel()}</div>
     </div>
   );
@@ -1186,10 +1138,7 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
         console.error('Reports fetch error:', err);
         dispatch(setReportsError(err?.message || 'Failed to load reports'));
         toast.error(t('common.error'), {
-          description:
-            err?.response?.data?.message ||
-            err?.message ||
-            'Please try again later.',
+          description: err?.message || 'Please try again later.',
         });
       }
     };
@@ -1197,10 +1146,8 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
     fetchReports();
   }, [dispatch, hasLoaded, t]);
 
-  const formatNumber = (num) => {
-    if (num === null || num === undefined) return '0';
-    return Number(num).toLocaleString('en-US');
-  };
+  const formatNumber = (n) =>
+    n === null || n === undefined ? '0' : Number(n).toLocaleString('en-US');
 
   const metrics = [
     {
@@ -1242,10 +1189,10 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
               className="bg-white rounded-3xl p-6 shadow-md flex items-center animate-pulse"
             >
               <div className="flex items-center gap-6">
-                <div className="w-14 h-14 rounded-full bg-gray-200"></div>
+                <div className="w-14 h-14 rounded-full bg-gray-200" />
                 <div className="flex flex-col gap-2">
-                  <div className="h-4 bg-gray-200 rounded w-32"></div>
-                  <div className="h-6 bg-gray-200 rounded w-20"></div>
+                  <div className="h-4 bg-gray-200 rounded w-32" />
+                  <div className="h-6 bg-gray-200 rounded w-20" />
                 </div>
               </div>
             </div>

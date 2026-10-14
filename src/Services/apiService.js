@@ -7,9 +7,163 @@ import { store } from '../Store/store';
 import { loginSuccess, logoutSuccess } from '../Store/Features/auth/authSlice';
 import { getToken } from '../utils/authStorage';
 
-/**
- * Auth Services
- */
+/* ------------------------------------------------------------------ */
+/*  NORMALIZER HELPERS (used by reportService)                         */
+/* ------------------------------------------------------------------ */
+const safeArray = (v) => (Array.isArray(v) ? v : []);
+const safeObj = (v) => (v && typeof v === 'object' ? v : {});
+const num = (v) => Number(v) || 0;
+
+/* Revenue: Total_Revenue → totalRevenue, Location → location, etc. */
+const normalizeRevenue = (payload) => {
+  const s = safeObj(payload?.summary);
+  return {
+    data: safeArray(payload?.data).map((r) => ({
+      clientId: r.Client_id,
+      location: r.Location || 'N/A',
+      city: r.City || 'N/A',
+      revenue: num(r.Revenue),
+      orders: num(r.Orders),
+      avgOrder: num(r.Average_Order_Value),
+      growth: r.Growth ?? null,
+      isPositive:
+        r.Growth != null
+          ? typeof r.Growth === 'string'
+            ? !r.Growth.trim().startsWith('-')
+            : num(r.Growth) >= 0
+          : null,
+    })),
+    summary: {
+      totalRevenue: num(s.Total_Revenue),
+      totalOrders: num(s.Total_Orders),
+      averageOrderValue: num(s.Average_Order_Value),
+      activeLocations: num(s.Active_Locations),
+      revenueGrowth: num(s.Revenue_Growth),
+    },
+    pagination: payload?.pagination || null,
+  };
+};
+
+/* Subscription: Subscriptions_By_Plan + Upcoming_Renewals at top level */
+const normalizeSubscriptions = (payload) => {
+  const s = safeObj(payload?.summary);
+  return {
+    data: safeArray(payload?.Subscriptions_By_Plan).map((p) => ({
+      planId: p.Admin_Plan_id,
+      planName: p.PlanName,
+      subscriptionType: p.Subscription_Type,
+      count: num(p.Subscriptions),
+      activeCount: num(p.Active_Subscriptions),
+      revenue: num(p.Total_Revenue),
+      avgValue: num(p.Average_Value),
+    })),
+    summary: {
+      mrr: num(s.Monthly_Recurring_Revenue),
+      total: num(s.Total_Subscriptions),
+      active: num(s.Active),
+      inactive: num(s.Inactive),
+      upcomingRenewals: safeArray(payload?.Upcoming_Renewals).map((u) => ({
+        month: u.Month,
+        count: num(u.Renewals_Expected),
+        expectedRevenue: num(u.Expected_Revenue),
+      })),
+    },
+  };
+};
+
+/* Low stock: Status/Device/Current/Minimum/Need_To_Order */
+const normalizeLowStock = (payload) => {
+  const s = safeObj(payload?.summary);
+  return {
+    data: safeArray(payload?.data).map((r) => ({
+      itemId: r.Item_id,
+      status: r.Status || 'Critical',
+      device: r.Device,
+      itemCode: r.Item_Code,
+      location: r.Location ?? null,
+      current: num(r.Current),
+      minimum: num(r.Minimum),
+      needToOrder: num(r.Need_To_Order),
+    })),
+    summary: {
+      lowStockItems: num(s.Low_Stock_Items),
+      criticalCount: num(s.Low_Stock_Items),
+      threshold: num(s.Threshold),
+    },
+  };
+};
+
+/* Hardware sales: nested under data.summary + salesByHardwareCategory */
+const normalizeHardwareSales = (payload) => {
+  const d = safeObj(payload?.data);
+  const s = safeObj(d.summary);
+  return {
+    data: safeArray(d.salesByHardwareCategory).map((c) => ({
+      category: c.category,
+      units: num(c.unitsSold),
+      revenue: num(c.revenue),
+      avgPrice: num(c.avgPrice),
+    })),
+    summary: {
+      totalSales: num(s.totalHardwareSales),
+      unitsSold: num(s.unitsSold),
+      avgUnitPrice: num(s.averageUnitPrice),
+      totalSaleRecords: num(s.totalSaleRecords),
+      systemsSold: num(s.systemsSold),
+      printersSold: num(s.printersSold),
+    },
+    dailyBreakdown: safeArray(d.dailyBreakdown).map((r) => ({
+      date: r.Date,
+      sales: num(r.Sales),
+      unitsSold: num(r.UnitsSold),
+      revenue: num(r.Revenue),
+    })),
+    topClients: safeArray(d.topClients).map((c) => ({
+      userId: c.UserId,
+      businessName: c.BusinessName,
+      sales: num(c.Sales),
+      unitsSold: num(c.UnitsSold),
+      revenue: num(c.Revenue),
+    })),
+  };
+};
+
+/* Inventory: nested under data.summary + inventoryByLocation */
+const normalizeInventory = (payload) => {
+  const d = safeObj(payload?.data);
+  const s = safeObj(d.summary);
+  return {
+    data: safeArray(d.inventoryByLocation).map((l) => ({
+      location: l.location || 'Unassigned',
+      device: l.devices || '—',
+      total: num(l.totalItems),
+      lowStock: num(l.lowStock),
+      outOfStock: num(l.outOfStock),
+      totalValue: num(l.totalValue),
+    })),
+    summary: {
+      totalItems: num(s.totalInventoryItems),
+      lowStock: num(s.lowStockItems),
+      outOfStock: num(s.outOfStock),
+      totalValue: num(s.totalValue),
+      totalLocations: num(s.totalLocations),
+    },
+    inventory: safeObj(d.inventory),
+    statusBreakdown: safeArray(d.statusBreakdown),
+    topDevices: safeArray(d.topDevices).map((t) => ({
+      deviceId: t.deviceId,
+      name: t.name,
+      type: t.type,
+      location: t.location,
+      stock: num(t.stock),
+      unitPrice: num(t.unitPrice),
+    })),
+  };
+};
+
+/* ------------------------------------------------------------------ */
+/*  AUTH                                                               */
+/* ------------------------------------------------------------------ */
 export const authService = {
   login: async (userType, credentials) => {
     const endpoint = ENDPOINTS.AUTH.LOGIN(userType);
@@ -79,9 +233,9 @@ export const changePasswordService = {
   },
 };
 
-/**
- * Admin Dashboard Services
- */
+/* ------------------------------------------------------------------ */
+/*  ADMIN DASHBOARD                                                    */
+/* ------------------------------------------------------------------ */
 export const dashboardService = {
   getMainDashboard: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN);
@@ -186,9 +340,9 @@ export const dashboardService = {
   },
 };
 
-/**
- * Client Services
- */
+/* ------------------------------------------------------------------ */
+/*  CLIENT                                                             */
+/* ------------------------------------------------------------------ */
 export const clientService = {
   createClient: async (payload) => {
     const response = await apiClient.post(ENDPOINTS.ADMIN.CLIENTS.CREATE, payload);
@@ -223,9 +377,9 @@ export const clientService = {
   },
 };
 
-/**
- * Subscription Services
- */
+/* ------------------------------------------------------------------ */
+/*  SUBSCRIPTION                                                       */
+/* ------------------------------------------------------------------ */
 export const subscriptionService = {
   getSubscriptionDashboard: async () => {
     const response = await apiClient.get(
@@ -320,9 +474,10 @@ export const subscriptionService = {
   },
 };
 
-/**
- * Reports Services
- */
+/* ------------------------------------------------------------------ */
+/*  REPORTS                                                            */
+/*  All analytics endpoints return camelCase shapes to the UI.        */
+/* ------------------------------------------------------------------ */
 export const reportService = {
   getKpiDashboard: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.REPORTS.KPI_DASHBOARD);
@@ -433,6 +588,9 @@ export const reportService = {
       pagination: payload?.pagination || null,
     };
   },
+
+  /* -------- Analytics (normalized) -------- */
+
   getRevenueReport: async ({
     dateRange = 'last30days',
     location = 'all',
@@ -446,11 +604,7 @@ export const reportService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load revenue report');
     }
-    return {
-      data: payload?.data || [],
-      summary: payload?.summary || null,
-      pagination: payload?.pagination || null,
-    };
+    return normalizeRevenue(payload);
   },
 
   getLowStockAlerts: async ({
@@ -466,10 +620,7 @@ export const reportService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load low stock alerts');
     }
-    return {
-      data: payload?.data || [],
-      summary: payload?.summary || null,
-    };
+    return normalizeLowStock(payload);
   },
 
   getSubscriptionReport: async ({
@@ -485,10 +636,7 @@ export const reportService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load subscription report');
     }
-    return {
-      data: payload?.data || [],
-      summary: payload?.summary || null,
-    };
+    return normalizeSubscriptions(payload);
   },
 
   getRestaurantDashboard: async () => {
@@ -511,10 +659,7 @@ export const reportService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load inventory status');
     }
-    return {
-      data: payload?.data || [],
-      summary: payload?.summary || null,
-    };
+    return normalizeInventory(payload);
   },
 
   getHardwareSalesReport: async ({ month, year, ...rest } = {}) => {
@@ -526,16 +671,13 @@ export const reportService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load hardware sales report');
     }
-    return {
-      data: payload?.data || [],
-      summary: payload?.summary || null,
-    };
+    return normalizeHardwareSales(payload);
   },
 };
 
-/**
- * Language Services
- */
+/* ------------------------------------------------------------------ */
+/*  LANGUAGE                                                           */
+/* ------------------------------------------------------------------ */
 export const languageService = {
   getAllLanguages: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.LANGUAGE.GET_ALL);
@@ -550,9 +692,9 @@ export const languageService = {
   },
 };
 
-/**
- * Audit Services
- */
+/* ------------------------------------------------------------------ */
+/*  AUDIT                                                              */
+/* ------------------------------------------------------------------ */
 export const auditService = {
   getOverview: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.AUDITS.OVERVIEW);
@@ -617,9 +759,9 @@ export const auditService = {
   },
 };
 
-/**
- * POS Hardware Services
- */
+/* ------------------------------------------------------------------ */
+/*  POS HARDWARE                                                       */
+/* ------------------------------------------------------------------ */
 export const posHardwareService = {
   getDashboard: async () => {
     const response = await apiClient.get(
@@ -633,9 +775,9 @@ export const posHardwareService = {
   },
 };
 
-/**
- * Support Ticket Services
- */
+/* ------------------------------------------------------------------ */
+/*  SUPPORT TICKETS                                                    */
+/* ------------------------------------------------------------------ */
 export const supportTicketService = {
   getSummary: async () => {
     const response = await apiClient.get(
@@ -709,9 +851,9 @@ export const supportTicketService = {
   },
 };
 
-/**
- * Hardware Asset Management Services
- */
+/* ------------------------------------------------------------------ */
+/*  HAM (Hardware Asset Mgmt)                                          */
+/* ------------------------------------------------------------------ */
 export const hamService = {
   getMyDevices: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.HAM.MY_DEVICES);
@@ -763,12 +905,10 @@ export const hamService = {
   },
 };
 
-/**
- * MDM Device Management Services
- */
+/* ------------------------------------------------------------------ */
+/*  MDM                                                                */
+/* ------------------------------------------------------------------ */
 export const mdmService = {
-  // GET /api/v1/master/myDevices/getall
-  // Returns: { data: Device[], count: number }
   getAllDevices: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_ALL);
     const payload = response.data;
@@ -781,8 +921,6 @@ export const mdmService = {
     };
   },
 
-  // GET /api/v1/master/myDevices/getbyauth
-  // Returns: Device[]
   getMyDevicesByAuth: async () => {
     const response = await apiClient.get(ENDPOINTS.ADMIN.MDM.GET_BY_AUTH);
     const payload = response.data;
@@ -792,9 +930,6 @@ export const mdmService = {
     return payload?.data || [];
   },
 
-  // GET /api/v1/master/myDevices/:id/session-logs
-  // API returns: { success, data: { device, logs: [...] } }
-  // We return that exact shape so the modal can render device stats too.
   getSessionLogs: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.MDM.SESSION_LOGS(id)
@@ -803,7 +938,6 @@ export const mdmService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load session logs');
     }
-    // Handle both possible shapes just in case
     if (Array.isArray(payload?.data)) {
       return { device: null, logs: payload.data };
     }
@@ -813,8 +947,6 @@ export const mdmService = {
     };
   },
 
-  // POST /api/v1/master/myDevices/:id/lock
-  // Body: { reason }
   lockDevice: async (id, reason) => {
     const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.LOCK(id), {
       reason,
@@ -826,8 +958,6 @@ export const mdmService = {
     return payload?.data || null;
   },
 
-  // POST /api/v1/master/myDevices/:id/restart
-  // Body: { Restart_Reason, Scheduled_Restart, Restart_Queue, ... }
   restartDevice: async (id, payload) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.RESTART(id),
@@ -840,8 +970,6 @@ export const mdmService = {
     return data?.data || null;
   },
 
-  // POST /api/v1/master/myDevices/:id/push-update
-  // Body: { App_Version }
   pushUpdate: async (id, App_Version) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.MDM.PUSH_UPDATE(id),
@@ -853,56 +981,39 @@ export const mdmService = {
     }
     return data?.data || null;
   },
+
   exportSessionLogs: async (id) => {
-  const response = await apiClient.get(
-    ENDPOINTS.ADMIN.MDM.SESSION_LOGS_EXPORT(id),
-    {
-      responseType: 'blob', // ✅ critical — tells axios not to parse JSON
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.MDM.SESSION_LOGS_EXPORT(id),
+      { responseType: 'blob' }
+    );
+    return response.data;
+  },
+
+  wipeDevice: async (id, { email, password }) => {
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.MDM.WIPE_SEND_OTP(id),
+      { Email: email, password }
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to send OTP');
     }
-  );
-  return response.data; // Blob
-},
+    return data?.data || null;
+  },
 
-  // -------------------------------------------------------------------------
-  // WIPE FLOW — 2 steps on the SAME endpoint
-  // -------------------------------------------------------------------------
+  verifyWipeDevice: async (id, { otp, mode }) => {
+    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id), {
+      otp: String(otp).trim(),
+      wipeMode: mode,
+    });
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to verify wipe');
+    }
+    return data?.data || null;
+  },
 
- // -------------------------------------------------------------------------
-// WIPE FLOW — Two separate endpoints
-// -------------------------------------------------------------------------
-
-// STEP 1: Send OTP
-// POST /api/v1/master/myDevices/:id/wipe/send-otp
-wipeDevice: async (id, { email, password }) => {
-  const response = await apiClient.post(
-    ENDPOINTS.ADMIN.MDM.WIPE_SEND_OTP(id),
-    { Email: email, password }   // keep the body — backend may still want creds
-  );
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to send OTP');
-  }
-  return data?.data || null;
-},
-
-// STEP 2: Verify OTP and wipe
-// POST /api/v1/master/myDevices/:id/wipe
-// Body: { otp, wipeMode }  ← lowercase keys as per your backend
-verifyWipeDevice: async (id, { otp, mode }) => {
-  const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.WIPE_VERIFY(id), {
-    otp: String(otp).trim(),   // ✅ lowercase otp
-    wipeMode: mode,            // ✅ camelCase wipeMode
-  });
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to verify wipe');
-  }
-  return data?.data || null;
-},
-  // -------------------------------------------------------------------------
-  // ENROLL (Create new device)
-  // POST /api/v1/master/myDevices/create
-  // -------------------------------------------------------------------------
   enrollDevice: async (formData) => {
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.HAM.CREATE_DEVICE,
@@ -916,10 +1027,9 @@ verifyWipeDevice: async (id, { otp, mode }) => {
   },
 };
 
-
-/**
- * SubAdmin Services
- */
+/* ------------------------------------------------------------------ */
+/*  SUBADMIN                                                           */
+/* ------------------------------------------------------------------ */
 export const subadminService = {
   getAll: async ({ page = 1, limit = 10, status = true, search = '' } = {}) => {
     const params = { page, limit };
@@ -974,15 +1084,15 @@ export const subadminService = {
   },
 
   remove: async (id) => {
-  const response = await apiClient.delete(
-    ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)  // ✅ Correct endpoint
-  );
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to delete payment option');
-  }
-  return data?.data || null;
-},
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to delete payment option');
+    }
+    return data?.data || null;
+  },
 
   deactivate: async (id) => {
     const response = await apiClient.patch(
@@ -1009,11 +1119,10 @@ export const subadminService = {
   },
 };
 
-/**
- * ✅ Account Settings Services
- */
+/* ------------------------------------------------------------------ */
+/*  ACCOUNT SETTINGS                                                   */
+/* ------------------------------------------------------------------ */
 export const accountSettingsService = {
-  // ---------- Profile ----------
   getProfile: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.PROFILE
@@ -1025,7 +1134,6 @@ export const accountSettingsService = {
     return payload?.data || null;
   },
 
-  // ---------- Date & Time ----------
   getDateTime: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME
@@ -1036,23 +1144,23 @@ export const accountSettingsService = {
     }
     return payload?.data || null;
   },
-updateDateTime: async (payload) => {
-  const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME;
 
-  console.log('🟢 updateDateTime PUT URL:', `${apiClient.defaults.baseURL}${url}`);
-  console.log('🟢 updateDateTime payload:', payload);
+  updateDateTime: async (payload) => {
+    const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME;
 
-  const response = await apiClient.put(url, payload); // ✅ PUT, not POST
-  const data = response.data;
+    console.log('🟢 updateDateTime PUT URL:', `${apiClient.defaults.baseURL}${url}`);
+    console.log('🟢 updateDateTime payload:', payload);
 
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to update date/time settings');
-  }
+    const response = await apiClient.put(url, payload);
+    const data = response.data;
 
-  return data?.data || null;
-},
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to update date/time settings');
+    }
 
-  // ---------- Active Sessions ----------
+    return data?.data || null;
+  },
+
   getSessions: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.SESSIONS
@@ -1075,7 +1183,6 @@ updateDateTime: async (payload) => {
     return payload;
   },
 
-  // ---------- Login History ----------
   getLoginHistory: async (page = 1, limit = 20) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.LOGIN_HISTORY,
@@ -1091,7 +1198,6 @@ updateDateTime: async (payload) => {
     };
   },
 
-  // ---------- Suspicious Activity ----------
   getSuspiciousActivity: async (page = 1, limit = 20) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.SUSPICIOUS_ACTIVITY,
@@ -1107,7 +1213,6 @@ updateDateTime: async (payload) => {
     };
   },
 
-  // ---------- Password Reset Logs ----------
   getPasswordResetLogs: async (page = 1, limit = 20) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.PASSWORD_RESET_LOGS,
@@ -1123,7 +1228,6 @@ updateDateTime: async (payload) => {
     };
   },
 
-  // ---------- API Keys ----------
   getApiKeys: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.API_KEYS
@@ -1167,7 +1271,6 @@ updateDateTime: async (payload) => {
     return payload;
   },
 
-  // ---------- Trusted Devices ----------
   getTrustedDevices: async () => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES
@@ -1179,23 +1282,23 @@ updateDateTime: async (payload) => {
     return payload?.data || [];
   },
 
-addTrustedDevice: async ({ device_name, device_type }) => {
-  const payload = {
-    name: device_name,
-    type: device_type,
-  };
-  console.log(' addTrustedDevice payload:', JSON.stringify(payload));
+  addTrustedDevice: async ({ device_name, device_type }) => {
+    const payload = {
+      name: device_name,
+      type: device_type,
+    };
+    console.log(' addTrustedDevice payload:', JSON.stringify(payload));
 
-  const response = await apiClient.post(
-    ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES,
-    payload
-  );
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to add device');
-  }
-  return data?.data || null;
-},
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES,
+      payload
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to add device');
+    }
+    return data?.data || null;
+  },
 
   removeTrustedDevice: async (deviceId) => {
     const response = await apiClient.delete(
@@ -1209,9 +1312,9 @@ addTrustedDevice: async ({ device_name, device_type }) => {
   },
 };
 
-/**
- * Currency Services
- */
+/* ------------------------------------------------------------------ */
+/*  CURRENCY                                                           */
+/* ------------------------------------------------------------------ */
 export const currencyService = {
   getAll: async () => {
     const response = await apiClient.get(ENDPOINTS.MASTER.CURRENCY.GET_ALL);
@@ -1238,9 +1341,9 @@ export const currencyService = {
   },
 };
 
-/**
- * Payment Options Services
- */
+/* ------------------------------------------------------------------ */
+/*  PAYMENT OPTIONS                                                    */
+/* ------------------------------------------------------------------ */
 export const paymentOptionService = {
   getAll: async () => {
     const response = await apiClient.get(
@@ -1286,14 +1389,14 @@ export const paymentOptionService = {
     return data?.data || null;
   },
 
- remove: async (id) => {
-  const response = await apiClient.delete(
-    ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id) // ✅ Correct
-  );
-  const data = response.data;
-  if (data?.success === false) {
-    throw new Error(data?.message || 'Failed to delete payment option');
-  }
-  return data?.data || null;
-},
+  remove: async (id) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to delete payment option');
+    }
+    return data?.data || null;
+  },
 };
