@@ -991,6 +991,10 @@
     "loadingDetails": "Loading details...",
     "viewMore": "View More",
     "viewDetails": "View Details",
+    "noRenewalDate": "No renewal date",
+    "overdue": "Overdue",
+    "daysLeft": "{{count}} days left",
+    "daysLeft_one": "1 day left",
     "filter": {
       "all": "All Clients",
       "active": "Active Clients",

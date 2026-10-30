@@ -991,6 +991,10 @@
     "loadingDetails": "Chargement des détails...",
     "viewMore": "Voir plus",
     "viewDetails": "Voir les détails",
+    "noRenewalDate": "Pas de date de renouvellement",
+    "overdue": "En retard",
+    "daysLeft": "{{count}} jours restants",
+    "daysLeft_one": "1 jour restant",
     "filter": {
       "all": "Tous les clients",
       "active": "Clients actifs",

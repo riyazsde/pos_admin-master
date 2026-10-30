@@ -82,6 +82,60 @@ const copyToClipboard = (text) => {
   });
 };
 
+
+// Normalize API timestamp fields and never render "Invalid Date".
+// The API currently returns `occurredAt` for login history; other endpoints
+// may use one of the fallback field names below.
+const getValidTimestamp = (record, fields) => {
+  if (!record || typeof record !== 'object') return null;
+
+  for (const field of fields) {
+    const value = record[field];
+    if (value === null || value === undefined) continue;
+
+    // Ignore empty or whitespace-only strings and try the next field.
+    if (typeof value === 'string' && !value.trim()) continue;
+
+    const date = value instanceof Date
+      ? value
+      : typeof value === 'number'
+        ? new Date(value)
+        : typeof value === 'string'
+          ? new Date(value.trim())
+          : new Date(NaN);
+
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+
+  return null;
+};
+
+const formatDateTime = (record, fields) => {
+  const date = getValidTimestamp(record, fields);
+  if (!date) return 'Date unavailable';
+
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Kolkata',
+  }).format(date);
+};
+
+const LOGIN_TIMESTAMP_FIELDS = [
+  'occurredAt', 'occurred_at', 'createdAt', 'created_at', 'timestamp', 'date',
+];
+
+const PASSWORD_RESET_TIMESTAMP_FIELDS = [
+  'occurredAt', 'occurred_at', 'resetAt', 'reset_at', 'createdAt', 'created_at',
+  'requestedAt', 'requested_at', 'completedAt', 'completed_at', 'timestamp', 'date',
+];
+
+
 // ============================================================
 // --- Two-Factor Auth Modal ---
 // ============================================================
@@ -547,13 +601,13 @@ const LoginHistoryModal = ({ onClose }) => {
           ) : logs.map((log, idx) => {
             const isBlocked = log.status?.toLowerCase() === 'blocked';
             return (
-              <div key={idx} className={`flex gap-3 p-3 rounded-lg border ${isBlocked ? 'bg-red-50/50 border-red-100' : 'border-gray-100'}`}>
+              <div key={log.attempt_id || log.id || idx} className={`flex gap-3 p-3 rounded-lg border ${isBlocked ? 'bg-red-50/50 border-red-100' : 'border-gray-100'}`}>
                 <div className="mt-0.5">
                   {isBlocked ? <XCircle className="w-5 h-5 text-red-500" /> : <CheckCircle2 className="w-5 h-5 text-green-500" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-gray-800 text-sm">{new Date(log.createdAt || log.date).toLocaleString()}</p>
+                    <p className="font-medium text-gray-800 text-sm">{formatDateTime(log, LOGIN_TIMESTAMP_FIELDS)}</p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {log.status || t('accountSettings.loginHistory.success')}
                     </span>
@@ -694,11 +748,11 @@ const PasswordResetLogsModal = ({ onClose }) => {
           {logs.length === 0 ? (
             <EmptyState message={t('accountSettings.passwordResetLogs.empty')} icon={FileText} />
           ) : logs.map((log, idx) => (
-            <div key={idx} className="border border-gray-100 rounded-lg p-3">
+            <div key={log.reset_id || log.resetId || log.id || idx} className="border border-gray-100 rounded-lg p-3">
               <div className="flex justify-between items-start mb-2">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
-                  <p className="font-medium text-gray-800 text-sm">{new Date(log.createdAt).toLocaleString()}</p>
+                  <p className="font-medium text-gray-800 text-sm">{formatDateTime(log, PASSWORD_RESET_TIMESTAMP_FIELDS)}</p>
                 </div>
                 <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                   {log.status || t('accountSettings.passwordResetLogs.completed')}
