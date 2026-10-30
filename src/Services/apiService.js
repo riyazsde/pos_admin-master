@@ -1371,18 +1371,25 @@ export const paymentOptionService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load payment options');
     }
+    // Backend now returns enabled + disabled (Status:true & false).
+    // isDeleted:true rows are already excluded server-side, but we
+    // defensively strip them here in case that changes.
+    const all = payload?.data || [];
+    const visible = all.filter((item) => !item.isDeleted);
+
     return {
-      data: payload?.data || [],
-      count: payload?.count ?? (payload?.data?.length || 0),
+      data: visible,
+      count: visible.length,
     };
   },
 
-  create: async ({ option, details, status = true }) => {
+  create: async ({ option, details, Status, status }) => {
+    const finalStatus = Status ?? status ?? true;
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.PAYMENT_OPTIONS.CREATE,
       {
         PaymentOption: [{ option, Details: details }],
-        Status: status,
+        Status: finalStatus,
       }
     );
     const data = response.data;
@@ -1392,13 +1399,15 @@ export const paymentOptionService = {
     return data?.data || null;
   },
 
-  update: async (id, { option, details, status = true }) => {
+  update: async (id, { option, details, Status, status }) => {
+    const finalStatus = Status ?? status ?? true;
+    const body = { Status: finalStatus };
+    if (option !== undefined || details !== undefined) {
+      body.PaymentOption = [{ option, Details: details }];
+    }
     const response = await apiClient.put(
       ENDPOINTS.ADMIN.PAYMENT_OPTIONS.UPDATE(id),
-      {
-        PaymentOption: [{ option, Details: details }],
-        Status: status,
-      }
+      body
     );
     const data = response.data;
     if (data?.success === false) {
@@ -1407,6 +1416,8 @@ export const paymentOptionService = {
     return data?.data || null;
   },
 
+  // Soft delete — backend sets isDeleted:true, hides from GET_ALL.
+  // Record is preserved in DB for history/audit; just not returned here.
   remove: async (id) => {
     const response = await apiClient.delete(
       ENDPOINTS.ADMIN.PAYMENT_OPTIONS.DELETE(id)
