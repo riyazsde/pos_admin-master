@@ -138,7 +138,7 @@ const LanguageSettings = () => {
             />
           </button>
           <span className="text-gray-800 text-base sm:text-2xl">
-            {t('accountSettings.languages')}
+            {t('accountSettings.regionalPreference.languages')}
           </span>
         </h1>
       </div>

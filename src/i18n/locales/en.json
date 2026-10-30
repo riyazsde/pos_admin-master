@@ -1504,6 +1504,7 @@
     }
   },
 
+ 
   "posHardware": {
     "pageTitle": "POS Hardware Devices",
     "lastUpdated": "Last updated: {{date}}",
@@ -1519,9 +1520,15 @@
       "noData": "No hardware devices found.",
       "table": {
         "device": "Device",
+        "type": "Type",
         "serialNumber": "Serial Number",
+        "client": "Client / Location",
         "warranty": "Warranty",
         "condition": "Condition"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
       },
       "warranty": {
         "exp": "Exp: {{date}}",
@@ -1585,6 +1592,8 @@
       "excellent": "Excellent",
       "good": "Good",
       "new": "New",
+      "locked": "Locked",
+      "inactive": "Inactive",
       "unknown": "Unknown"
     },
     "deviceLabels": {
@@ -1592,6 +1601,7 @@
       "sold": "{{count}} sold"
     }
   },
+
 
   "notifications": {
     "searchPlaceholder": "Search notifications..."

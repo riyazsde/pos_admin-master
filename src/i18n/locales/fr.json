@@ -1504,44 +1504,51 @@
     }
   },
 
+  
   "posHardware": {
-    "pageTitle": "Appareils matériels POS",
+    "pageTitle": "Appareils POS",
     "lastUpdated": "Dernière mise à jour : {{date}}",
     "metrics": {
-      "totalClients": "Total clients",
-      "totalPrinters": "Total imprimantes",
-      "totalSystems": "Total systèmes POS"
+      "totalClients": "Total Clients",
+      "totalPrinters": "Total Imprimantes",
+      "totalSystems": "Total Systèmes POS"
     },
     "devicesSection": {
-      "title": "Tous les appareils matériels",
-      "subtitle": "Gérez et suivez tous les appareils matériels sur tous les sites",
-      "loading": "Chargement des appareils matériels...",
-      "noData": "Aucun appareil matériel trouvé.",
+      "title": "Tous les appareils",
+      "subtitle": "Gérer et suivre tous les appareils sur tous les sites",
+      "loading": "Chargement des appareils…",
+      "noData": "Aucun appareil trouvé.",
       "table": {
         "device": "Appareil",
+        "type": "Type",
         "serialNumber": "Numéro de série",
+        "client": "Client / Site",
         "warranty": "Garantie",
         "condition": "État"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
       },
       "warranty": {
         "exp": "Exp : {{date}}",
         "purchase": "Achat : {{date}}"
       },
       "toasts": {
-        "fetchFailed": "Échec du chargement des données matérielles POS",
+        "fetchFailed": "Échec du chargement des données POS",
         "fetchFailedDesc": "Veuillez réessayer plus tard.",
-        "devicesFailed": "Échec du chargement de la liste des appareils matériels"
+        "devicesFailed": "Échec du chargement de la liste des appareils"
       }
     },
     "hardwareChart": {
       "title": "Matériel vendu",
       "units": "unités",
-      "changeFromLastMonth": "changement par rapport au mois dernier",
+      "changeFromLastMonth": "de variation par rapport au mois dernier",
       "sold": "Vendu",
       "unitsLabel": "{{count}} unités"
     },
     "history": {
-      "title": "Historique des appareils matériels POS",
+      "title": "Historique des appareils POS",
       "records": "{{count}} enregistrement{{count, plural}}",
       "records_one": "{{count}} enregistrement",
       "records_other": "{{count}} enregistrements",
@@ -1554,7 +1561,7 @@
         "tablet": "Tablette"
       },
       "loading": "Chargement de l'historique…",
-      "noData": "Aucun historique matériel pour le moment",
+      "noData": "Aucun historique pour le moment",
       "noDataDesc": "Les achats de matériel apparaîtront ici.",
       "table": {
         "hash": "#",
@@ -1570,8 +1577,8 @@
       "records": "{{count}} enregistrement{{count, plural}}",
       "records_one": "{{count}} enregistrement",
       "records_other": "{{count}} enregistrements",
-      "loading": "Chargement des ventes de matériel…",
-      "noData": "Aucun matériel vendu pour le moment",
+      "loading": "Chargement des ventes…",
+      "noData": "Aucune vente pour le moment",
       "noDataDesc": "Le matériel acheté apparaîtra ici une fois les ventes enregistrées.",
       "table": {
         "hash": "#",
@@ -1585,6 +1592,8 @@
       "excellent": "Excellent",
       "good": "Bon",
       "new": "Neuf",
+      "locked": "Verrouillé",
+      "inactive": "Inactif",
       "unknown": "Inconnu"
     },
     "deviceLabels": {

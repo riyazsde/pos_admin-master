@@ -23,6 +23,17 @@ const formatNumber = (n) => {
   return Number(n).toLocaleString('en-US');
 };
 
+// Return the first defined, non-null, non-empty value — else 'N/A'
+const pick = (...vals) =>
+  vals.find((v) => v !== undefined && v !== null && v !== '') ?? 'N/A';
+
+// Human-friendly fallback date formatter
+const safeDate = (value) => {
+  if (!value) return 'N/A';
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+};
+
 const PosDevice = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -41,37 +52,72 @@ const PosDevice = () => {
 
   // Helper for Condition Badges
   const getConditionBadge = (condition) => {
-    const normalized = condition?.toLowerCase() || '';
+    const normalized = String(condition || '').toLowerCase();
     switch (normalized) {
       case 'excellent':
         return 'bg-green-100 text-green-700';
       case 'good':
+      case 'active':
         return 'bg-blue-100 text-blue-700';
       case 'new':
         return 'bg-blue-100 text-blue-700';
+      case 'locked':
+        return 'bg-red-100 text-red-700';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
   };
 
-  // Helper to map API data to Table format
-  const mapApiResponseToDevices = (apiData) => {
+  // ✅ Map HAM API payload → table rows
+  // Actual API fields (see payload dump):
+  //   Name, type, Serial_Number, Devices_ModelNo, MyDevices_id,
+  //   CreateAt, CreateBy { Name, email, user_id }, location,
+  //   isActive, isLocked, _id
+  const mapApiResponseToDevices = (apiData, tFn) => {
     if (!Array.isArray(apiData)) return [];
 
-    return apiData.map((item, index) => ({
-      id: item.id || index,
-      name: item.deviceName || item.name || t('posHardware.deviceLabels.device'),
-      model: item.model || item.deviceModel || 'N/A',
-      serial: item.serialNumber || item.serial || 'N/A',
-      posId: item.posId || item.tagId || 'N/A',
-      warrantyExp: item.warrantyExpiry || item.warrantyExp || 'N/A',
-      purchaseDate: item.purchaseDate || 'N/A',
-      condition: item.condition || t('posHardware.conditions.good'),
-      iconColor: 'bg-purple-100 text-purple-600',
-    }));
+    return apiData.map((item, index) => {
+      const condition = item.isLocked
+        ? 'Locked'
+        : item.isActive === false
+        ? 'Inactive'
+        : tFn('posHardware.conditions.good');
+
+      return {
+        id: pick(item._id, index),
+        name: pick(
+          item.Name,
+          item.name,
+          item.deviceName,
+          tFn('posHardware.deviceLabels.device')
+        ),
+        model: pick(item.Devices_ModelNo, item.model, item.deviceModel),
+        serial: pick(item.Serial_Number, item.serialNumber, item.serial),
+        posId:
+          item.MyDevices_id !== undefined && item.MyDevices_id !== null
+            ? `#${item.MyDevices_id}`
+            : 'N/A',
+        type: pick(item.type, 'N/A'),
+        client: pick(item.CreateBy?.Name, '—'),
+        clientEmail: pick(item.CreateBy?.email, ''),
+        location: pick(
+          typeof item.location === 'string' ? item.location : null,
+          '—'
+        ),
+        active: item.isActive === true,
+        locked: item.isLocked === true,
+        // API does not expose warranty fields — show a dash, don't invent
+        warrantyExp: '—',
+        purchaseDate: safeDate(item.CreateAt),
+        condition,
+        iconColor: 'bg-purple-100 text-purple-600',
+      };
+    });
   };
 
-  // ✅ Fetch Dashboard Metrics
+  // ✅ Fetch Dashboard Metrics (once)
   const hasFetched = useRef(false);
   useEffect(() => {
     if (hasLoaded || hasFetched.current) return;
@@ -99,18 +145,29 @@ const PosDevice = () => {
     fetchDashboard();
   }, [dispatch, hasLoaded, t]);
 
-  // ✅ Fetch All Devices using hamService
+  // ✅ Fetch All Devices (once — guard with ref so `t` changes don't refire)
+  const hasFetchedDevices = useRef(false);
   useEffect(() => {
+    if (hasFetchedDevices.current) return;
+    hasFetchedDevices.current = true;
+
     const fetchDevices = async () => {
       setDevicesLoading(true);
       try {
         const result = await hamService.getMyDevices();
-        const mappedDevices = mapApiResponseToDevices(result.data);
-        setDevices(mappedDevices);
+        // Some endpoints wrap in `{ data: [...] }`, some return raw array
+        const rawList = Array.isArray(result)
+          ? result
+          : Array.isArray(result?.data)
+          ? result.data
+          : [];
+        setDevices(mapApiResponseToDevices(rawList, t));
       } catch (err) {
         console.error('Error fetching devices:', err);
         toast.error(t('posHardware.devicesSection.toasts.devicesFailed'), {
-          description: err?.message || t('posHardware.devicesSection.toasts.fetchFailedDesc'),
+          description:
+            err?.message ||
+            t('posHardware.devicesSection.toasts.fetchFailedDesc'),
         });
       } finally {
         setDevicesLoading(false);
@@ -118,7 +175,8 @@ const PosDevice = () => {
     };
 
     fetchDevices();
-  }, [t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const metrics = [
     {
@@ -144,7 +202,9 @@ const PosDevice = () => {
     },
   ];
 
-  const locale = t('posHardware.lastUpdated', { date: '' })?.includes('Dernière')
+  const locale = t('posHardware.lastUpdated', { date: '' })?.includes(
+    'Dernière'
+  )
     ? 'fr-FR'
     : 'en-US';
 
@@ -261,7 +321,13 @@ const PosDevice = () => {
                       {t('posHardware.devicesSection.table.device')}
                     </th>
                     <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      {t('posHardware.devicesSection.table.type')}
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
                       {t('posHardware.devicesSection.table.serialNumber')}
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      {t('posHardware.devicesSection.table.client')}
                     </th>
                     <th className="py-4 px-6 text-sm font-semibold text-gray-900">
                       {t('posHardware.devicesSection.table.warranty')}
@@ -317,9 +383,35 @@ const PosDevice = () => {
                       </td>
 
                       <td className="py-4 px-6">
-                        <p className="text-sm text-gray-900">{device.serial}</p>
+                        <p className="text-sm text-gray-900">
+                          {device.type}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {device.active
+                            ? t('posHardware.devicesSection.status.active', {
+                                defaultValue: 'Active',
+                              })
+                            : t('posHardware.devicesSection.status.inactive', {
+                                defaultValue: 'Inactive',
+                              })}
+                        </p>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <p className="text-sm text-gray-900">
+                          {device.serial}
+                        </p>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {device.posId}
+                        </p>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <p className="text-sm text-gray-900">
+                          {device.client}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {device.location}
                         </p>
                       </td>
 
