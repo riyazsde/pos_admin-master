@@ -124,6 +124,7 @@ ACCOUNT_SETTINGS: {
       UPDATE: '/api/v1/restaurant/support_ticket/update',
       REPLY: '/api/v1/restaurant/support_ticket_reply/create',
       CHART: '/api/v1/restaurant/support_ticket/chart',
+      ASSIGNABLE_USERS: '/api/v1/restaurant/support_ticket/assignable-users',
     },
 
     HAM: {

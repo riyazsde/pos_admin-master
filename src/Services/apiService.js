@@ -806,7 +806,16 @@ export const supportTicketService = {
       pagination: payload?.pagination || null,
     };
   },
-
+getAssignableUsers: async () => {
+  const response = await apiClient.get(
+    ENDPOINTS.ADMIN.SUPPORT_TICKETS.ASSIGNABLE_USERS
+  );
+  const payload = response.data;
+  if (payload?.success === false) {
+    throw new Error(payload?.message || 'Failed to load assignable users');
+  }
+  return payload?.data || [];
+},
   updateTicketStatus: async (id, backendStatus) => {
     const response = await apiClient.put(
       ENDPOINTS.ADMIN.SUPPORT_TICKETS.UPDATE,

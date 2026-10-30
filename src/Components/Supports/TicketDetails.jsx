@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronDownIcon } from '@heroicons/react/20/solid';
@@ -95,9 +95,15 @@ const StatusDropdown = ({ status, onStatusChange, disabled }) => {
 };
 
 // ---------------------------------------------------------------------------
-// Assign agent dropdown (unchanged)
+// Assign agent dropdown
 // ---------------------------------------------------------------------------
-const AssignAgentDropdown = ({ value, onChange, agents = [], disabled }) => {
+const AssignAgentDropdown = ({
+  value,
+  onChange,
+  agents = [],
+  disabled,
+  loading = false,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedAgent = agents.find((a) => a.id === value);
@@ -108,16 +114,16 @@ const AssignAgentDropdown = ({ value, onChange, agents = [], disabled }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        disabled={disabled}
+        disabled={disabled || loading}
         className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
       >
         <span className={selectedAgent ? 'text-gray-900' : 'text-gray-400'}>
-          {label}
+          {loading ? 'Loading agents...' : label}
         </span>
         <ChevronDownIcon className="w-4 h-4 text-gray-500" />
       </button>
 
-      {isOpen && (
+      {isOpen && !loading && (
         <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg z-20 max-h-60 overflow-y-auto">
           <div
             onClick={() => {
@@ -177,48 +183,89 @@ const TicketDetails = () => {
   const [subject, setSubject] = useState(
     initial.title || 'Money Deposit not working'
   );
-  const [assignedAgent, setAssignedAgent] = useState(null);
   const [reply, setReply] = useState('');
   const [image1, setImage1] = useState(null);
   const [image2, setImage2] = useState(null);
   const [status, setStatus] = useState(initial.status || 'New');
   const [showModal, setShowModal] = useState(false);
 
-  const AGENTS = [
-    { id: 10, name: 'Sarah Johnson' },
-    { id: 11, name: 'Michael Chen' },
-    { id: 12, name: 'Emily Martinez' },
-  ];
+  // Assignee state
+  const [agents, setAgents] = useState([]);
+  const [agentsLoading, setAgentsLoading] = useState(true);
+  const [assignedAgent, setAssignedAgent] = useState(
+    initial.employeeId ??
+      initial.employee_id ??
+      initial.assignedAgentId ??
+      null
+  );
+
+  // -------------------------------------------------------------------------
+  // Load assignable users
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadAgents = async () => {
+      setAgentsLoading(true);
+      try {
+        const raw = await supportTicketService.getAssignableUsers();
+        if (cancelled) return;
+
+        setAgents(
+          raw.map((u) => ({
+            id: u.id ?? u.employee_id ?? u.Employee_id ?? u.user_id,
+            name:
+              u.name ??
+              u.full_name ??
+              u.Employee_name ??
+              ([u.first_name, u.last_name].filter(Boolean).join(' ') ||
+                u.email ||
+                `User #${u.id ?? u.employee_id ?? ''}`),
+          }))
+        );
+      } catch (err) {
+        console.error('Failed to load assignable users:', err);
+        if (!cancelled) toast.error('Failed to load agents');
+      } finally {
+        if (!cancelled) setAgentsLoading(false);
+      }
+    };
+
+    loadAgents();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // -------------------------------------------------------------------------
   // Status change — optimistic + rollback + Redux patch with BACKEND value
   // -------------------------------------------------------------------------
- const handleStatusChange = async (backendStatus, frontendLabel) => {
-  if (!backendStatus) return;
+  const handleStatusChange = async (backendStatus, frontendLabel) => {
+    if (!backendStatus) return;
 
-  const previousUi = status;
-  setStatus(frontendLabel);              // optimistic
+    const previousUi = status;
+    setStatus(frontendLabel); // optimistic
 
-  dispatch(setUpdating(true));
-  try {
-    const res = await supportTicketService.updateTicketStatus(
-      ticketDbId,
-      backendStatus
-    );
-    const newBackend = res?.Ticket_status ?? backendStatus;
-    const newUi = mapBackendStatus(newBackend);
+    dispatch(setUpdating(true));
+    try {
+      const res = await supportTicketService.updateTicketStatus(
+        ticketDbId,
+        backendStatus
+      );
+      const newBackend = res?.Ticket_status ?? backendStatus;
+      const newUi = mapBackendStatus(newBackend);
 
-    setStatus(newUi);
-    dispatch(patchTicketStatus({ id: ticketDbId, status: newBackend }));  // ← BACKEND
+      setStatus(newUi);
+      dispatch(patchTicketStatus({ id: ticketDbId, status: newBackend }));
 
-    toast.success(`Status updated to ${newUi}`);
-  } catch (err) {
-    setStatus(previousUi);               // rollback
-    toast.error('Failed to update status');
-  } finally {
-    dispatch(setUpdating(false));
-  }
-};
+      toast.success(`Status updated to ${newUi}`);
+    } catch (err) {
+      setStatus(previousUi); // rollback
+      toast.error('Failed to update status');
+    } finally {
+      dispatch(setUpdating(false));
+    }
+  };
 
   // -------------------------------------------------------------------------
   // Reply submit
@@ -229,13 +276,18 @@ const TicketDetails = () => {
       return;
     }
 
+    if (!assignedAgent) {
+      toast.error('Please assign an agent before submitting a reply');
+      return;
+    }
+
     dispatch(setUpdating(true));
     const toastId = toast.loading('Submitting reply...');
     try {
       await supportTicketService.createReply({
         support_ticket_id: ticketDbId,
         reply: reply.trim(),
-        employee_id: assignedAgent || 10,
+        employee_id: assignedAgent,
         Ticket_status: 'Process',
         Status: true,
       });
@@ -334,8 +386,9 @@ const TicketDetails = () => {
             <AssignAgentDropdown
               value={assignedAgent}
               onChange={setAssignedAgent}
-              agents={AGENTS}
+              agents={agents}
               disabled={updating}
+              loading={agentsLoading}
             />
           </div>
 
@@ -408,7 +461,7 @@ const TicketDetails = () => {
         <div className="flex justify-end px-6 py-4 border-t border-gray-100">
           <button
             onClick={handleSubmitReply}
-            disabled={updating}
+            disabled={updating || agentsLoading}
             className="px-8 py-3 bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] rounded-lg text-white text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-60"
           >
             {updating ? 'Submitting...' : 'Submit Reply'}
