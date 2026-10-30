@@ -13,6 +13,14 @@ const initialState = {
     totalHardware: 0,
   },
 
+  inventorySummary: {
+    totalInventoryItems: 0,
+    lowStockItems: 0,
+    outOfStock: 0,
+    totalValue: 0,
+    totalLocations: 0,
+  },
+
   loading: false,
   creating: false,
   hasLoaded: false,
@@ -27,18 +35,28 @@ const hamSlice = createSlice({
       state.loading = action.payload;
     },
     setDevicesData: (state, action) => {
-      state.devices = action.payload.data || [];
-      state.totalDevices = action.payload.count ?? 0;
+      state.devices = action.payload?.data || [];
+      state.totalDevices = action.payload?.count ?? 0;
       state.hasLoaded = true;
       state.loading = false;
       state.error = null;
     },
     setAssignedDevicesData: (state, action) => {
-      state.assignedDevices = action.payload.data || [];
+      state.assignedDevices = action.payload?.data || [];
     },
     setInventoryStatus: (state, action) => {
-      if (action.payload?.inventory) {
-        state.inventory = action.payload.inventory;
+      const payload = action.payload;
+      if (payload?.inventory) {
+        state.inventory = payload.inventory;
+      }
+      if (payload?.summary) {
+        state.inventorySummary = {
+          totalInventoryItems: payload.summary.totalInventoryItems ?? 0,
+          lowStockItems: payload.summary.lowStockItems ?? 0,
+          outOfStock: payload.summary.outOfStock ?? 0,
+          totalValue: payload.summary.totalValue ?? 0,
+          totalLocations: payload.summary.totalLocations ?? 0,
+        };
       }
     },
     addDevice: (state, action) => {

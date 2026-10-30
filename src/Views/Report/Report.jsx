@@ -1365,14 +1365,14 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div>
-          <LatestTransactionsTable />
-        </div>
-        <div>
-          <TransactionGraph />
-        </div>
-      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 items-stretch">
+  <div className="h-full min-h-0 flex flex-col">
+    <LatestTransactionsTable />
+  </div>
+  <div className="h-full min-h-0 flex flex-col">
+    <TransactionGraph />
+  </div>
+</div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div>

@@ -1135,10 +1135,12 @@
 
   "ham": {
     "title": "Hardware Asset Management (HAM)",
+    "subtitle_one":   "{{count}} device model · {{units}} total units in inventory",
+    "subtitle_other": "{{count}} device models · {{units}} total units in inventory",
     "subtitle": "{{count}} device{{count, plural}} in inventory",
-    "subtitle_one": "{{count}} device in inventory",
-    "subtitle_other": "{{count}} devices in inventory",
     "addDevice": "Add Device",
+    "summaryBar": "{{models}} models · {{units}} total units · {{assigned}} assigned",
+   
     "loading": "Loading devices…",
     "noData": "No devices found",
     "noDataAddFirst": "Add your first device to get started.",

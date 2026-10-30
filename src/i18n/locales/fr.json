@@ -1143,6 +1143,7 @@
     "noData": "Aucun appareil trouvé",
     "noDataAddFirst": "Ajoutez votre premier appareil pour commencer.",
     "noDataFilter": "Aucun appareil ne correspond à ce filtre.",
+     "summaryBar": "{{models}} modèles · {{units}} unités au total · {{assigned}} affectées",
     "tabs": {
       "all": "Tous les appareils",
       "assigned": "Appareils assignés",
