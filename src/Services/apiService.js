@@ -956,6 +956,16 @@ export const mdmService = {
     }
     return payload?.data || null;
   },
+ unlockDevice: async (id, reason) => {
+    const response = await apiClient.post(ENDPOINTS.ADMIN.MDM.UNLOCK(id), {
+      reason,
+    });
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to unlock device');
+    }
+    return payload?.data || null;
+  },
 
   restartDevice: async (id, payload) => {
     const response = await apiClient.post(

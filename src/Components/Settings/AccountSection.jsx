@@ -1,6 +1,6 @@
 // src/Components/Settings/AccountSection.jsx
 
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useId, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { 
@@ -32,27 +32,89 @@ import { setProfile } from '../../Store/Features/subadmin/subadminSlice';
 // --- Reusable UI Components ---
 // ============================================================
 
-const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-lg' }) => (
-  <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-    <div className={`bg-white rounded-xl shadow-2xl w-full ${maxWidth} overflow-hidden flex flex-col max-h-[90vh]`}>
-      <div 
-        className="flex items-center justify-between p-4 text-white shrink-0"
-        style={{ background: 'linear-gradient(90deg, #6A1B9A 0%, #D32F2F 100%)' }}
+const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-lg' }) => {
+  const { t } = useTranslation();
+  const titleId = useId();
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    const previousActiveElement = document.activeElement;
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+
+      const focusableElements = dialogRef.current.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (!firstElement) {
+        event.preventDefault();
+        dialogRef.current.focus();
+      } else if (event.shiftKey && (document.activeElement === firstElement || !dialogRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && (document.activeElement === lastElement || !dialogRef.current.contains(document.activeElement))) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousActiveElement instanceof HTMLElement && previousActiveElement.isConnected) {
+        previousActiveElement.focus();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        className={`bg-white rounded-xl shadow-2xl w-full ${maxWidth} overflow-hidden flex flex-col max-h-[90vh]`}
       >
-        <div className="flex items-center gap-2">
-          {Icon && <Icon className="w-5 h-5" />}
-          <h3 className="font-semibold text-lg">{title}</h3>
+        <div
+          className="flex items-center justify-between p-4 text-white shrink-0"
+          style={{ background: 'linear-gradient(90deg, #6A1B9A 0%, #D32F2F 100%)' }}
+        >
+          <div className="flex items-center gap-2">
+            {Icon && <Icon className="w-5 h-5" />}
+            <h3 id={titleId} className="font-semibold text-lg">{title}</h3>
+          </div>
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            aria-label={t('accountSettings.common.close')}
+            className="p-1 hover:bg-white/20 rounded-full transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <button onClick={onClose} className="p-1 hover:bg-white/20 rounded-full transition-colors">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      <div className="p-5 overflow-y-auto flex-1">
-        {children}
+        <div className="p-5 overflow-y-auto flex-1">
+          {children}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const LoadingState = () => {
   const { t } = useTranslation();
@@ -1208,36 +1270,43 @@ function AccountSection() {
   const userEmail = profile?.email || 'hello@TRIAXX.Admin';
   const roleName = profile?.Role_id?.role_name || 'Admin';
 
-  const SettingsRow = ({ label, hasChevron = false, onClick, icon: Icon, subtext, badge }) => (
-    <div 
-      className="flex justify-between items-center py-4 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors px-2 -mx-2 rounded"
-      onClick={onClick}
-    >
-      <div className="flex items-center gap-3">
-        {Icon && <Icon className="w-5 h-5 text-gray-500" />}
-        <div>
-          <div className="flex items-center gap-2">
-            <p className="text-gray-800 font-medium text-sm">{label}</p>
-            {badge && (
-              <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                {badge}
-              </span>
-            )}
+  const SettingsRow = ({ label, hasChevron = false, onClick, icon: Icon, subtext, badge }) => {
+    const Element = onClick ? 'button' : 'div';
+
+    return (
+      <Element
+        {...(onClick ? { type: 'button' } : {})}
+        className={`flex justify-between items-center py-4 border-b border-gray-100 last:border-b-0 ${
+          onClick ? 'w-full text-left cursor-pointer hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500' : ''
+        } transition-colors px-2 -mx-2 rounded`}
+        onClick={onClick}
+      >
+        <div className="flex items-center gap-3">
+          {Icon && <Icon className="w-5 h-5 text-gray-500" />}
+          <div>
+            <div className="flex items-center gap-2">
+              <p className="text-gray-800 font-medium text-sm">{label}</p>
+              {badge && (
+                <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                  {badge}
+                </span>
+              )}
+            </div>
+            {subtext && <p className="text-xs text-gray-500">{subtext}</p>}
           </div>
-          {subtext && <p className="text-xs text-gray-500">{subtext}</p>}
         </div>
-      </div>
-      <button className="focus:outline-none shrink-0">
-        {hasChevron ? (
-          <ChevronRight className="w-5 h-5 text-gray-400" />
-        ) : (
-          <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
-            <Pencil className="w-3 h-3 text-white" />
-          </div>
-        )}
-      </button>
-    </div>
-  );
+        <span className="shrink-0" aria-hidden="true">
+          {hasChevron ? (
+            <ChevronRight className="w-5 h-5 text-gray-400" />
+          ) : (
+            <span className="w-6 h-6 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors">
+              <Pencil className="w-3 h-3 text-white" />
+            </span>
+          )}
+        </span>
+      </Element>
+    );
+  };
 
   const SectionCard = ({ title, children }) => (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6 flex flex-col">

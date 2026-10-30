@@ -141,6 +141,7 @@ ACCOUNT_SETTINGS: {
   SESSION_LOGS_EXPORT: (id) =>
     `/api/v1/master/myDevices/${id}/session-logs/export`,
   LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
+   UNLOCK: (id) => `/api/v1/master/myDevices/${id}/unlock`,   
   RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
   PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
 
