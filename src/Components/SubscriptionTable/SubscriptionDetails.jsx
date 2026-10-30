@@ -27,15 +27,51 @@ const MOCK_BILLING_HISTORY = [
 ];
 
 // ---------------------------------------------------------------------------
+// ETF constants
+// ---------------------------------------------------------------------------
+const ETF_RATE = 0.5;                 // 50% of remaining months
+const MAX_CONTRACT_MONTHS = 24;       // 2-year contract (matches plan copy)
+
+/**
+ * Returns the ETF calculation for a given number of remaining months.
+ * `null` means "invalid input — do not display an estimate".
+ */
+const calculateETF = (monthsRemaining, monthlyPrice) => {
+  const months = Number(monthsRemaining);
+  const price = Number(monthlyPrice);
+
+  // Reject empty / non-numeric / non-finite input
+  if (
+    monthsRemaining === '' ||
+    monthsRemaining === null ||
+    monthsRemaining === undefined ||
+    !Number.isFinite(months) ||
+    !Number.isFinite(price)
+  ) {
+    return null;
+  }
+
+  // Reject non-integer, negative, or out-of-range durations
+  if (!Number.isInteger(months) || months < 0 || months > MAX_CONTRACT_MONTHS) {
+    return null;
+  }
+
+  return {
+    months,
+    amount: (months * price * ETF_RATE).toFixed(2),
+  };
+};
+
+// ---------------------------------------------------------------------------
 // Main Component
 // ---------------------------------------------------------------------------
 const SubscriptionDetails = ({ subscription, onBack }) => {
   const { t } = useTranslation();
 
-  // ETF Calculator State
+  // ETF Calculator State — store raw input value so invalid intermediate
+  // states (empty string, "-", "e") are visible to validation instead of
+  // silently collapsing to 0 or NaN.
   const [monthsRemaining, setMonthsRemaining] = useState(12);
-  const etfRate = 0.5; // 50%
-  const calculatedETF = (monthsRemaining * 299 * etfRate).toFixed(2);
 
   // Use mock data or fallback to subscription prop if available
   const currentPlan = {
@@ -44,7 +80,7 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
     price: subscription?.Plan?.Price || 299,
   };
 
-  const renewalDate = subscription?.Renewal_Date 
+  const renewalDate = subscription?.Renewal_Date
     ? new Date(subscription.Renewal_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : 'June 30, 2026';
 
@@ -55,6 +91,10 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
   const contractEndDate = subscription?.Contract_End_Date
     ? new Date(subscription.Contract_End_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
     : 'Dec 30, 2026';
+
+  // Derive validity + estimate from the same source of truth
+  const etfResult = calculateETF(monthsRemaining, currentPlan.price);
+  const isValidDuration = etfResult !== null;
 
   return (
     <div className="p-4 lg:p-6 bg-gray-50 min-h-screen font-poppins">
@@ -73,7 +113,6 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
 
       {/* ================= GRADIENT PLAN HEADER ================= */}
       <div className="bg-gradient-to-r from-[#7B1FA2] via-[#9C27B0] to-[#D32F2F] rounded-2xl p-6 text-white shadow-lg mb-6 relative overflow-hidden">
-        {/* Decorative circle */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 pointer-events-none"></div>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
@@ -114,7 +153,7 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
 
       {/* ================= INFO & ETF CALCULATOR GRID ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        
+
         {/* Account & Subscription Details */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-gray-800 mb-5 flex items-center gap-2">
@@ -151,22 +190,56 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="block text-[11px] text-gray-400 uppercase tracking-wider mb-1.5">Months Remaining on Contract</label>
+              <label
+                htmlFor="months-remaining"
+                className="block text-[11px] text-gray-400 uppercase tracking-wider mb-1.5"
+              >
+                Months Remaining on Contract
+              </label>
               <input
+                id="months-remaining"
                 type="number"
                 value={monthsRemaining}
-                onChange={(e) => setMonthsRemaining(Number(e.target.value))}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                onChange={(e) => setMonthsRemaining(e.target.value)}
                 min="0"
+                max={MAX_CONTRACT_MONTHS}
+                step="1"
+                aria-invalid={!isValidDuration}
+                aria-describedby={!isValidDuration ? 'etf-error' : undefined}
+                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+                  isValidDuration
+                    ? 'border-gray-300 focus:ring-purple-500'
+                    : 'border-red-400 focus:ring-red-400 bg-red-50/40'
+                }`}
               />
             </div>
-            
+
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
               <p className="text-[11px] text-gray-500 mb-1">ETF Rate</p>
               <p className="text-sm font-semibold text-gray-800 mb-4">50% of remaining months</p>
-              
-              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">Calculated ETF Amount</p>
-              <p className="text-2xl font-bold text-[#8E24AA]">${calculatedETF}</p>
+
+              {isValidDuration ? (
+                <>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
+                    Calculated ETF Amount
+                  </p>
+                  <p className="text-2xl font-bold text-[#8E24AA]">
+                    ${etfResult.amount}
+                  </p>
+                </>
+              ) : (
+                <div
+                  id="etf-error"
+                  role="alert"
+                  className="flex items-start gap-2 text-sm font-medium text-red-600"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    Enter a whole number between 0 and {MAX_CONTRACT_MONTHS} months.
+                    ETF estimate is unavailable for this value.
+                  </span>
+                </div>
+              )}
             </div>
 
             <p className="text-[10px] text-gray-400 flex items-start gap-1.5 mt-2">
@@ -183,7 +256,7 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
           <RotateCcw className="w-4 h-4 text-gray-500" /> Upgrade / Downgrade Plan
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          
+
           {/* 3 Months Plan */}
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
             <h4 className="text-base font-semibold text-gray-800 mb-1">3 Months Plan</h4>
@@ -231,7 +304,7 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
 
       {/* ================= PAYMENT METHOD & QUICK ACTIONS ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        
+
         {/* Payment Method */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -239,7 +312,6 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
           </h3>
           <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50/50">
             <div className="flex items-center gap-4">
-              {/* Visa Logo Placeholder */}
               <div className="w-12 h-8 bg-blue-800 rounded flex items-center justify-center">
                 <span className="text-white text-[10px] font-bold italic">VISA</span>
               </div>
