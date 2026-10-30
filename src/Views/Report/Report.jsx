@@ -91,6 +91,30 @@ const fmtCurrency = (n) =>
   `$${Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 const fmtNumber = (n) => Number(n || 0).toLocaleString('en-US');
 
+// Revenue API currently returns PascalCase fields. Normalize once so the
+// report tables use one predictable frontend shape.
+const normalizeRevenueRow = (row = {}) => ({
+  ...row,
+  location: row.Location ?? row.location ?? '',
+  // The supplied API does not expose Location_id. Do not mistake Client_id
+  // for a location ID; use the exact location name as the filter value.
+  revenue: row.Revenue ?? row.revenue ?? 0,
+  orders: row.Orders ?? row.orders ?? 0,
+  avgOrder: row.Average_Order_Value ?? row.avgOrder ?? 0,
+  growth: row.Growth ?? row.growth ?? null,
+  isPositive: row.IsPositive ?? row.isPositive ?? true,
+});
+
+const normalizeRevenueSummary = (summary = {}) => ({
+  ...summary,
+  totalRevenue: summary.Total_Revenue ?? summary.totalRevenue ?? 0,
+  totalOrders: summary.Total_Orders ?? summary.totalOrders ?? 0,
+  averageOrderValue:
+    summary.Average_Order_Value ?? summary.averageOrderValue ?? 0,
+  activeLocations: summary.Active_Locations ?? summary.activeLocations ?? 0,
+  revenueGrowth: summary.Revenue_Growth ?? summary.revenueGrowth ?? null,
+});
+
 /* ------------------------------------------------------------------ */
 /*  VIEW TOGGLE                                                        */
 /* ------------------------------------------------------------------ */
@@ -141,12 +165,12 @@ const TableSkeleton = ({ cols = 4, rows = 5 }) => (
   </tbody>
 );
 
-const EmptyRow = ({ colSpan }) => {
+const EmptyRow = ({ colSpan, message }) => {
   const { t } = useTranslation();
   return (
     <tr>
       <td colSpan={colSpan} className="px-6 py-10 text-center text-gray-500">
-        {t('common.noData')}
+        {message || t('common.noData')}
       </td>
     </tr>
   );
@@ -208,8 +232,8 @@ const RevenuePanel = ({ filters }) => {
       try {
         const res = await reportService.getRevenueReport(filters);
         if (cancelled) return;
-        setRows(res.data);
-        setSummary(res.summary);
+        setRows((res.data || []).map(normalizeRevenueRow));
+        setSummary(normalizeRevenueSummary(res.summary));
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -268,7 +292,12 @@ const RevenuePanel = ({ filters }) => {
             {loading ? (
               <TableSkeleton cols={5} />
             ) : rows.length === 0 ? (
-              <EmptyRow colSpan={5} />
+              <EmptyRow
+                colSpan={5}
+                message={filters.location !== 'all'
+                  ? `No revenue data for ${filters.location} in the selected date range.`
+                  : 'No revenue data available for the selected date range.'}
+              />
             ) : (
               <tbody className="divide-y divide-gray-100">
                 {rows.map((row, idx) => {
@@ -820,7 +849,7 @@ const LocationsPanel = ({ filters }) => {
       try {
         const res = await reportService.getRevenueReport(filters);
         if (cancelled) return;
-        setRows(res.data);
+        setRows((res.data || []).map(normalizeRevenueRow));
       } catch (err) {
         if (cancelled) return;
         toast.error(t('common.error'), {
@@ -855,7 +884,12 @@ const LocationsPanel = ({ filters }) => {
           {loading ? (
             <TableSkeleton cols={4} />
           ) : rows.length === 0 ? (
-            <EmptyRow colSpan={4} />
+            <EmptyRow
+              colSpan={4}
+              message={filters.location !== 'all'
+                ? `No location comparison data for ${filters.location} in the selected date range.`
+                : 'No location comparison data available for the selected date range.'}
+            />
           ) : (
             <tbody className="divide-y divide-gray-100">
               {rows.map((row, idx) => (
@@ -898,6 +932,63 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
     location: 'all',
     search: '',
   });
+  const [availableLocations, setAvailableLocations] = useState([]);
+  const [locationsLoading, setLocationsLoading] = useState(false);
+  const [locationsError, setLocationsError] = useState(false);
+
+  // Build choices from the same authenticated, scoped revenue dataset.
+  // The supplied API has Location names but no Location_id field, so the
+  // exact name is used as the filter value rather than inventing an ID.
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadLocations = async () => {
+      setLocationsLoading(true);
+      setLocationsError(false);
+      try {
+        const response = await reportService.getRevenueReport({
+          dateRange: filters.dateRange,
+          location: 'all',
+          search: '',
+        });
+        if (cancelled) return;
+
+        const rows = Array.isArray(response?.data) ? response.data : [];
+        const unique = new Map();
+        rows.forEach((item) => {
+          const name = String(item?.Location ?? item?.location ?? '').trim();
+          if (name) {
+            const key = name.toLocaleLowerCase();
+            if (!unique.has(key)) unique.set(key, name);
+          }
+        });
+        const nextLocations = Array.from(unique.values()).sort((a, b) =>
+          a.localeCompare(b, undefined, { sensitivity: 'base' })
+        );
+        setAvailableLocations(nextLocations);
+
+        // Keep the filter valid when date range or authorization scope changes.
+        setFilters((current) =>
+          current.location !== 'all' && !nextLocations.some(
+            (name) => name.toLocaleLowerCase() === current.location.toLocaleLowerCase()
+          )
+            ? { ...current, location: 'all' }
+            : current
+        );
+      } catch (error) {
+        if (!cancelled) {
+          setAvailableLocations([]);
+          setLocationsError(true);
+          console.error('Unable to load report locations:', error);
+        }
+      } finally {
+        if (!cancelled) setLocationsLoading(false);
+      }
+    };
+
+    loadLocations();
+    return () => { cancelled = true; };
+  }, [filters.dateRange]);
 
   const quickActions = useMemo(
     () => [
@@ -1063,22 +1154,32 @@ const AnalyticsView = ({ activeTab, setActiveTab }) => {
               <div className="relative">
                 <select
                   value={filters.location}
+                  disabled={locationsLoading || locationsError}
                   onChange={(e) =>
                     setFilters((f) => ({ ...f, location: e.target.value }))
                   }
-                  className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full appearance-none bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 >
                   <option value="all">{t('common.all')}</option>
-                  <option value="downtownBistro">
-                    {t('reports.analyticsView.revenueData.downtownBistro')}
-                  </option>
-                  <option value="oceanViewCafe">
-                    {t('reports.analyticsView.revenueData.oceanViewCafe')}
-                  </option>
-                  <option value="mountainLodge">
-                    {t('reports.analyticsView.revenueData.mountainLodge')}
-                  </option>
+                  {availableLocations.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
                 </select>
+                {locationsLoading && (
+                  <p className="mt-1 text-xs text-gray-400">Loading locations...</p>
+                )}
+                {locationsError && (
+                  <p className="mt-1 text-xs text-red-500">
+                    Unable to load authorized locations. Please refresh and try again.
+                  </p>
+                )}
+                {!locationsLoading && !locationsError && availableLocations.length === 0 && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    No locations are available in this report scope.
+                  </p>
+                )}
                 <div className="absolute right-3 top-2.5 pointer-events-none">
                   <ChevronDownIcon />
                 </div>
