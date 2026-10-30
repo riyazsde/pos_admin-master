@@ -14,7 +14,6 @@ import { useTranslation } from 'react-i18next';
 import {
   SERIES,
   seriesGradient,
-  seriesDash,
   gradientStops,
   legendSwatchStyle,
 } from '../../theme/chartSeries';
@@ -38,7 +37,7 @@ const CurrentMonthActivity = ({ data }) => {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-black text-white p-2 rounded shadow-md text-xs font-[Poppins]">
+        <div className="bg-black text-white p-2 rounded shadow-md text-xs ">
           <p className="font-semibold">{payload[0].payload.name}</p>
           <p>
             {t(SERIES.newClients.labelKey)}:{' '}
@@ -64,14 +63,14 @@ const CurrentMonthActivity = ({ data }) => {
   const [newFrom] = gradientStops('newClients');
 
   return (
-    <div className="w-full">
+    <div className="dashboard-typography w-full">
       <div
         className="bg-white rounded-3xl p-6 h-full shadow-sm border border-gray-100"
         style={{ boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.05)' }}
       >
         {/* Header — i18n only */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
-          <h2 className="text-xl font-bold text-black font-[Poppins]">
+          <h2 className="text-xl font-bold text-black ">
             {t('dashboard.dailyActivity')}
           </h2>
 
@@ -83,7 +82,7 @@ const CurrentMonthActivity = ({ data }) => {
                 className="w-4 h-4 rounded-full"
                 style={legendSwatchStyle('newClients')}
               />
-              <span className="text-xs font-medium text-black font-[Poppins]">
+              <span className="text-xs font-medium text-black ">
                 {t(SERIES.newClients.labelKey)}
               </span>
             </div>
@@ -97,7 +96,7 @@ const CurrentMonthActivity = ({ data }) => {
                   borderBottomColor: renewFrom,
                 }}
               />
-              <span className="text-xs font-medium text-black font-[Poppins]">
+              <span className="text-xs font-medium text-black ">
                 {t(SERIES.clientRenewals.labelKey)}
               </span>
             </div>
@@ -105,7 +104,7 @@ const CurrentMonthActivity = ({ data }) => {
         </div>
 
         {chartData.length === 0 ? (
-          <div className="h-80 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
+          <div className="h-80 flex items-center justify-center text-gray-400  text-sm">
             {t('dashboard.noActivityData')}
           </div>
         ) : (
@@ -131,13 +130,13 @@ const CurrentMonthActivity = ({ data }) => {
                 <XAxis
                   dataKey="name"
                   stroke="#000"
-                  tick={{ fontSize: 12, fontFamily: 'Poppins', fill: '#000' }}
+                  tick={{ fontSize: 12, fontFamily: 'inherit', fill: '#000' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
                   stroke="#000"
-                  tick={{ fontSize: 12, fontFamily: 'Poppins', fill: '#000' }}
+                  tick={{ fontSize: 12, fontFamily: 'inherit', fill: '#000' }}
                   interval={0}
                   tickLine={false}
                   axisLine={false}
@@ -147,8 +146,8 @@ const CurrentMonthActivity = ({ data }) => {
                     angle: -90,
                     position: 'insideLeft',
                     style: {
-                      fontSize: 10,
-                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontFamily: 'inherit',
                       fontWeight: 600,
                       fill: '#6B7280',
                       textAnchor: 'middle',

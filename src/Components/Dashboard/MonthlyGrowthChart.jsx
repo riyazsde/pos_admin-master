@@ -61,7 +61,7 @@ export default function MonthlyGrowthChart({ data }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-black text-white p-2 rounded shadow-md text-xs font-[Poppins]">
+        <div className="bg-black text-white p-2 rounded shadow-md text-xs ">
           <p className="font-semibold mb-1">{label}</p>
           {payload.map((entry, idx) => (
             <p key={idx}>
@@ -80,7 +80,7 @@ export default function MonthlyGrowthChart({ data }) {
   const renewStroke = gradientStops('clientRenewals')[0];
 
   return (
-    <div className="w-full">
+    <div className="dashboard-typography w-full">
       <div
         className="bg-white rounded-3xl h-full p-6"
         style={{
@@ -90,7 +90,7 @@ export default function MonthlyGrowthChart({ data }) {
       >
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
-          <h2 className="text-xl font-bold text-black font-[Poppins]">
+          <h2 className="text-xl font-bold text-black ">
             {t('dashboard.monthlyGrowth')}
           </h2>
 
@@ -103,7 +103,7 @@ export default function MonthlyGrowthChart({ data }) {
                 className="w-4 h-4 rounded-full"
                 style={legendSwatchStyle('newClients')}
               />
-              <span className="text-[11px] font-medium text-black font-[Poppins]">
+              <span className="text-xs font-medium text-black ">
                 {t(SERIES.newClients.labelKey)}
               </span>
             </div>
@@ -117,7 +117,7 @@ export default function MonthlyGrowthChart({ data }) {
                   borderBottomColor: renewStroke,
                 }}
               />
-              <span className="text-[11px] font-medium text-black font-[Poppins]">
+              <span className="text-xs font-medium text-black ">
                 {t(SERIES.clientRenewals.labelKey)}
               </span>
             </div>
@@ -125,7 +125,7 @@ export default function MonthlyGrowthChart({ data }) {
         </div>
 
         {hasPeriods && (
-          <p className="text-xs text-gray-500 font-[Poppins] mb-4 -mt-4">
+          <p className="text-xs text-gray-500  mb-4 -mt-4">
             {t('dashboard.growthSubtitle', {
               percent: Math.abs(Number(percent)),
               period1,
@@ -135,7 +135,7 @@ export default function MonthlyGrowthChart({ data }) {
         )}
 
         {chartData.length === 0 ? (
-          <div className="h-72 flex items-center justify-center text-gray-400 font-[Poppins] text-sm">
+          <div className="h-72 flex items-center justify-center text-gray-400  text-sm">
             {t('dashboard.noGrowthData')}
           </div>
         ) : (
@@ -162,7 +162,7 @@ export default function MonthlyGrowthChart({ data }) {
                   dataKey="month"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fontFamily: 'Poppins', fontWeight: 500, fill: '#1a1a1a' }}
+                  tick={{ fontSize: 12, fontFamily: 'inherit', fontWeight: 500, fill: '#1a1a1a' }}
                   dy={8}
                 />
 
@@ -171,7 +171,7 @@ export default function MonthlyGrowthChart({ data }) {
                   ticks={yTicks}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fontFamily: 'Poppins', fontWeight: 500, fill: '#1a1a1a' }}
+                  tick={{ fontSize: 12, fontFamily: 'inherit', fontWeight: 500, fill: '#1a1a1a' }}
                   width={45}
                 />
 

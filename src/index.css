@@ -71,3 +71,15 @@
 .react-datepicker-popper[data-placement^=bottom] .react-datepicker__triangle::before {
     border-bottom-color: #6A1B9A !important;
 }
+.dashboard-typography {
+  font-family: inherit;
+}
+
+/* Recharts SVG labels and tooltip content follow the same interface font. */
+.dashboard-typography .recharts-cartesian-axis-tick-value,
+.dashboard-typography .recharts-label,
+.dashboard-typography .recharts-legend-item-text,
+.dashboard-typography .recharts-tooltip-label,
+.dashboard-typography .recharts-tooltip-item {
+  font-family: inherit;
+}

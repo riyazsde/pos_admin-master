@@ -79,8 +79,8 @@ const ProfitAfterTax = () => {
 
   if (profitLoading && !profit) {
     return (
-      <div className="h-full flex flex-col gap-4 min-w-0">
-        <h2 className="text-2xl font-bold text-black">
+      <div className="dashboard-typography h-full flex flex-col gap-4 min-w-0">
+        <h2 className="text-xl font-bold text-black">
           {t('profitAfterTax.title')}
         </h2>
         <div className="flex-1 bg-white rounded-3xl shadow-md border border-gray-100 px-6 py-5 animate-pulse">
@@ -92,10 +92,10 @@ const ProfitAfterTax = () => {
   }
 
   return (
-    <div className="h-full flex flex-col gap-4 min-w-0">
+    <div className="dashboard-typography h-full flex flex-col gap-4 min-w-0">
       {/* Header */}
       <div className="flex items-center gap-4 flex-wrap">
-        <h2 className="text-2xl font-bold text-black whitespace-nowrap">
+        <h2 className="text-xl font-bold text-black whitespace-nowrap">
           {t('profitAfterTax.title')}
         </h2>
         <select className="text-sm border border-gray-400 rounded-md px-3 py-1.5 bg-white text-black focus:outline-none">
@@ -201,7 +201,7 @@ const ProfitAfterTax = () => {
             >
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 10, fill: '#333' }}
+                tick={{ fontSize: 12, fontFamily: 'inherit', fill: '#333' }}
                 axisLine={false}
                 tickLine={false}
                 interval={0}
@@ -213,6 +213,7 @@ const ProfitAfterTax = () => {
                   border: 'none',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                   fontSize: 12,
+                  fontFamily: 'inherit',
                 }}
                 formatter={(value) => [
                   `${formatNumber(value)} ${currency}`,

@@ -88,7 +88,7 @@ const SubscriptionsPurchased = () => {
   // ✅ Loading skeleton
   if (subscriptionsLoading && rows.length === 0) {
     return (
-      <div className="flex flex-col gap-4 w-full bg-white rounded-3xl p-4 shadow-sm border border-gray-100 h-full">
+      <div className="dashboard-typography flex flex-col gap-4 w-full bg-white rounded-3xl p-4 shadow-sm border border-gray-100 h-full">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-black">
             {t('subscriptions.activeTitle')}
@@ -105,7 +105,7 @@ const SubscriptionsPurchased = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 w-full bg-white rounded-3xl p-4 shadow-sm border border-gray-100 h-full">
+    <div className="dashboard-typography flex flex-col gap-4 w-full bg-white rounded-3xl p-4 shadow-sm border border-gray-100 h-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-black">
@@ -171,7 +171,7 @@ const SubscriptionsPurchased = () => {
 
           {/* Pagination Footer */}
           <div className="flex items-center justify-between pt-3 mt-auto border-t border-gray-100 shrink-0">
-            <span className="text-xs text-gray-500 font-['Poppins']">
+            <span className="text-xs text-gray-500 ">
               Page {currentPage}
             </span>
             <div className="flex gap-2">

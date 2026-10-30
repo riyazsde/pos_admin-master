@@ -65,7 +65,7 @@ const HeatMapCities = () => {
   // ✅ Loading skeleton
   if (heatmapLoading && !heatmap) {
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+      <div className="dashboard-typography bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
         <h2 className="text-lg font-bold mb-4 self-start text-black">
           {t('heatMap.title')}
         </h2>
@@ -77,7 +77,7 @@ const HeatMapCities = () => {
   // ✅ Empty state
   if (data.length === 0 || total === 0) {
     return (
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+      <div className="dashboard-typography bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
         <h2 className="text-lg font-bold mb-4 self-start text-black">
           {t('heatMap.title')}
         </h2>
@@ -113,7 +113,7 @@ const HeatMapCities = () => {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
+    <div className="dashboard-typography bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center w-full h-full">
       {/* ✅ Always translated title */}
       <h2 className="text-lg font-bold mb-4 self-start text-black">
         {t('heatMap.title')}
@@ -164,6 +164,7 @@ const HeatMapCities = () => {
                       fill="#fff"
                       fontSize="14"
                       fontWeight="700"
+                      fontFamily="inherit"
                     >
                       {slice.value}%
                     </text>
@@ -174,6 +175,7 @@ const HeatMapCities = () => {
                       fill="#fff"
                       fontSize="12"
                       fontWeight="600"
+                      fontFamily="inherit"
                     >
                       {slice.name}
                     </text>
