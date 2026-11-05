@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import logo from '../../assets/Images/Home/logo.png';
+import logo from '../../assets/LOGOPlande.svg';
 import Gradient from '../../assets/Images/Home/Gradient.png';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';

@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
-import logo from '../../assets/Images/Home/logo.png';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {

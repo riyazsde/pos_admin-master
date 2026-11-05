@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-import logo from '../../assets/Images/Home/logo.png';
+import logo from '../../assets/LOGOPlande.svg';
 import profileAvatar from '../../assets/Images/admin/SidebarIcon/profileAvatar.png';
 import SignOutModal from './SignOutModal';
 import image1 from '../../assets/Images/admin/SidebarIcon/1.png';
@@ -96,7 +96,7 @@ export default function Sidebar() {
           <div className="flex items-center justify-center gap-[8.83px] mt-6 sm:mt-8 md:mt-10 mb-8 sm:mb-12 md:mb-16 flex-shrink-0">
             <img
               src={logo}
-              className="w-[100px] sm:w-[120px] h-[16px] sm:h-[20px]"
+              className="w-[130px] sm:w-[120px] h-[43px]"
               alt="Logo"
             />
           </div>

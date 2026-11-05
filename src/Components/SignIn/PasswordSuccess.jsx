@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import logo from '../../assets/Images/Home/logo.png';
+import logo from '../../assets/LOGOPlande.svg';
 import Gradient from '../../assets/Images/Home/Gradient.png';
 import tickImg from '../../assets/Images/Home/tick.png';
 
