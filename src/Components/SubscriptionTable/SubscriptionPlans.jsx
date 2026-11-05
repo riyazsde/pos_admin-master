@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Check, Loader2, Plus, RefreshCw } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  Loader2,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Trash2,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { subscriptionService } from '../../Services/apiService';
 
@@ -135,77 +143,99 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
           </p>
         </div>
       ) : (
-        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid max-w-[1024px] grid-cols-1 gap-2 min-[520px]:grid-cols-3">
           {plans.map((plan, index) => {
             const features = Array.isArray(plan.fesility)
-              ? plan.fesility.filter((feature) => feature.statue !== false)
+              ? plan.fesility
+                  .filter((feature) => feature.statue !== false)
+                  .slice(0, 5)
               : [];
             const planId = plan.Admin_Plan_id || plan.id || `${plan.PlanName}-${index}`;
+            const isPopular = index === 1;
+            const isBundle = plan.Subscription_Type === 'SaaS + Hardware';
+            const planLabel = `${plan.PlanName || 'PLAN'}${isBundle ? ' BUNDLE' : ''}`;
 
             return (
               <article
                 key={planId}
-                className="flex flex-col rounded-xl border border-gray-300 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+                className={`relative flex min-h-[210px] flex-col rounded-[11px] bg-white p-[10px] ${
+                  isPopular
+                    ? 'border-2 border-[#8E24AA]'
+                    : 'border border-[#d1d1d1]'
+                }`}
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                    {plan.Subscription_Type || subscriptionType}
+                {isPopular && (
+                  <span className="absolute -top-[7px] left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] px-2 py-[3px] text-[8px] font-semibold leading-none text-white">
+                    Best value
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => onEditPlan?.(plan)}
-                    aria-label={`Edit ${plan.PlanName || 'plan'}`}
-                    className="rounded-md p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-purple-700"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
+                )}
+                <div className="flex items-start justify-between gap-1">
+                  <div className="min-w-0">
+                    <p className="truncate text-[9px] font-medium uppercase leading-[11px] tracking-wide text-[#999]">
+                      {planLabel}
+                    </p>
+                    <h2 className="truncate text-[13px] font-semibold leading-[16px] text-[#222]">
+                      {plan.PlanName || 'Untitled plan'}
+                    </h2>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-[18px] font-semibold leading-[21px] tabular-nums text-[#a00065]">
+                        ${Number(plan.Price || 0).toFixed(2)}
+                      </span>
+                      <span className="text-[9px] text-[#777]">/ mo</span>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-[3px]">
+                    <button
+                      type="button"
+                      onClick={() => onEditPlan?.(plan)}
+                      aria-label={`Edit ${plan.PlanName || 'plan'}`}
+                      className="p-[2px] text-black hover:text-purple-700"
                     >
-                      <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                    </svg>
-                  </button>
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Delete ${plan.PlanName || 'plan'}`}
+                      className="p-[2px] text-red-600 hover:text-red-800"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900">
-                  {plan.PlanName || 'Untitled plan'}
-                </h2>
-                <div className="mb-3 mt-1 flex items-baseline gap-1">
-                  <span className="text-2xl font-bold tabular-nums text-[#8E24AA]">
-                    ${Number(plan.Price || 0).toFixed(2)}
+                <div className="mt-1 flex min-h-[22px] items-center gap-1.5 rounded-[4px] border border-[#f6a53b] bg-[#fff9ed] px-1.5 text-[8px] leading-[10px] text-[#b56a00]">
+                  <span className="h-[4px] w-[4px] shrink-0 rounded-full bg-[#f29922]" />
+                  <span className="truncate">
+                    {plan.Description || 'Subscription plan'}
                   </span>
-                  <span className="text-xs text-gray-500">/ mo</span>
                 </div>
-                {plan.Description && (
-                  <p className="mb-4 text-xs leading-relaxed text-gray-600">
-                    {plan.Description}
-                  </p>
-                )}
-                {plan.expiry_day != null && (
-                  <p className="mb-3 rounded-md bg-purple-50 px-3 py-2 text-xs text-purple-700">
-                    Expires after {plan.expiry_day} days
-                  </p>
-                )}
-                <ul className="mb-6 flex-1 space-y-2">
+                <div className="mt-1 flex min-h-[22px] items-center gap-1.5 rounded-[4px] border border-[#c084fc] bg-[#fbf6ff] px-1.5 text-[8px] leading-[10px] text-[#7735a5]">
+                  <Check className="h-[10px] w-[10px] shrink-0" />
+                  <span className="truncate">
+                    {plan.expiry_day != null
+                      ? `Expires after ${plan.expiry_day} days`
+                      : isBundle
+                        ? 'Bundle subscription'
+                        : 'No contract'}
+                  </span>
+                </div>
+                <ul className="my-2 min-h-0 flex-1 space-y-1 overflow-hidden">
                   {features.map((feature, featureIndex) => (
                     <li
                       key={`${feature.fesilityLine}-${featureIndex}`}
-                      className="flex items-start gap-2 text-xs text-gray-700"
+                      className="flex min-w-0 items-center gap-1.5 text-[9px] leading-[12px] text-[#333]"
                     >
-                      <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-600" />
-                      <span>{feature.fesilityLine}</span>
+                      <Check className="h-[11px] w-[11px] shrink-0 text-[#36b878]" />
+                      <span className="truncate">{feature.fesilityLine}</span>
                     </li>
                   ))}
                 </ul>
                 <button
                   onClick={() => handleSelectPlan(plan)}
-                  className="w-full rounded-lg border border-[#8E24AA] py-2.5 text-sm font-medium text-[#8E24AA] transition-colors hover:bg-purple-50"
+                  className={`h-[30px] w-full rounded-[6px] border border-[#a340c0] text-[11px] font-medium leading-none transition-colors ${
+                    isPopular
+                      ? 'bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] text-white'
+                      : 'bg-white text-[#a00065] hover:bg-purple-50'
+                  }`}
                 >
                   Get Started
                 </button>
