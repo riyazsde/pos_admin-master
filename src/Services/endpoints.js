@@ -84,6 +84,7 @@ ACCOUNT_SETTINGS: {
       GET_BY_AUTH: '/api/v1/admin/admin_plan/getbyauth',
       CREATE: '/api/v1/admin/admin_plan/create',
       UPDATE: '/api/v1/admin/admin_plan/update',
+      DELETE: (id) => `/api/v1/admin/admin_plan/delete/${id}`,
       HISTORY: '/api/v1/admin/subscription-history/listing',
     },
 

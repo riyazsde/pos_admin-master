@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import React from 'react';
+import { Loader2 } from 'lucide-react';
 import deleteIcon from '../../assets/Images/Home/delete.png';
 
 // Modal Component
-const DeletePaymentConfirmModal = ({ isOpen, onClose, onConfirm, title, description }) => {
+const DeletePaymentConfirmModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  description,
+  loading = false,
+}) => {
   if (!isOpen) return null;
   
   return (
@@ -33,15 +40,24 @@ const DeletePaymentConfirmModal = ({ isOpen, onClose, onConfirm, title, descript
             {/* Delete Button */}
             <button
               onClick={onConfirm}
-              className="w-full h-12 bg-gradient-to-r from-purple-600 to-red-600 text-white text-base font-medium rounded-xl hover:from-purple-700 hover:to-red-700 transition-all duration-200 font-sans"
+              disabled={loading}
+              className="w-full h-12 bg-gradient-to-r from-purple-600 to-red-600 text-white text-base font-medium rounded-xl hover:from-purple-700 hover:to-red-700 transition-all duration-200 font-sans disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Yes Delete
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Deleting...
+                </span>
+              ) : (
+                'Yes Delete'
+              )}
             </button>
            
             {/* Cancel Button */}
             <button
               onClick={onClose}
-              className="w-full h-12 bg-transparent border-2  text-base font-medium rounded-xl border-gradient"
+              disabled={loading}
+              className="w-full h-12 bg-transparent border-2 text-base font-medium rounded-xl border-gradient disabled:cursor-not-allowed disabled:opacity-60"
             >
               No Don't
             </button>

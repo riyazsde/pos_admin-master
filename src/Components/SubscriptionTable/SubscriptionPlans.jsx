@@ -9,7 +9,9 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { subscriptionService } from '../../Services/apiService';
+import DeletePaymentConfirmModal from '../Settings/DeletePaymentConfirmModal';
 
 const SUBSCRIPTION_TYPES = [
   'SaaS Only',
@@ -28,6 +30,8 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reloadKey, setReloadKey] = useState(0);
+  const [deletingPlanId, setDeletingPlanId] = useState(null);
+  const [pendingDeletePlan, setPendingDeletePlan] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -62,8 +66,53 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
     onGetStarted?.(plan);
   };
 
+  const handleDeletePlan = (plan) => {
+    const planId = plan.Admin_Plan_id || plan.id;
+    if (!planId) {
+      toast.error('Unable to delete this plan because it has no ID.');
+      return;
+    }
+    setPendingDeletePlan(plan);
+  };
+
+  const confirmDeletePlan = async () => {
+    if (!pendingDeletePlan) return;
+    const planId = pendingDeletePlan.Admin_Plan_id || pendingDeletePlan.id;
+    setDeletingPlanId(planId);
+    const toastId = toast.loading('Deleting plan…');
+    try {
+      await subscriptionService.deletePlan(planId);
+      setPlans((currentPlans) =>
+        currentPlans.filter(
+          (item) => (item.Admin_Plan_id || item.id) !== planId
+        )
+      );
+      setPendingDeletePlan(null);
+      toast.success('Plan deleted successfully.', { id: toastId });
+    } catch (requestError) {
+      toast.error(
+        requestError?.response?.data?.message ||
+          requestError?.message ||
+          'Failed to delete plan.',
+        { id: toastId }
+      );
+    } finally {
+      setDeletingPlanId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white p-4 font-poppins lg:p-6">
+      <DeletePaymentConfirmModal
+        isOpen={Boolean(pendingDeletePlan)}
+        onClose={() => {
+          if (deletingPlanId === null) setPendingDeletePlan(null);
+        }}
+        onConfirm={confirmDeletePlan}
+        title="Delete subscription plan?"
+        description={`Are you sure you want to delete "${pendingDeletePlan?.PlanName || 'this plan'}"? This action cannot be undone.`}
+        loading={deletingPlanId !== null}
+      />
       <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div className="flex flex-wrap items-center gap-4">
           <button
@@ -195,10 +244,16 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
                     </button>
                     <button
                       type="button"
+                      onClick={() => handleDeletePlan(plan)}
+                      disabled={deletingPlanId === planId}
                       aria-label={`Delete ${plan.PlanName || 'plan'}`}
                       className="p-[2px] text-red-600 hover:text-red-800"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      {deletingPlanId === planId ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
                     </button>
                   </div>
                 </div>

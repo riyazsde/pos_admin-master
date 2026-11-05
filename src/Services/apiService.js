@@ -477,6 +477,17 @@ export const subscriptionService = {
     return data?.data || null;
   },
 
+  deletePlan: async (id) => {
+    const response = await apiClient.delete(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.DELETE(id)
+    );
+    const data = response.data;
+    if (data?.success === false) {
+      throw new Error(data?.message || 'Failed to delete plan');
+    }
+    return data?.data || null;
+  },
+
   getSubscriptionHistory: async (page = 1, limit = 10, status = 'all') => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.HISTORY,
