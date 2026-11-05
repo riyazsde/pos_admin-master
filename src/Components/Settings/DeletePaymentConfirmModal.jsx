@@ -14,14 +14,14 @@ const DeletePaymentConfirmModal = ({
   if (!isOpen) return null;
   
   return (
-    <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
         {/* Content Container */}
         <div className="flex flex-col items-center space-y-6">
           {/* Header Section */}
           <div className="flex flex-col items-center space-y-4 w-full">
             {/* Warning Icon */}
-           <img src={deleteIcon}/>
+            <img src={deleteIcon} alt="Delete" />
              
             {/* Title and Description */}
             <div className="flex flex-col items-center space-y-2 w-full">
