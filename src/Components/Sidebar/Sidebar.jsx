@@ -93,15 +93,15 @@ export default function Sidebar() {
         className="fixed left-0 top-0 w-[250px] sm:w-[280px] md:w-[250px] h-screen bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] flex flex-col z-40 overflow-hidden"
       >
         <div className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-          <div className="flex items-center justify-center gap-[8.83px] mt-6 sm:mt-8 md:mt-10 mb-8 sm:mb-12 md:mb-16 flex-shrink-0">
+          <div className="flex items-center justify-center gap-[8.83px] mt-4 sm:mt-8  sm:mb-6  flex-shrink-0">
             <img
               src={logo}
-              className="w-[130px] sm:w-[120px] h-[43px]"
+              className="w-[130px] sm:w-[120px] h-[65px]"
               alt="Logo"
             />
           </div>
 
-          <ul className="flex flex-col gap-3 sm:gap-4 md:gap-[19px] px-3 sm:px-4 md:px-[20.5px] pb-6 flex-1 list-none m-0">
+          <ul className="flex flex-col gap-3 sm:gap-2 md:gap-[12px] px-3 sm:px-4 md:px-[20.5px] pb-6 flex-1 list-none m-0">
             {navItems.map(({ icon, label, route }) => {
               const isSelected = checkIsSelected(route);
               return (
