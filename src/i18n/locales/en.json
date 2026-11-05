@@ -163,6 +163,7 @@
     "criticalTickets": "Critical Tickets",
     "offlineDevices": "Offline Devices",
     "lastUpdated": "Last updated",
+    "refreshing": "Updating dashboard...",
     "loadFailed": "Failed to load dashboard",
     "dailyActivity": "Daily Activity",
     "monthlyGrowth": "Monthly Growth",

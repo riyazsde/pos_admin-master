@@ -163,6 +163,7 @@
     "criticalTickets": "Tickets critiques",
     "offlineDevices": "Appareils hors ligne",
     "lastUpdated": "Dernière mise à jour",
+    "refreshing": "Mise à jour du tableau de bord...",
     "loadFailed": "Échec du chargement du tableau de bord",
     "dailyActivity": "Activité quotidienne",
     "monthlyGrowth": "Croissance mensuelle",

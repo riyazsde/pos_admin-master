@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronDown,
+  LoaderCircle,
   Wallet,
   TrendingUp,
   Users,
@@ -42,7 +43,7 @@ const Dashboard = () => {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation();  // ✅ translation hook
 
-  const [selectedPeriod, setSelectedPeriod] = useState('Today');
+  const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // ✅ Read dashboard data from Redux
@@ -56,20 +57,22 @@ const Dashboard = () => {
     completeDashboardLoaded,
   } = useAppSelector((state) => state.dashboard);
 
-  const fetchedMain = useRef(false);
   const fetchedComplete = useRef(false);
 
   // ✅ Fetch main dashboard
   useEffect(() => {
-    if (hasLoaded || fetchedMain.current) return;
-    fetchedMain.current = true;
+    const controller = new AbortController();
 
     const fetchDashboard = async () => {
       dispatch(setDashboardLoading(true));
       try {
-        const data = await dashboardService.getMainDashboard();
-        dispatch(setDashboardData(data));
+        const data = await dashboardService.getMainDashboard(
+          selectedPeriod,
+          controller.signal
+        );
+        if (!controller.signal.aborted) dispatch(setDashboardData(data));
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error('Dashboard fetch error:', err);
         dispatch(setDashboardError(err?.message || 'Failed to load dashboard'));
         toast.error(t('dashboard.loadFailed') || 'Failed to load dashboard', {
@@ -83,7 +86,11 @@ const Dashboard = () => {
     };
 
     fetchDashboard();
-  }, [dispatch, hasLoaded, t]);
+    return () => {
+      controller.abort();
+      dispatch(setDashboardLoading(false));
+    };
+  }, [dispatch, selectedPeriod, t]);
 
   // ✅ Fetch complete dashboard
   useEffect(() => {
@@ -138,12 +145,12 @@ const Dashboard = () => {
   // Period options (translated)
   // ---------------------------------------------------------------------
   const periodOptions = [
-    { value: 'Today', key: 'period.today' },
-    { value: 'Yesterday', key: 'period.yesterday' },
-    { value: 'This Week', key: 'period.thisWeek' },
-    { value: 'Three Month', key: 'period.threeMonth' },
-    { value: 'Six Month', key: 'period.sixMonth' },
-    { value: 'This Month', key: 'period.thisMonth' },
+    { value: 'today', key: 'period.today' },
+    { value: 'yesterday', key: 'period.yesterday' },
+    { value: 'this_week', key: 'period.thisWeek' },
+    { value: 'three_months', key: 'period.threeMonth' },
+    { value: 'six_months', key: 'period.sixMonth' },
+    { value: 'this_month', key: 'period.thisMonth' },
   ];
 
   // ---------------------------------------------------------------------
@@ -224,13 +231,21 @@ const Dashboard = () => {
         <div className="relative z-20">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
+            aria-busy={loading}
             className="flex items-center gap-2 w-[129px] h-[35px] px-4 py-2 bg-white border border-black rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
           >
             <span className="text-gray-700 text-sm font-medium">
               {t(periodOptions.find((p) => p.value === selectedPeriod)?.key) ||
                 selectedPeriod}
             </span>
-            <ChevronDown className="w-4 h-4 text-gray-500" />
+            {loading ? (
+              <LoaderCircle
+                className="w-4 h-4 text-purple-700 animate-spin"
+                aria-hidden="true"
+              />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-gray-500" />
+            )}
           </button>
 
           {dropdownOpen && (
@@ -259,6 +274,17 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {loading && hasLoaded && (
+        <div
+          className="flex items-center gap-2 mb-5 rounded-lg border border-purple-100 bg-purple-50 px-3 py-2 text-sm text-purple-800"
+          role="status"
+          aria-live="polite"
+        >
+          <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+          <span>{t('dashboard.refreshing')}</span>
+        </div>
+      )}
 
       {/* ------------------------------ KPI Cards ------------------------------ */}
       {loading && !hasLoaded ? (

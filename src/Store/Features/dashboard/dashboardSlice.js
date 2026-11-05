@@ -67,6 +67,7 @@ const dashboardSlice = createSlice({
       if (dailyActivity) state.dailyActivity = dailyActivity;
       if (monthlyGrowth) state.monthlyGrowth = monthlyGrowth;
       state.lastUpdated = lastUpdated || null;
+      state.loading = false;
       state.hasLoaded = true;
       state.error = null;
     },

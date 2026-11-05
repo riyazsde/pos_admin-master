@@ -236,8 +236,11 @@ export const changePasswordService = {
 /*  ADMIN DASHBOARD                                                    */
 /* ------------------------------------------------------------------ */
 export const dashboardService = {
-  getMainDashboard: async () => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN);
+  getMainDashboard: async (filter, signal) => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.MAIN, {
+      params: filter ? { filter } : undefined,
+      signal,
+    });
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load dashboard');
