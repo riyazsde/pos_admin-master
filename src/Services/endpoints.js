@@ -79,6 +79,7 @@ ACCOUNT_SETTINGS: {
     SUBSCRIPTION: {
       DASHBOARD: '/api/v1/admin/admin_plan/subscription-dashboard',
       GET_ALL: '/api/v1/admin/admin_plan/getall',
+      GET_PUBLIC: '/api/v1/admin/admin_plan/public',
       GET_BY_ID: (id) => `/api/v1/admin/admin_plan/getbyid/${id}`,
       GET_BY_AUTH: '/api/v1/admin/admin_plan/getbyauth',
       CREATE: '/api/v1/admin/admin_plan/create',

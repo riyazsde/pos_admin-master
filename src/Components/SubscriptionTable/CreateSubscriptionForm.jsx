@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, X, Save, Loader2, Info } from 'lucide-react';
+import { ArrowLeft, Plus, Save, Loader2, Info, Minus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useAppDispatch } from '../../Store/hooks';
@@ -21,14 +21,23 @@ const buildInitialForm = (plan) => ({
   Description: plan?.Description || '',
   Subscription_Type: plan?.Subscription_Type || 'SaaS Only',
   Price: plan?.Price ?? '',
+  expiry_day: plan?.expiry_day ?? null,
   fesility: (plan?.fesility || []).map((f) => ({
     fesilityLine: f.fesilityLine,
     statue: f.statue,
   })),
-  Status: plan?.Status ?? true,
+  Published: plan?.Published ?? plan?.Status ?? true,
 });
 
-const SUBSCRIPTION_TYPES = ['SaaS Only', 'SaaS + Hardware'];
+const SUBSCRIPTION_TYPES = [
+  'SaaS Only',
+  'SaaS + Hardware',
+  'Franchise',
+  'Enterprise',
+  'Pilot',
+  'Government',
+  'White-label',
+];
 
 // ---------------------------------------------------------------------------
 // UI helpers
@@ -43,23 +52,16 @@ const Label = ({ children, required }) => (
 const Input = ({ ...props }) => (
   <input
     {...props}
-    className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-[#2E2A40] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+    className={`w-full rounded-md border-0 bg-[#F6EAF0] px-3 py-2.5 text-sm text-[#2E2A40] placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
       props.className || ''
     }`}
-  />
-);
-
-const Textarea = ({ ...props }) => (
-  <textarea
-    {...props}
-    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-[#2E2A40] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all resize-none"
   />
 );
 
 const Select = ({ children, ...props }) => (
   <select
     {...props}
-    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-[#2E2A40] bg-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+    className="w-full rounded-md border-0 bg-[#F6EAF0] px-3 py-2.5 text-sm text-[#2E2A40] focus:outline-none focus:ring-2 focus:ring-purple-500"
   >
     {children}
   </select>
@@ -76,7 +78,6 @@ const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
   const isEditMode = Boolean(editingPlan?.Admin_Plan_id);
 
   const [form, setForm] = useState(() => buildInitialForm(editingPlan));
-  const [featureInput, setFeatureInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [preselectedPlan, setPreselectedPlan] = useState(null);
 
@@ -90,7 +91,17 @@ const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
         setPreselectedPlan(parsed);
         setForm((prev) => ({
           ...prev,
+          PlanName: parsed.PlanName || prev.PlanName,
+          Description: parsed.Description || prev.Description,
           Subscription_Type: parsed.Subscription_Type || prev.Subscription_Type,
+          Price: parsed.Price ?? prev.Price,
+          expiry_day: parsed.expiry_day ?? prev.expiry_day,
+          fesility: Array.isArray(parsed.fesility)
+            ? parsed.fesility.map((feature) => ({
+                fesilityLine: feature.fesilityLine || '',
+                statue: feature.statue !== false,
+              }))
+            : prev.fesility,
         }));
       } catch {
         // ignore
@@ -107,32 +118,12 @@ const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
     setForm((prev) => ({ ...prev, [key]: value }));
 
   // ---- Features ----
-  const addFeature = () => {
-    const line = featureInput.trim();
-    if (!line) return;
-    if (form.fesility.some((f) => f.fesilityLine === line)) {
-      toast.error(t('subscriptions.featureAlreadyAdded'));
-      return;
-    }
-    update('fesility', [
-      ...form.fesility,
-      { fesilityLine: line, statue: true },
-    ]);
-    setFeatureInput('');
-  };
-
+  const addFeature = () =>
+    update('fesility', [...form.fesility, { fesilityLine: '', statue: true }]);
   const removeFeature = (idx) =>
     update(
       'fesility',
       form.fesility.filter((_, i) => i !== idx)
-    );
-
-  const toggleFeature = (idx) =>
-    update(
-      'fesility',
-      form.fesility.map((f, i) =>
-        i === idx ? { ...f, statue: !f.statue } : f
-      )
     );
 
   // ---- Validation ----
@@ -140,7 +131,7 @@ const CreateSubscriptionForm = ({ onBack, onComplete, editingPlan }) => {
     if (!form.PlanName.trim()) return t('subscriptions.validation.planNameRequired');
     if (!form.Price || Number(form.Price) <= 0)
       return t('subscriptions.validation.priceRequired');
-    if (form.fesility.length === 0)
+    if (!form.fesility.some((feature) => feature.fesilityLine.trim()))
       return t('subscriptions.validation.featureRequired');
     return null;
   };
@@ -167,11 +158,17 @@ const handleSubmit = async (e) => {
       Subscription_Type: form.Subscription_Type,
       Description: form.Description.trim(),
       Price: Number(form.Price),
-      fesility: form.fesility.map((f) => ({
-        fesilityLine: f.fesilityLine,
+      expiry_day:
+        form.expiry_day === '' || form.expiry_day == null
+          ? null
+          : Number(form.expiry_day),
+      fesility: form.fesility
+        .filter((f) => f.fesilityLine.trim())
+        .map((f) => ({
+        fesilityLine: f.fesilityLine.trim(),
         statue: f.statue,
-      })),
-      Status: form.Status,
+        })),
+      Published: form.Published,
     };
 
     let result;
@@ -189,49 +186,8 @@ const handleSubmit = async (e) => {
         duration: 3000,
       });
     } else {
-      // 1️⃣ Create the plan in the catalog
       const planResult = await subscriptionService.createPlan(basePayload);
       dispatch(addSubscriptionPlan(planResult));
-
-      // 2️⃣ ALSO create a purchased subscription so it appears in the table
-      //    (Replace this with your actual API call — this is the missing piece.)
-      let newSubscription = null;
-      try {
-        if (subscriptionService.createSubscription) {
-          newSubscription = await subscriptionService.createSubscription({
-            Plan: planResult,
-            Business_Name: form.Business_Name || 'New Business',
-            Amount: Number(form.Price),
-            Purchase_Date: new Date().toISOString(),
-            Renewal_Date: new Date(
-              new Date().setMonth(new Date().getMonth() + 1)
-            ).toISOString(),
-            Subscription_Status: 'Active',
-            Mode_Of_Payment: form.Mode_Of_Payment || 'Stripe',
-          });
-        } else {
-          // Fallback: build a local subscription object so the UI still updates
-          newSubscription = {
-            Subscription_id: `local-${Date.now()}`,
-            Business_Name: form.Business_Name || 'New Business',
-            Amount: Number(form.Price),
-            Mode_Of_Payment: form.Mode_Of_Payment || 'Stripe',
-            Purchase_Date: new Date().toISOString(),
-            Renewal_Date: new Date(
-              new Date().setMonth(new Date().getMonth() + 1)
-            ).toISOString(),
-            Subscription_Status: 'Active',
-            Plan: {
-              Admin_Plan_id: planResult?.Admin_Plan_id,
-              PlanName: planResult?.PlanName || form.PlanName,
-              Subscription_Type: planResult?.Subscription_Type || form.Subscription_Type,
-              Price: Number(form.Price),
-            },
-          };
-        }
-      } catch (subErr) {
-        console.warn('Subscription create failed, plan was still saved:', subErr);
-      }
 
       toast.success(t('subscriptions.createSuccess'), {
         id: toastId,
@@ -242,10 +198,8 @@ const handleSubmit = async (e) => {
       });
 
       sessionStorage.removeItem('selectedPlan');
-
       setTimeout(() => {
-        // ✅ Pass the new subscription object back to the parent
-        if (onComplete) onComplete(newSubscription);
+        if (onComplete) onComplete(planResult);
         else navigate('/subscription-list');
       }, 1200);
       return; // early return so we don't fall through
@@ -276,7 +230,7 @@ const handleSubmit = async (e) => {
   }
 };
   return (
-    <div className="min-h-screen w-full bg-gray-50 poppins-text p-4 sm:p-6">
+    <div className="min-h-screen w-full bg-white poppins-text p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 max-w-4xl mx-auto">
         <button
@@ -286,7 +240,7 @@ const handleSubmit = async (e) => {
           <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#2E2A40]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#2E2A40]">
             {isEditMode
               ? t('subscriptions.editPlanTitle')
               : t('subscriptions.createPlanTitle')}
@@ -322,10 +276,14 @@ const handleSubmit = async (e) => {
       {/* Form */}
       <form
         onSubmit={handleSubmit}
-        className="max-w-4xl mx-auto bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] border border-gray-100 p-6 sm:p-8 space-y-6"
+        className="max-w-4xl mx-auto space-y-3"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+        <section className="rounded-md border border-gray-300 p-4 sm:p-5">
+          <h2 className="mb-4 text-sm font-medium text-gray-900">
+            Subscription Info
+          </h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-x-8">
+            <div>
             <Label required>{t('subscriptions.form.planName')}</Label>
             <Input
               type="text"
@@ -335,7 +293,7 @@ const handleSubmit = async (e) => {
               disabled={isSubmitting}
             />
           </div>
-          <div>
+            <div>
             <Label required>{t('subscriptions.form.subscriptionType')}</Label>
             <Select
               value={form.Subscription_Type}
@@ -347,21 +305,7 @@ const handleSubmit = async (e) => {
               ))}
             </Select>
           </div>
-        </div>
-
-        <div>
-          <Label>{t('subscriptions.form.description')}</Label>
-          <Textarea
-            rows={3}
-            value={form.Description}
-            onChange={(e) => update('Description', e.target.value)}
-            placeholder={t('subscriptions.form.descriptionPlaceholder')}
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
+            <div>
             <Label required>{t('subscriptions.form.price')}</Label>
             <Input
               type="number"
@@ -373,81 +317,94 @@ const handleSubmit = async (e) => {
               disabled={isSubmitting}
             />
           </div>
-        </div>
+            <div>
+              <Label>{t('subscriptions.form.description')}</Label>
+              <Input
+                type="text"
+                value={form.Description}
+                onChange={(e) => update('Description', e.target.value)}
+                placeholder={t('subscriptions.form.descriptionPlaceholder')}
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <Label>Expiry day (optional)</Label>
+              <Input
+                type="number"
+                min="1"
+                value={form.expiry_day ?? ''}
+                onChange={(e) => update('expiry_day', e.target.value)}
+                placeholder="No expiry"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        </section>
 
         {/* Features */}
-        <div>
-          <Label required>{t('subscriptions.form.features')}</Label>
-          <div className="flex gap-2">
-            <Input
-              type="text"
-              value={featureInput}
-              onChange={(e) => setFeatureInput(e.target.value)}
-              onKeyDown={(e) =>
-                e.key === 'Enter' && (e.preventDefault(), addFeature())
-              }
-              placeholder={t('subscriptions.form.featurePlaceholder')}
-              disabled={isSubmitting}
-            />
+        <section className="rounded-md border border-gray-300 p-4 sm:p-5">
+          <h2 className="mb-4 text-sm font-medium text-gray-900">
+            Features &amp; Permissions
+          </h2>
+          {form.fesility.length > 0 && (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-2">
+              {form.fesility.map((feature, idx) => (
+                <div
+                  key={idx}
+                  className="min-w-0"
+                >
+                  <Label>Feature {idx + 1}</Label>
+                  <Input
+                    type="text"
+                    value={feature.fesilityLine}
+                    onChange={(e) =>
+                      update(
+                        'fesility',
+                        form.fesility.map((item, itemIndex) =>
+                          itemIndex === idx
+                            ? { ...item, fesilityLine: e.target.value }
+                            : item
+                        )
+                      )
+                    }
+                    placeholder={t('subscriptions.form.featurePlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="mt-4 flex justify-center gap-3">
             <button
               type="button"
               onClick={addFeature}
               disabled={isSubmitting}
-              className="px-4 py-3 bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] text-white rounded-lg hover:opacity-90 transition-opacity flex items-center gap-1.5 text-sm font-medium shrink-0 disabled:opacity-50"
+              className="flex min-w-28 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-[#8E24AA] to-[#D32F2F] px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
             >
-              <Plus className="w-4 h-4" /> {t('common.save')}
+              <Plus className="h-4 w-4" /> Add
+            </button>
+            <button
+              type="button"
+              onClick={() => removeFeature(form.fesility.length - 1)}
+              disabled={isSubmitting || form.fesility.length === 0}
+              className="flex min-w-28 items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              <Minus className="h-4 w-4" /> Remove
             </button>
           </div>
-
-          {form.fesility.length > 0 && (
-            <ul className="mt-3 space-y-2">
-              {form.fesility.map((feature, idx) => (
-                <li
-                  key={idx}
-                  className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-purple-50/60 border border-purple-100"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={feature.statue}
-                      onChange={() => toggleFeature(idx)}
-                      className="w-4 h-4 accent-purple-600"
-                    />
-                    <span
-                      className={`text-sm truncate ${
-                        feature.statue
-                          ? 'text-gray-800 font-medium'
-                          : 'text-gray-400 line-through'
-                      }`}
-                      title={feature.fesilityLine}
-                    >
-                      {feature.fesilityLine}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeFeature(idx)}
-                    className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        </section>
 
         {/* Status toggle */}
         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
           <input
-            id="status"
+            id="published"
             type="checkbox"
-            checked={form.Status}
-            onChange={(e) => update('Status', e.target.checked)}
+            checked={form.Published}
+            onChange={(e) => update('Published', e.target.checked)}
             className="w-5 h-5 accent-purple-600"
             disabled={isSubmitting}
           />
-          <label htmlFor="status" className="text-sm text-gray-700">
+          <label htmlFor="published" className="text-sm text-gray-700">
             {isEditMode
               ? t('subscriptions.form.keepActive')
               : t('subscriptions.form.activateNow')}

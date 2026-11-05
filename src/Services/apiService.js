@@ -408,6 +408,26 @@ export const subscriptionService = {
     };
   },
 
+  getPublicPlans: async (subscriptionType) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.GET_PUBLIC,
+      { params: { Subscription_Type: subscriptionType } }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load public plans');
+    }
+    const data = Array.isArray(payload?.data)
+      ? payload.data
+      : Array.isArray(payload?.data?.data)
+        ? payload.data.data
+        : [];
+    return {
+      data,
+      count: payload?.count ?? payload?.data?.count ?? data.length,
+    };
+  },
+
   getPlanById: async (id) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.SUBSCRIPTION.GET_BY_ID(id)

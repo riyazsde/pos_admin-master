@@ -15,7 +15,6 @@ import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
   setSubscriptionHistoryData,
   setSubscriptionHistoryLoading,
-  addSubscriptionHistoryItem, // ✅ import
 } from '../../Store/Features/subscriptions/subscriptionsSlice';
 import { subscriptionService } from '../../Services/apiService';
 
@@ -98,6 +97,7 @@ const TableRow = ({ sub, index, onViewMore, t, i18n }) => {
 const SubscriptionTable = () => {
   const [currentView, setCurrentView] = useState('list');
   const [selectedSubscription, setSelectedSubscription] = useState(null);
+  const [editingPlan, setEditingPlan] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -139,8 +139,15 @@ const SubscriptionTable = () => {
       <SubscriptionPlans
         onBack={() => setCurrentView('list')}
         onGetStarted={() => setCurrentView('form')}
-        onCreateNew={() => setCurrentView('form')}
-        onEditPlan={(plan) => console.log('Edit plan:', plan)}
+        onCreateNew={() => {
+          setEditingPlan(null);
+          sessionStorage.removeItem('selectedPlan');
+          setCurrentView('form');
+        }}
+        onEditPlan={(plan) => {
+          setEditingPlan(plan);
+          setCurrentView('form');
+        }}
       />
     );
   }
@@ -152,13 +159,10 @@ const SubscriptionTable = () => {
     return (
       <CreateSubscriptionForm
         onBack={() => setCurrentView('plans')}
-        onComplete={(newSub) => {
-          // ✅ If the form returns the new subscription object, push it into the store
-          if (newSub) {
-            dispatch(addSubscriptionHistoryItem(newSub));
-          }
-          // Then go back to list — the useEffect above will also refetch to stay in sync
-          setCurrentView('list');
+        editingPlan={editingPlan}
+        onComplete={() => {
+          setEditingPlan(null);
+          setCurrentView('plans');
         }}
       />
     );
