@@ -99,7 +99,7 @@ export default function ForgotPassword() {
               <img
                 src={logo}
                 alt="Company Logo"
-                className="h-9 w-[150px] sm:w-[210px]"
+                className="h-20 w-[150px] sm:w-[210px]"
               />
             </div>
 

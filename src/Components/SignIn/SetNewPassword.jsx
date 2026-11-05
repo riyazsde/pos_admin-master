@@ -57,7 +57,7 @@ export default function SetNewPassword() {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="text-3xl sm:text-4xl font-bold text-black mb-3">Sign in</h1>
-              <img src={logo} alt="Triaxx Logo" className="h-9 w-[150px] sm:w-[210px]" />
+              <img src={logo} alt="Triaxx Logo" className="h-20 w-[150px] sm:w-[210px]" />
             </div>
 
             {/* Title */}
