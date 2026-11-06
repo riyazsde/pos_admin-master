@@ -176,17 +176,61 @@ const normalizeRestaurantPerformance = (payload) => {
 };
 
 const normalizeRenewal = (payload) => {
-  const d = safeObj(payload);
+  const d = safeObj(payload?.data || payload);
+
+  // CurrentPlan is an object in the API — extract the plan name only
+  const planObj = safeObj(d.CurrentPlan);
+  const planName = planObj.PlanName || d.Plan || '—';
+  const planDescription = planObj.Description || '—';
+  const planType = planObj.Subscription_Type || '—';
+  const planPrice = planObj.Price ?? null;
+
   return {
-    currentPlan: d.Current_Plan ?? d.CurrentPlan ?? null,
-    purchasedDate: d.Purchased_Date ?? d.PurchasedDate ?? null,
-    renewalDate: d.Renewal_Date ?? d.RenewalDate ?? null,
-    firstPurchaseOn: d.First_Purchase_On ?? d.FirstPurchaseOn ?? null,
-    noOfRenewals: num(d.No_of_Renewals ?? d.NoOfRenewals ?? 0),
+    // Plan
+    currentPlan: planName,
+    planName,
+    planDescription,
+    planType,
+    planPrice,
+
+    // Dates
+    purchasedDate: d.PurchaseDate ?? null,
+    renewalDate: d.RenewalDate ?? null,
+    firstPurchaseOn: d.FirstPurchaseOn ?? null,
+    daysUntilRenewal: Number(d.DaysUntilRenewal ?? 0),
+
+    // Subscription meta
+    noOfRenewals: Number(d.NoOfRenewals ?? 0),
+    subscriptionId: d.SubscriptionId ?? null,
+    subscriptionCount: Number(d.SubscriptionCount ?? 0),
+    renewalStatus: d.RenewalStatus ?? '—',
+    hasSubscription: Boolean(d.HasSubscription),
+    isActive: Boolean(d.IsActive),
+    isDemo: Boolean(d.IsDemo),
+    autoRenew: Boolean(d.AutoRenew),
+    ownerAccountLinked: Boolean(d.OwnerAccountLinked),
+    canSendRenewalMessage:
+      d.CanSendRenewalMessage !== undefined
+        ? Boolean(d.CanSendRenewalMessage)
+        : true,
+
+    // Billing
+    paymentMethod: d.PaymentMethod || '—',
+    paymentStatus: d.PaymentStatus || '—',
+    currency: d.Currency || 'XOF',
+
+    // Owner / client
+    clientsId: d.Clients_id ?? null,
+    ownerUserId: d.Owner_User_id ?? null,
+
+    // Message (API doesn't return one; keep default text handled in UI)
     renewalMessage: d.Renewal_Message ?? d.RenewalMessage ?? '',
-    notifyTwoWeeksAgo: Boolean(d.Two_Weeks_Ago ?? d.NotifyTwoWeeksAgo ?? true),
-    notifyOneWeekAgo: Boolean(d.One_Week_Ago ?? d.NotifyOneWeekAgo ?? true),
-    notifyOneDayAgo: Boolean(d.One_Day_Ago ?? d.NotifyOneDayAgo ?? true),
+
+    // Toggles — API doesn't currently expose these; keep local defaults
+    notifyTwoWeeksAgo: d.Two_Weeks_Ago ?? d.NotifyTwoWeeksAgo ?? true,
+    notifyOneWeekAgo: d.One_Week_Ago ?? d.NotifyOneWeekAgo ?? true,
+    notifyOneDayAgo: d.One_Day_Ago ?? d.NotifyOneDayAgo ?? true,
+
     raw: d,
   };
 };

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import uil_message from '../../assets/Images/admin/client/uil_message.png';
 import arrow from '../../assets/Images/Home/arrow.png';
@@ -68,7 +68,7 @@ const InfoBlock = ({ label, value, valueClassName = '' }) => (
       <span
         className={`text-lg font-medium text-black font-poppins ${valueClassName}`}
       >
-        {value ?? '—'}
+        {value === null || value === undefined || value === '' ? '—' : value}
       </span>
     </div>
   </div>
@@ -87,15 +87,34 @@ const formatDate = (iso) => {
   }
 };
 
+const StatusBadge = ({ label, tone = 'purple' }) => {
+  const tones = {
+    purple: 'bg-purple-50 text-purple-700',
+    green: 'bg-green-50 text-green-700',
+    red: 'bg-red-50 text-red-700',
+    amber: 'bg-amber-50 text-amber-700',
+    gray: 'bg-gray-100 text-gray-600',
+  };
+  return (
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+        tones[tone] || tones.gray
+      }`}
+    >
+      {label}
+    </span>
+  );
+};
+
 function SubscriptionManagement() {
   const [searchParams] = useSearchParams();
+  const { t } = useTranslation();
   const clientsId = searchParams.get('id');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [renewal, setRenewal] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [savingToggles, setSavingToggles] = useState(false);
 
   const [toggleStates, setToggleStates] = useState({
     twoWeeks: true,
@@ -137,7 +156,6 @@ function SubscriptionManagement() {
   }, [clientsId]);
 
   const handleToggle = (key) => {
-    // Local optimistic toggle. Persist via API if/when backend exposes it.
     setToggleStates((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -162,7 +180,33 @@ function SubscriptionManagement() {
         <div className="text-red-500 font-medium py-6">{error}</div>
       ) : (
         <div className="flex flex-col gap-14">
-          {/* Subscription Details */}
+          {/* ─── Status strip ─── */}
+          <div className="w-full max-w-5xl flex flex-wrap gap-3">
+            <StatusBadge
+              label={renewal?.isActive ? 'Active' : 'Inactive'}
+              tone={renewal?.isActive ? 'green' : 'red'}
+            />
+            <StatusBadge
+              label={renewal?.planType || 'Plan'}
+              tone="purple"
+            />
+            <StatusBadge
+              label={renewal?.renewalStatus || 'Renewal'}
+              tone={
+                renewal?.renewalStatus === 'Available' ? 'green' : 'amber'
+              }
+            />
+            {renewal?.isDemo && <StatusBadge label="Demo" tone="amber" />}
+            {renewal?.autoRenew && (
+              <StatusBadge label="Auto-Renew ON" tone="green" />
+            )}
+            <StatusBadge
+              label={`${renewal?.daysUntilRenewal ?? 0} days to renewal`}
+              tone="purple"
+            />
+          </div>
+
+          {/* ─── Plan details ─── */}
           <div className="w-full max-w-5xl">
             <div className="flex flex-col gap-10">
               <div className="flex gap-10 flex-wrap">
@@ -185,11 +229,37 @@ function SubscriptionManagement() {
                   label="No of Renewals"
                   value={String(renewal?.noOfRenewals ?? 0).padStart(2, '0')}
                 />
+                <InfoBlock
+                  label="Payment Method"
+                  value={renewal?.paymentMethod}
+                />
+              </div>
+              <div className="flex gap-10 flex-wrap">
+                <InfoBlock
+                  label="Payment Status"
+                  value={renewal?.paymentStatus}
+                />
+                <InfoBlock
+                  label="Subscription Price"
+                  value={
+                    renewal?.planPrice != null
+                      ? `${renewal.planPrice} ${renewal?.currency || ''}`.trim()
+                      : '—'
+                  }
+                />
+                <InfoBlock
+                  label="Subscription ID"
+                  value={
+                    renewal?.subscriptionId != null
+                      ? `#${renewal.subscriptionId}`
+                      : '—'
+                  }
+                />
               </div>
             </div>
           </div>
 
-          {/* Renewal Messages */}
+          {/* ─── Renewal messages ─── */}
           <div className="w-full max-w-5xl">
             <div className="flex flex-col gap-10">
               <div className="flex flex-col gap-6">
@@ -221,7 +291,6 @@ function SubscriptionManagement() {
                           <Toggle
                             isOn={toggleStates[key]}
                             onToggle={() => handleToggle(key)}
-                            disabled={savingToggles}
                           />
                         </div>
                       </div>
@@ -254,8 +323,15 @@ function SubscriptionManagement() {
               <div className="flex justify-start">
                 <button
                   onClick={() => setShowModal(true)}
-                  disabled={!clientsId}
-                  className="flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-white font-medium text-lg font-poppins h-14 w-80 hover:opacity-90 transition-opacity disabled:opacity-60"
+                  disabled={
+                    !clientsId || renewal?.canSendRenewalMessage === false
+                  }
+                  title={
+                    renewal?.canSendRenewalMessage === false
+                      ? 'This client cannot receive renewal messages right now'
+                      : ''
+                  }
+                  className="flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-white font-medium text-lg font-poppins h-14 w-80 hover:opacity-90 transition-opacity disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
                     background:
                       'linear-gradient(180deg, #6A1B9A 0%, #D32F2F 100%)',
