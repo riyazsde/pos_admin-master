@@ -25,23 +25,22 @@ export const ENDPOINTS = {
 
   // ----------------------------- ADMIN -----------------------------
   ADMIN: {
-    // ✅ SINGLE consolidated ACCOUNT_SETTINGS block (only declared ONCE)
-ACCOUNT_SETTINGS: {
-  // Date & Time — GET to read, PUT to update (same URL, different verb)
-  DATE_TIME: '/api/v1/admin/account-settings/date-time',
-
-  PROFILE: '/api/v1/user/getbyauth',
-  SESSIONS: '/api/v1/admin/account-settings/sessions',
-  REVOKE_SESSION: (id) => `/api/v1/admin/account-settings/sessions/${id}`,
-  LOGIN_HISTORY: '/api/v1/admin/account-settings/login-history',
-  SUSPICIOUS_ACTIVITY: '/api/v1/admin/account-settings/suspicious-activity',
-  PASSWORD_RESET_LOGS: '/api/v1/admin/account-settings/password-reset-logs',
-  API_KEYS: '/api/v1/admin/account-settings/api-keys',
-  REVOKE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}/revoke`,
-  DELETE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}`,
-  TRUSTED_DEVICES: '/api/v1/admin/account-settings/trusted-devices',
-  REMOVE_TRUSTED_DEVICE: (id) => `/api/v1/admin/account-settings/trusted-devices/${id}`,
-},
+    ACCOUNT_SETTINGS: {
+      DATE_TIME: '/api/v1/admin/account-settings/date-time',
+      PROFILE: '/api/v1/user/getbyauth',
+      SESSIONS: '/api/v1/admin/account-settings/sessions',
+      REVOKE_SESSION: (id) => `/api/v1/admin/account-settings/sessions/${id}`,
+      LOGIN_HISTORY: '/api/v1/admin/account-settings/login-history',
+      SUSPICIOUS_ACTIVITY: '/api/v1/admin/account-settings/suspicious-activity',
+      PASSWORD_RESET_LOGS: '/api/v1/admin/account-settings/password-reset-logs',
+      API_KEYS: '/api/v1/admin/account-settings/api-keys',
+      REVOKE_API_KEY: (id) =>
+        `/api/v1/admin/account-settings/api-keys/${id}/revoke`,
+      DELETE_API_KEY: (id) => `/api/v1/admin/account-settings/api-keys/${id}`,
+      TRUSTED_DEVICES: '/api/v1/admin/account-settings/trusted-devices',
+      REMOVE_TRUSTED_DEVICE: (id) =>
+        `/api/v1/admin/account-settings/trusted-devices/${id}`,
+    },
 
     LANGUAGE: {
       GET_ALL: '/api/v1/admin/language/getall',
@@ -56,8 +55,6 @@ ACCOUNT_SETTINGS: {
       DEACTIVATE: (id) => `/api/v1/admin/subadmin/deactivate/${id}`,
       ACTIVATE: (id) => `/api/v1/admin/subadmin/activate/${id}`,
     },
-
-    
 
     DASHBOARD: {
       MAIN: '/api/v1/admin/dashboard/main-dashboard',
@@ -74,6 +71,11 @@ ACCOUNT_SETTINGS: {
       CREATE: '/api/v1/admin/clients/create',
       GET_ALL: '/api/v1/admin/clients/getall',
       GET_BY_ID: (id) => `/api/v1/admin/clients/getbyid/${id}`,
+      // NEW ↓
+      GET_RENEWAL: (id) => `/api/v1/admin/clients/${id}/renewal`,
+      SEND_RENEWAL_MESSAGE: (id) =>
+        `/api/v1/admin/clients/${id}/renewal-message`,
+      RESET_PASSWORD: (id) => `/api/v1/admin/clients/${id}/password`,
     },
 
     SUBSCRIPTION: {
@@ -88,26 +90,31 @@ ACCOUNT_SETTINGS: {
       HISTORY: '/api/v1/admin/subscription-history/listing',
     },
 
-   REPORTS: {
-    KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
-    ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',
-    INACTIVE_CLIENTS: '/api/v1/admin/reports/inactive-clients',
-    SUBSCRIPTION_SALES: '/api/v1/admin/reports/subscription-sales',
-    LATEST_TRANSACTIONS: '/api/v1/admin/reports/latest-transactions',
-    TRANSACTION_GRAPH: '/api/v1/admin/reports/transaction-graph',
-    SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets',
-    CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage',
+    REPORTS: {
+      KPI_DASHBOARD: '/api/v1/admin/reports/kpi-dashboard',
+      ACTIVE_CLIENTS: '/api/v1/admin/reports/active-clients',
+      INACTIVE_CLIENTS: '/api/v1/admin/reports/inactive-clients',
+      SUBSCRIPTION_SALES: '/api/v1/admin/reports/subscription-sales',
+      LATEST_TRANSACTIONS: '/api/v1/admin/reports/latest-transactions',
+      TRANSACTION_GRAPH: '/api/v1/admin/reports/transaction-graph',
+      SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets',
+      CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage',
 
-    // AnalyticsView
-    REVENUE_REPORT: '/api/v1/admin/reports/revenue-report',
-    LOW_STOCK_ALERTS: '/api/v1/admin/reports/low-stock-alerts',
-    SUBSCRIPTION_REPORT: '/api/v1/admin/reports/subscription-report',
-    RESTAURANT_DASHBOARD: '/api/v1/admin/restaurant-reports/dashboard',
+      // AnalyticsView
+      REVENUE_REPORT: '/api/v1/admin/reports/revenue-report',
+      LOW_STOCK_ALERTS: '/api/v1/admin/reports/low-stock-alerts',
+      SUBSCRIPTION_REPORT: '/api/v1/admin/reports/subscription-report',
+      RESTAURANT_DASHBOARD: '/api/v1/admin/restaurant-reports/dashboard',
 
-    // Hardware / Inventory
-    HARDWARE_INVENTORY: '/api/v1/admin/pos-hardware-devices/inventory-status',
-    HARDWARE_SALES: '/api/v1/admin/pos-hardware-devices/sales-report',
-  },
+      // NEW ↓
+      RESTAURANT_PERFORMANCE:
+        '/api/v1/admin/restaurant-reports/getRestaurantPerformance',
+
+      // Hardware / Inventory — single source of truth
+      HARDWARE_INVENTORY:
+        '/api/v1/admin/pos-hardware-devices/inventory-status',
+      HARDWARE_SALES: '/api/v1/admin/pos-hardware-devices/sales-report',
+    },
 
     AUDITS: {
       OVERVIEW: '/api/v1/admin/audits/dashboard/overview',
@@ -118,6 +125,8 @@ ACCOUNT_SETTINGS: {
 
     POS_HARDWARE: {
       DASHBOARD: '/api/v1/admin/pos-hardware-devices/dashboard',
+      INVENTORY_STATUS: '/api/v1/admin/pos-hardware-devices/inventory-status',
+      SALES_REPORT: '/api/v1/admin/pos-hardware-devices/sales-report',
     },
 
     SUPPORT_TICKETS: {
@@ -134,25 +143,24 @@ ACCOUNT_SETTINGS: {
       CREATE_DEVICE: '/api/v1/master/myDevices/create',
       SOLD_IN_RESTAURANT:
         '/api/v1/admin/admin_pos_mydevices_sold_in_restaurant/getall',
-      INVENTORY_STATUS: '/api/v1/admin/pos-hardware-devices/inventory-status',
+      // NOTE: INVENTORY_STATUS removed — use ADMIN.POS_HARDWARE.INVENTORY_STATUS
     },
 
     MDM: {
-  GET_ALL: '/api/v1/master/myDevices/getall',
-  GET_BY_AUTH: '/api/v1/master/myDevices/getbyauth',
-  SESSION_LOGS: (id) => `/api/v1/master/myDevices/${id}/session-logs`,
-  SESSION_LOGS_EXPORT: (id) =>
-    `/api/v1/master/myDevices/${id}/session-logs/export`,
-  LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
-   UNLOCK: (id) => `/api/v1/master/myDevices/${id}/unlock`,   
-  RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
-  PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
+      GET_ALL: '/api/v1/master/myDevices/getall',
+      GET_BY_AUTH: '/api/v1/master/myDevices/getbyauth',
+      SESSION_LOGS: (id) => `/api/v1/master/myDevices/${id}/session-logs`,
+      SESSION_LOGS_EXPORT: (id) =>
+        `/api/v1/master/myDevices/${id}/session-logs/export`,
+      LOCK: (id) => `/api/v1/master/myDevices/${id}/lock`,
+      UNLOCK: (id) => `/api/v1/master/myDevices/${id}/unlock`,
+      RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
+      PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
 
-  // ✅ NEW: two separate wipe endpoints
-  WIPE_SEND_OTP: (id) => `/api/v1/master/myDevices/${id}/wipe/send-otp`,
-  WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
-  WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`, // same URL, different body
-},
+      WIPE_SEND_OTP: (id) => `/api/v1/master/myDevices/${id}/wipe/send-otp`,
+      WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
+      WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`,
+    },
 
     PAYMENT_OPTIONS: {
       GET_ALL: '/api/v1/admin/payment_options/getall',

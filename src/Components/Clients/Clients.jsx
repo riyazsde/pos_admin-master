@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight as ChevronRightIcon,
   Eye,
+  KeyRound,
 } from 'lucide-react';
 
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
@@ -21,6 +22,7 @@ import {
   setClientsError,
 } from '../../Store/Features/clients/clientsSlice';
 import { clientService } from '../../Services/apiService';
+import ResetPasswordModal from './ResetPasswordModal';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -28,7 +30,6 @@ import { clientService } from '../../Services/apiService';
 const PER_PAGE = 8;
 
 // IANA timezone your back office treats as "today".
-// South Africa Standard Time (SAST, UTC+2).
 const BUSINESS_TZ = 'Africa/Johannesburg';
 
 // ---------------------------------------------------------------------------
@@ -50,11 +51,6 @@ const formatDate = (iso, locale = 'en-US') => {
 const formatNumber = (n, locale = 'en-US') => {
   if (n === null || n === undefined) return '0';
   return Number(n).toLocaleString(locale);
-};
-
-const getCurrencyLabel = (client) => {
-  const cur = client?.currency?.[0];
-  return cur?.name || 'XOF';
 };
 
 // Format a Date as YYYY-MM-DD in a specific IANA timezone.
@@ -86,6 +82,18 @@ const getDaysLeft = (iso, timeZone = BUSINESS_TZ, now = new Date()) => {
   return Math.round((targetUtc - todayUtc) / msPerDay);
 };
 
+// Status may come back as true/false, 1/0, "true"/"false", or "Active"/"Inactive".
+const isClientActive = (client) => {
+  const s = client?.Status ?? client?.About?.Status;
+  return (
+    s === true ||
+    s === 1 ||
+    s === 'true' ||
+    s === 'Active' ||
+    s === 'active'
+  );
+};
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -103,6 +111,9 @@ const Clients = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('All Clients');
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Reset-password modal state
+  const [resetTarget, setResetTarget] = useState(null); // { id, businessName }
+
   const buttonRefs = useRef([]);
 
   // Fetch list once on mount
@@ -114,14 +125,16 @@ const Clients = () => {
     const fetchClients = async () => {
       dispatch(setClientsLoading(true));
       try {
-        const result = await clientService.getAllClients();
+        const result = await clientService.getAllClients('all');
         dispatch(setClientsData(result));
       } catch (err) {
         console.error('Fetch clients error:', err);
         dispatch(setClientsError(err?.message || 'Failed to load clients'));
-        toast.error(t('clients.loadFailed'), {
+        toast.error(t('clients.loadFailed', 'Failed to load clients'), {
           description:
-            err?.response?.data?.message || err?.message || t('common.error'),
+            err?.response?.data?.message ||
+            err?.message ||
+            t('common.error', 'Something went wrong'),
         });
       }
     };
@@ -132,9 +145,10 @@ const Clients = () => {
   // Filter by period
   const filteredClients = useMemo(() => {
     return clients.filter((client) => {
+      const active = isClientActive(client);
       if (selectedPeriod === 'All Clients') return true;
-      if (selectedPeriod === 'Active Clients') return client.Status === true;
-      if (selectedPeriod === 'Inactive Clients') return client.Status === false;
+      if (selectedPeriod === 'Active Clients') return active;
+      if (selectedPeriod === 'Inactive Clients') return !active;
       return true;
     });
   }, [clients, selectedPeriod]);
@@ -148,6 +162,7 @@ const Clients = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedPeriod]);
+
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
@@ -158,14 +173,39 @@ const Clients = () => {
   // Precompute countdowns once per data/page/day change.
   const rows = useMemo(() => {
     return paginatedClients.map((client) => {
-      const renewalSource = client.RenewalDate ?? client.CreateAt ?? null;
+      // Prefer nested About fields if present
+      const about = client.About || {};
+      const sub = client.AccountSubscriptionDetails || {};
+
+      // Only compute countdown from an actual renewal date.
+      const renewalSource =
+        sub.RenewalDate ?? client.RenewalDate ?? null;
+      const fallback = client.CreateAt ?? client.CreatedAt ?? null;
+      const fallbackFresh =
+        fallback && getDaysLeft(fallback, BUSINESS_TZ) > -365
+          ? fallback
+          : null;
+      const daysLeft = getDaysLeft(
+        renewalSource ?? fallbackFresh,
+        BUSINESS_TZ
+      );
+
       return {
         client,
-        daysLeft: getDaysLeft(renewalSource, BUSINESS_TZ),
-        plan: client.Plan ?? null,
-        paymentMethod: client.PaymentMethod ?? null,
+        daysLeft,
+        plan:
+          sub.CurrentPlan?.PlanName ||
+          client.Plan ||
+          client.PlanName ||
+          null,
+        paymentMethod:
+          sub.PaymentMethod ||
+          client.PaymentMethod ||
+          client.Payment_Method ||
+          null,
       };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paginatedClients, todayKey]);
 
   // Selection Logic
@@ -187,9 +227,15 @@ const Clients = () => {
   };
 
   const dropdownOptions = [
-    { value: 'All Clients', label: t('clients.filter.all') },
-    { value: 'Active Clients', label: t('clients.filter.active') },
-    { value: 'Inactive Clients', label: t('clients.filter.inactive') },
+    { value: 'All Clients', label: t('clients.filter.all', 'All Clients') },
+    {
+      value: 'Active Clients',
+      label: t('clients.filter.active', 'Active Clients'),
+    },
+    {
+      value: 'Inactive Clients',
+      label: t('clients.filter.inactive', 'Inactive Clients'),
+    },
   ];
 
   const goToPage = (page) => {
@@ -223,10 +269,26 @@ const Clients = () => {
     return pages;
   };
 
-  // 🎨 FIGMA STYLES
-  const getPlanBadgeStyle = () => {
-    return 'bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white shadow-[0_4px_10px_rgba(139,92,246,0.4)]';
+  const openResetModal = (client) => {
+    const id = client?.Clients_id ?? client?._id;
+    if (!id) {
+      toast.error('Missing client id');
+      return;
+    }
+    setResetTarget({
+      id,
+      businessName:
+        client?.Display_Name ||
+        client?.Business_Name ||
+        client?.About?.Display_Name ||
+        client?.About?.Business_Name ||
+        'this client',
+    });
   };
+
+  // 🎨 FIGMA STYLES
+  const getPlanBadgeStyle = () =>
+    'bg-gradient-to-r from-[#8B5CF6] to-[#6366F1] text-white shadow-[0_4px_10px_rgba(139,92,246,0.4)]';
 
   const getDaysLeftBadge = (days) => {
     if (days === null || days === undefined) {
@@ -331,11 +393,10 @@ const Clients = () => {
 
         {/* ====================== Main Content ====================== */}
         <div className="w-full">
-          {/* TABLE SECTION - FULL WIDTH */}
           <div className="bg-white rounded-xl border border-gray-200 w-full flex flex-col shadow-sm overflow-hidden">
             {/* Table Header */}
             <div className="hidden sm:block bg-[#FDF8FD] border-b border-gray-100 px-6 py-4">
-              <div className="grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_1fr] gap-4 items-center">
+              <div className="grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_1.2fr] gap-4 items-center">
                 <div className="text-gray-500 font-medium text-xs">#</div>
                 <div className="text-gray-500 font-medium text-xs">
                   Company Name
@@ -360,14 +421,14 @@ const Clients = () => {
               <div className="p-10 flex flex-col items-center justify-center text-gray-400 gap-3">
                 <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
                 <p className="text-sm">
-                  {t('clients.loading') || 'Loading...'}
+                  {t('clients.loading', 'Loading...')}
                 </p>
               </div>
             ) : filteredClients.length === 0 ? (
               <div className="p-10 flex flex-col items-center justify-center text-gray-400 gap-3">
                 <Users className="w-8 h-8 text-gray-300" />
                 <p className="text-sm font-medium text-gray-500">
-                  {t('clients.noClients') || 'No clients found'}
+                  {t('clients.noClients', 'No clients found')}
                 </p>
               </div>
             ) : (
@@ -380,18 +441,24 @@ const Clients = () => {
                     '0'
                   );
                   const company =
-                    client.Display_Name || client.Business_Name || 'Unknown';
+                    client.Display_Name ||
+                    client.Business_Name ||
+                    client.About?.Display_Name ||
+                    client.About?.Business_Name ||
+                    'Unknown';
                   const isSelected = selectedClientIndex === index;
+                  const clientsId = client.Clients_id ?? client._id;
 
                   return (
                     <div
-                      key={client._id || index}
+                      key={clientsId || index}
                       className={`border-b border-gray-100 px-6 py-4 transition-colors duration-150 ${
                         isSelected ? 'bg-[#FDF8FD]' : 'hover:bg-gray-50'
                       }`}
+                      onClick={() => handleClientSelect(index)}
                     >
                       {/* DESKTOP ROW */}
-                      <div className="hidden sm:grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_1fr] gap-4 items-center">
+                      <div className="hidden sm:grid grid-cols-[40px_1.5fr_1fr_1fr_1fr_1.2fr] gap-4 items-center">
                         <div className="text-gray-900 font-bold text-[13px]">
                           {globalId}
                         </div>
@@ -409,17 +476,27 @@ const Clients = () => {
                         <div className="text-gray-700 text-[13px] text-center font-normal">
                           {paymentMethod ?? '—'}
                         </div>
-                        <div className="flex justify-center">
+                        <div className="flex items-center justify-center gap-3">
                           <button
-                            onClick={() =>
-                              navigate(
-                                `/client-details?id=${client.Clients_id}`
-                              )
-                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/client-details?id=${clientsId}`);
+                            }}
                             className="text-[#8B5CF6] hover:text-[#6D28D9] text-[13px] font-medium flex items-center gap-1.5 transition-colors"
                           >
                             <Eye className="w-3.5 h-3.5" />
                             View Details
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openResetModal(client);
+                            }}
+                            className="text-gray-500 hover:text-red-600 text-[13px] font-medium flex items-center gap-1.5 transition-colors"
+                            title="Reset password"
+                          >
+                            <KeyRound className="w-3.5 h-3.5" />
+                            Reset
                           </button>
                         </div>
                       </div>
@@ -443,16 +520,27 @@ const Clients = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           {getDaysLeftBadge(daysLeft)}
-                          <button
-                            onClick={() =>
-                              navigate(
-                                `/client-details?id=${client.Clients_id}`
-                              )
-                            }
-                            className="text-[#8B5CF6] text-xs font-semibold flex items-center gap-1"
-                          >
-                            <Eye className="w-3 h-3" /> View
-                          </button>
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openResetModal(client);
+                              }}
+                              className="text-gray-500 text-xs font-semibold flex items-center gap-1"
+                            >
+                              <KeyRound className="w-3 h-3" />
+                              Reset
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/client-details?id=${clientsId}`);
+                              }}
+                              className="text-[#8B5CF6] text-xs font-semibold flex items-center gap-1"
+                            >
+                              <Eye className="w-3 h-3" /> View
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -494,6 +582,15 @@ const Clients = () => {
           </div>
         </div>
       </div>
+
+      {/* ============= RESET PASSWORD MODAL ============= */}
+      {resetTarget && (
+        <ResetPasswordModal
+          clientId={resetTarget.id}
+          businessName={resetTarget.businessName}
+          onClose={() => setResetTarget(null)}
+        />
+      )}
     </div>
   );
 };

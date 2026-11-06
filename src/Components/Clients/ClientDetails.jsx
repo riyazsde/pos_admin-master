@@ -18,6 +18,7 @@ import arrow from '../../assets/Images/Home/arrow.png';
 // Components
 import Performance from './Performance';
 import RenewalPopupModal from './RenewalPopupModal';
+import ResetPasswordModal from './ResetPasswordModal';
 
 // Service
 import { clientService } from '../../Services/apiService';
@@ -38,18 +39,26 @@ const formatDate = (iso, locale = 'en-US') => {
   }
 };
 
+const formatNumber = (n, locale = 'en-US') => {
+  if (n === null || n === undefined || n === '') return '0';
+  const num = Number(n);
+  return Number.isFinite(num) ? num.toLocaleString(locale) : '0';
+};
+
 const computeYearsWithUs = (onboardingIso, t) => {
   if (!onboardingIso) return '—';
   try {
     const start = new Date(onboardingIso);
+    if (Number.isNaN(start.getTime())) return '—';
     const now = new Date();
-    const years = Math.floor(
-      (now - start) / (1000 * 60 * 60 * 24 * 365)
-    );
-    if (years < 1) return t('clientDetails.lessThanYear');
+    const years = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 365));
+    if (years < 1) return t('clientDetails.lessThanYear', 'Less than a year');
     return years === 1
-      ? t('clientDetails.oneYear')
-      : t('clientDetails.yearsCount', { count: years });
+      ? t('clientDetails.oneYear', '1 year')
+      : t('clientDetails.yearsCount', {
+          count: years,
+          defaultValue: `${years} years`,
+        });
   } catch {
     return '—';
   }
@@ -60,6 +69,37 @@ const formatLocation = (client) => {
     (p) => p && p !== 'N/A'
   );
   return parts.length > 0 ? parts.join(', ') : null;
+};
+
+/**
+ * Safely extract a display label from language/currency fields,
+ * which the API may return in several shapes:
+ *   - [{ Language_name }] / [{ name }]
+ *   - { name }
+ *   - 'English' / 'XOF'
+ *   - 2
+ *   - null / undefined
+ */
+const getLabel = (
+  value,
+  keyCandidates = ['name', 'Name', 'Language_name', 'label']
+) => {
+  if (value === null || value === undefined) return '—';
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '—';
+    return getLabel(value[0], keyCandidates);
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    return String(value);
+  }
+  if (typeof value === 'object') {
+    for (const k of keyCandidates) {
+      if (value[k] != null && value[k] !== '') return String(value[k]);
+    }
+    const found = Object.keys(value).find((k) => /name$/i.test(k));
+    if (found && value[found] != null) return String(value[found]);
+  }
+  return '—';
 };
 
 // ---------------------------------------------------------------------------
@@ -73,7 +113,8 @@ const ClientDetails = () => {
   const clientId = searchParams.get('id');
 
   const [activeTab, setActiveTab] = useState('about');
-  const [showModal, setShowModal] = useState(false);
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const [client, setClient] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const fetchedRef = useRef(false);
@@ -85,7 +126,7 @@ const ClientDetails = () => {
     if (fetchedRef.current) return;
 
     if (!clientId) {
-      toast.error(t('clientDetails.missingId'));
+      toast.error(t('clientDetails.missingId', 'Missing client id'));
       navigate('/clients');
       return;
     }
@@ -95,15 +136,14 @@ const ClientDetails = () => {
       setIsLoading(true);
       try {
         const data = await clientService.getClientById(clientId);
-        console.log('✅ [CLIENT DETAIL] Fetched:', data);
         setClient(data);
       } catch (err) {
-        console.error('❌ [CLIENT DETAIL] Fetch error:', err);
-        toast.error(t('clientDetails.loadFailed'), {
+        console.error('[CLIENT DETAIL] Fetch error:', err);
+        toast.error(t('clientDetails.loadFailed', 'Failed to load client'), {
           description:
             err?.response?.data?.message ||
             err?.message ||
-            t('common.error'),
+            t('common.error', 'Something went wrong'),
         });
       } finally {
         setIsLoading(false);
@@ -114,14 +154,16 @@ const ClientDetails = () => {
   }, [clientId, navigate, t]);
 
   // ---------------------------------------------------------------------
-  // Loading state
+  // Loading / not-found states
   // ---------------------------------------------------------------------
   if (isLoading) {
     return (
       <div className="w-full min-h-[400px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-gray-400">
           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-          <span className="text-sm">{t('clientDetails.loading')}</span>
+          <span className="text-sm">
+            {t('clientDetails.loading', 'Loading…')}
+          </span>
         </div>
       </div>
     );
@@ -131,58 +173,98 @@ const ClientDetails = () => {
     return (
       <div className="w-full min-h-[400px] flex items-center justify-center">
         <div className="text-center text-gray-400">
-          <p className="text-sm">{t('clientDetails.notFound')}</p>
+          <p className="text-sm">
+            {t('clientDetails.notFound', 'Client not found')}
+          </p>
         </div>
       </div>
     );
   }
 
   // ---------------------------------------------------------------------
-  // Derived data
+  // Derived data — mapped to the real API shape
   // ---------------------------------------------------------------------
-  const businessName = client.Business_Name || '—';
-  const displayName = client.Display_Name || businessName;
-  const plan = client.Plan || t('clientDetails.noPlan');
-  const isActive = client.Status === true;
+  const about = client.About || {};
+  const sub = client.AccountSubscriptionDetails || {};
+  const perf = client.Performance || {};
+
+  const businessName = about.Business_Name || client.Business_Name || '—';
+  const displayName =
+    about.Display_Name || client.Display_Name || businessName;
+  const businessLogo = about.Business_logo || client.Business_logo;
+
+  const plan =
+    sub.CurrentPlan?.PlanName ||
+    client.Plan ||
+    t('clientDetails.noPlan', 'No Plan');
+
+  const isActive =
+    about.Status === true ||
+    about.Status === 1 ||
+    client.Status === true ||
+    client.Status === 1;
+
   const statusText = isActive
-    ? t('clientDetails.activeUser')
-    : t('clientDetails.inactiveUser');
-  const yearsWithUs = computeYearsWithUs(client.OnboardingDate, t);
-  const location = formatLocation(client);
-  const languageName = client.language?.[0]?.Language_name || '—';
-  const currencyName = client.currency?.[0]?.name || 'XOF';
-  const email = client.Email || '—';
-  const phone = client.phone || '—';
+    ? t('clientDetails.activeUser', 'Active user')
+    : t('clientDetails.inactiveUser', 'Inactive user');
 
-  // Employee bars (still mock since API doesn't provide yet)
-  const employeeData = [
-    [t('clientDetails.roles.managers'), 10],
-    [t('clientDetails.roles.waiters'), 100],
-    [t('clientDetails.roles.cashiers'), 5],
-    [t('clientDetails.roles.kitchenStaff'), 20],
-  ];
-  const maxEmployeeCount = Math.max(...employeeData.map(([, c]) => c), 1);
+  const yearsWithUs = computeYearsWithUs(client.CreateAt, t);
+  const location = formatLocation(about) || formatLocation(client);
+  const languageName = getLabel(client.language, ['Language_name', 'name']);
+  const currencyName = getLabel(client.currency, ['name']) || 'XOF';
+  const email = about.Email || client.Email || '—';
+  const phone = sub.Phone || client.Phone || '—';
+  const clientType = about.type || client.type || '—';
 
-  // Detail fields for the account section
+  // Restaurant ID for the Performance tab — prefer Owner.user_id,
+  // fall back to Owner_User_id, then Clients_id (API may accept either).
+  const restaurantUserId =
+    client.Owner?.user_id ||
+    client.Owner_User_id ||
+    undefined;
+
   const accountFields = [
-    [t('clientDetails.fields.currentPlan'), plan],
-    [t('clientDetails.fields.email'), email],
-    [t('clientDetails.fields.phone'), phone],
-    [t('clientDetails.fields.language'), languageName],
-    [t('clientDetails.fields.currency'), currencyName],
+    [t('clientDetails.fields.currentPlan', 'Current Plan'), plan],
+    [t('clientDetails.fields.email', 'Email'), email],
+    [t('clientDetails.fields.phone', 'Phone'), phone],
+    [t('clientDetails.fields.language', 'Language'), languageName],
+    [t('clientDetails.fields.currency', 'Currency'), currencyName],
     [
-      t('clientDetails.fields.onboardingDate'),
-      formatDate(client.OnboardingDate, locale),
+      t('clientDetails.fields.onboardingDate', 'Onboarding Date'),
+      formatDate(client.CreateAt, locale),
     ],
     [
-      t('clientDetails.fields.totalOrders'),
-      client.TotalOrdersLastYear ?? 0,
+      t('clientDetails.fields.totalOrders', 'Total Orders'),
+      formatNumber(perf.TotalOrders, locale),
     ],
     [
-      t('clientDetails.fields.lastYearSales'),
-      `${client.lastYearSales ?? 0} ${currencyName}`,
+      t('clientDetails.fields.lastYearSales', 'Last Year Sales'),
+      `${formatNumber(perf.TotalRevenue, locale)} ${currencyName}`,
     ],
   ];
+
+  // Employee counts — API returns [] and EmployeeCountByRole: []
+  const roleCounts = Array.isArray(client.EmployeeCountByRole)
+    ? client.EmployeeCountByRole
+    : [];
+  const hasEmployees = roleCounts.length > 0;
+
+  const employeeData = hasEmployees
+    ? roleCounts.map((r) => [
+        r.role || r.Role || r.name || '—',
+        Number(r.count || r.Count || 0),
+      ])
+    : [
+        [t('clientDetails.roles.managers', 'Managers'), 0],
+        [t('clientDetails.roles.waiters', 'Waiters'), 0],
+        [t('clientDetails.roles.cashiers', 'Cashiers'), 0],
+        [t('clientDetails.roles.kitchenStaff', 'Kitchen Staff'), 0],
+      ];
+
+  const maxEmployeeCount = Math.max(
+    ...employeeData.map(([, c]) => c),
+    1
+  );
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-10 py-4 sm:py-6 lg:py-8 text-black">
@@ -192,22 +274,25 @@ const ClientDetails = () => {
           onClick={() => navigate('/clients')}
           className="text-gray-400 hover:text-purple-600 transition-colors flex items-center gap-2 sm:gap-5 text-xl sm:text-2xl lg:text-[32px]"
         >
-          {t('clientDetails.breadcrumb')}
+          {t('clientDetails.breadcrumb', 'Clients')}
           <img
             src={arrow}
             alt="Arrow"
             className="w-3 h-3 sm:w-4 sm:h-4 inline-block"
           />
         </button>
-        <span>{t('clientDetails.title')}</span>
+        <span>{t('clientDetails.title', 'Client Details')}</span>
       </h1>
 
       {/* ============= Tabs ============= */}
       <div className="relative w-full max-w-[300px] sm:w-[254px]">
         <div className="flex gap-8 sm:gap-8 pb-2 justify-start sm:justify-between">
           {[
-            { key: 'about', label: t('clientDetails.about') },
-            { key: 'performance', label: t('clientDetails.performance') },
+            { key: 'about', label: t('clientDetails.about', 'About') },
+            {
+              key: 'performance',
+              label: t('clientDetails.performance', 'Performance'),
+            },
           ].map(({ key, label }) => (
             <div
               key={key}
@@ -247,9 +332,9 @@ const ClientDetails = () => {
           <div className="mt-6 sm:mt-8 flex flex-col lg:flex-row gap-6 lg:gap-10">
             {/* Business Logo */}
             <div className="w-full lg:w-[377px] h-[200px] sm:h-[212px] rounded-xl shadow-md overflow-hidden bg-gray-50 flex items-center justify-center">
-              {client.Business_logo ? (
+              {businessLogo ? (
                 <img
-                  src={client.Business_logo}
+                  src={businessLogo}
                   alt={businessName}
                   className="w-full h-full object-contain p-4"
                 />
@@ -270,9 +355,7 @@ const ClientDetails = () => {
 
               <div className="flex items-center gap-2 mt-1 text-base sm:text-[18px] font-medium">
                 <span
-                  className={
-                    isActive ? 'text-[#34C759]' : 'text-red-500'
-                  }
+                  className={isActive ? 'text-[#34C759]' : 'text-red-500'}
                 >
                   {statusText}
                 </span>
@@ -285,7 +368,7 @@ const ClientDetails = () => {
               </div>
 
               <p className="text-sm mt-1 font-medium">
-                {t('clientDetails.fields.type')}: {client.type || '—'}
+                {t('clientDetails.fields.type', 'Type')}: {clientType}
               </p>
 
               <p className="mt-2 text-base sm:text-[18px] font-medium leading-[22px]">
@@ -293,7 +376,8 @@ const ClientDetails = () => {
                 {location && (
                   <>
                     {' — '}
-                    {t('clientDetails.fields.location')}: {location}
+                    {t('clientDetails.fields.location', 'Location')}:{' '}
+                    {location}
                   </>
                 )}
               </p>
@@ -303,7 +387,7 @@ const ClientDetails = () => {
           {/* Subscription Section */}
           <div className="mt-8 sm:mt-12">
             <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8">
-              {t('clientDetails.accountSection')}
+              {t('clientDetails.accountSection', 'Account / Subscription')}
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10 mb-6 sm:mb-8">
@@ -322,14 +406,14 @@ const ClientDetails = () => {
             {/* Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mt-4">
               <button
+                onClick={() => setShowRenewalModal(true)}
                 className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded-xl text-base sm:text-[18px] w-full sm:w-auto hover:opacity-90 transition-opacity"
-                onClick={() => setShowModal(true)}
               >
                 <span className="hidden sm:inline">
-                  {t('clientDetails.sendRenewal')}
+                  {t('clientDetails.sendRenewal', 'Send Renewal Message')}
                 </span>
                 <span className="sm:hidden">
-                  {t('clientDetails.sendRenewalShort')}
+                  {t('clientDetails.sendRenewalShort', 'Renewal')}
                 </span>
                 <img
                   src={uil_message}
@@ -338,12 +422,15 @@ const ClientDetails = () => {
                 />
               </button>
 
-              <button className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded-xl text-base sm:text-[18px] w-full sm:w-auto hover:opacity-90 transition-opacity">
+              <button
+                onClick={() => setShowResetModal(true)}
+                className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white rounded-xl text-base sm:text-[18px] w-full sm:w-auto hover:opacity-90 transition-opacity"
+              >
                 <span className="hidden sm:inline">
-                  {t('clientDetails.resetPassword')}
+                  {t('clientDetails.resetPassword', 'Reset Password')}
                 </span>
                 <span className="sm:hidden">
-                  {t('clientDetails.resetPasswordShort')}
+                  {t('clientDetails.resetPasswordShort', 'Reset')}
                 </span>
                 <img
                   src={Lock}
@@ -358,10 +445,10 @@ const ClientDetails = () => {
           <div className="mt-12 sm:mt-16 relative">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
               <h2 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-0">
-                {t('clientDetails.employeeDetails')}
+                {t('clientDetails.employeeDetails', 'Employee Details')}
               </h2>
               <div className="flex items-center gap-2 text-base sm:text-[18px] font-medium cursor-pointer poppins-text">
-                <span>{t('clientDetails.viewMore')}</span>
+                <span>{t('clientDetails.viewMore', 'View more')}</span>
                 <img
                   src={Icon}
                   alt="Icon"
@@ -395,13 +482,27 @@ const ClientDetails = () => {
       )}
 
       {/* ============= TAB: PERFORMANCE ============= */}
-      {activeTab === 'performance' && <Performance clientId={clientId} />}
+      {activeTab === 'performance' && (
+        <Performance
+          clientId={clientId}
+          restaurantId={restaurantUserId}
+        />
+      )}
 
       {/* ============= RENEWAL MODAL ============= */}
-      {showModal && (
+      {showRenewalModal && (
         <RenewalPopupModal
-          onClose={() => setShowModal(false)}
-          client={client}
+          clientsId={clientId}
+          onClose={() => setShowRenewalModal(false)}
+        />
+      )}
+
+      {/* ============= RESET PASSWORD MODAL ============= */}
+      {showResetModal && (
+        <ResetPasswordModal
+          clientId={clientId}
+          businessName={businessName}
+          onClose={() => setShowResetModal(false)}
         />
       )}
     </div>

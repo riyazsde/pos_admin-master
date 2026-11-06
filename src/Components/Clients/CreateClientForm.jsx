@@ -1,7 +1,6 @@
 // src/Components/Clients/CreateClientForm.jsx
-
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
@@ -9,9 +8,6 @@ import { ArrowLeft, Upload, Loader2 } from 'lucide-react';
 import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import { clientService } from '../../Services/apiService';
 
-// ---------------------------------------------------------------------------
-// Default values for fields the form doesn't collect but the API needs
-// ---------------------------------------------------------------------------
 const DEFAULT_VALUES = {
   type: 'Restaurant',
   Tax_ID: '',
@@ -35,7 +31,6 @@ const DEFAULT_VALUES = {
   Status: true,
 };
 
-// Map display name → backend ID (language)
 const LANGUAGE_MAP = {
   French: [1],
   English: [2],
@@ -43,7 +38,6 @@ const LANGUAGE_MAP = {
   Spanish: [4],
 };
 
-// Map display name → backend ID (currency)
 const CURRENCY_MAP = {
   XOF: [1],
   EUR: [2],
@@ -51,24 +45,9 @@ const CURRENCY_MAP = {
   GBP: [4],
 };
 
-const getLanguageIds = (language) => {
-  if (!language) return [1];
-  const trimmed = language.trim();
-  const match = Object.keys(LANGUAGE_MAP).find(
-    (k) => k.toLowerCase() === trimmed.toLowerCase()
-  );
-  return match ? LANGUAGE_MAP[match] : [1];
-};
+const getLanguageIds = (language) => LANGUAGE_MAP[language] || [1];
+const getCurrencyIds = (currency) => CURRENCY_MAP[currency] || [1];
 
-const getCurrencyIds = (currency) => {
-  if (!currency) return [1];
-  const trimmed = currency.trim().toUpperCase();
-  return CURRENCY_MAP[trimmed] || [1];
-};
-
-// ---------------------------------------------------------------------------
-// Main
-// ---------------------------------------------------------------------------
 const CreateClientForm = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -87,9 +66,8 @@ const CreateClientForm = () => {
     currency: 'XOF',
   });
 
-  const update = (key, value) => {
+  const update = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
-  };
 
   const handleLogoChange = (e) => {
     const file = e.target.files?.[0];
@@ -115,7 +93,7 @@ const CreateClientForm = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
 
     const err = validate();
     if (err) {
@@ -133,7 +111,7 @@ const CreateClientForm = () => {
         Business_logo: logoPreview || '',
         Email: form.Email.trim(),
         password: form.password,
-        Confirm_Password: form.Confirm_Password,
+        // Confirm_Password NOT sent to backend — validation happens client-side
         language: getLanguageIds(form.language),
         currency: getCurrencyIds(form.currency),
         ...DEFAULT_VALUES,
@@ -166,7 +144,6 @@ const CreateClientForm = () => {
 
   return (
     <div className="min-h-screen w-full bg-white poppins-text">
-      {/* ============ Header with back button ============ */}
       <div className="flex items-center gap-3 m-6">
         <button
           onClick={() => navigate('/clients')}
@@ -175,14 +152,12 @@ const CreateClientForm = () => {
         >
           <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
-
         <h2 className="text-3xl font-bold text-[#2E2A40]">
           {t('createClient.pageTitle')}
         </h2>
       </div>
 
       <div className="w-full max-w-7xl mx-auto p-8 rounded-2xl bg-gradient-to-b from-[#6A1B9A1A] to-[#D32F2F1A] shadow-md">
-        {/* Heading */}
         <div className="mb-10">
           <h2 className="text-3xl font-bold text-[#2E2A40]">
             {t('createClient.formTitle')}
@@ -192,7 +167,6 @@ const CreateClientForm = () => {
           </p>
         </div>
 
-        {/* Form */}
         <form
           className="grid grid-cols-1 md:grid-cols-2 gap-8"
           onSubmit={handleSubmit}
@@ -227,9 +201,7 @@ const CreateClientForm = () => {
                 className="hidden"
               />
               <div className="w-full px-5 py-3 flex items-center justify-center gap-2 text-white bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] rounded hover:opacity-90 transition-opacity">
-                {logoFile
-                  ? logoFile.name
-                  : t('createClient.fields.chooseFile')}
+                {logoFile ? logoFile.name : t('createClient.fields.chooseFile')}
                 <Upload className="w-4 h-4" />
               </div>
             </label>
@@ -297,38 +269,45 @@ const CreateClientForm = () => {
             />
           </div>
 
-          {/* Preferred Language */}
+          {/* Language */}
           <div>
             <label className="block text-lg font-medium text-[#2E2A40] mb-2">
               {t('createClient.fields.language')}
             </label>
-            <input
-              type="text"
+            <select
               value={form.language}
               onChange={(e) => update('language', e.target.value)}
-              placeholder={t('createClient.fields.languagePlaceholder')}
               disabled={isSubmitting}
-              className="w-full px-5 py-3 border border-black/50 rounded text-base text-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
-            />
+              className="w-full px-5 py-3 border border-black/50 rounded text-base text-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60 bg-white"
+            >
+              {Object.keys(LANGUAGE_MAP).map((lang) => (
+                <option key={lang} value={lang}>
+                  {lang}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {/* Preferred Currency */}
+          {/* Currency */}
           <div>
             <label className="block text-lg font-medium text-[#2E2A40] mb-2">
               {t('createClient.fields.currency')}
             </label>
-            <input
-              type="text"
+            <select
               value={form.currency}
               onChange={(e) => update('currency', e.target.value)}
-              placeholder={t('createClient.fields.currencyPlaceholder')}
               disabled={isSubmitting}
-              className="w-full px-5 py-3 border border-black/50 rounded text-base text-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60"
-            />
+              className="w-full px-5 py-3 border border-black/50 rounded text-base text-black/60 focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-60 bg-white"
+            >
+              {Object.keys(CURRENCY_MAP).map((cur) => (
+                <option key={cur} value={cur}>
+                  {cur}
+                </option>
+              ))}
+            </select>
           </div>
         </form>
 
-        {/* Save Button */}
         <div className="flex justify-center mt-12">
           <button
             type="button"
