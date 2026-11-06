@@ -71,7 +71,6 @@ export const ENDPOINTS = {
       CREATE: '/api/v1/admin/clients/create',
       GET_ALL: '/api/v1/admin/clients/getall',
       GET_BY_ID: (id) => `/api/v1/admin/clients/getbyid/${id}`,
-      // NEW ↓
       GET_RENEWAL: (id) => `/api/v1/admin/clients/${id}/renewal`,
       SEND_RENEWAL_MESSAGE: (id) =>
         `/api/v1/admin/clients/${id}/renewal-message`,
@@ -100,17 +99,13 @@ export const ENDPOINTS = {
       SUPPORT_TICKETS: '/api/v1/admin/reports/support-tickets',
       CITY_WISE_USAGE: '/api/v1/admin/reports/city-wise-usage',
 
-      // AnalyticsView
       REVENUE_REPORT: '/api/v1/admin/reports/revenue-report',
       LOW_STOCK_ALERTS: '/api/v1/admin/reports/low-stock-alerts',
       SUBSCRIPTION_REPORT: '/api/v1/admin/reports/subscription-report',
       RESTAURANT_DASHBOARD: '/api/v1/admin/restaurant-reports/dashboard',
-
-      // NEW ↓
       RESTAURANT_PERFORMANCE:
         '/api/v1/admin/restaurant-reports/getRestaurantPerformance',
 
-      // Hardware / Inventory — single source of truth
       HARDWARE_INVENTORY:
         '/api/v1/admin/pos-hardware-devices/inventory-status',
       HARDWARE_SALES: '/api/v1/admin/pos-hardware-devices/sales-report',
@@ -143,7 +138,6 @@ export const ENDPOINTS = {
       CREATE_DEVICE: '/api/v1/master/myDevices/create',
       SOLD_IN_RESTAURANT:
         '/api/v1/admin/admin_pos_mydevices_sold_in_restaurant/getall',
-      // NOTE: INVENTORY_STATUS removed — use ADMIN.POS_HARDWARE.INVENTORY_STATUS
     },
 
     MDM: {
@@ -156,7 +150,6 @@ export const ENDPOINTS = {
       UNLOCK: (id) => `/api/v1/master/myDevices/${id}/unlock`,
       RESTART: (id) => `/api/v1/master/myDevices/${id}/restart`,
       PUSH_UPDATE: (id) => `/api/v1/master/myDevices/${id}/push-update`,
-
       WIPE_SEND_OTP: (id) => `/api/v1/master/myDevices/${id}/wipe/send-otp`,
       WIPE: (id) => `/api/v1/master/myDevices/${id}/wipe`,
       WIPE_VERIFY: (id) => `/api/v1/master/myDevices/${id}/wipe`,
@@ -167,6 +160,16 @@ export const ENDPOINTS = {
       CREATE: '/api/v1/admin/payment_options/create',
       UPDATE: (id) => `/api/v1/admin/payment_options/update/${id}`,
       DELETE: (id) => `/api/v1/admin/payment_options/delete/${id}`,
+    },
+
+    // NEW — Employees
+    USER: {
+      EMPLOYEES_BY_CLIENT: (clientId) =>
+        `/api/v1/user/employees/client/${clientId}`,
+      EMPLOYEES_BY_RESTAURANT: (restaurantUserId) =>
+        `/api/v1/user/employees/${restaurantUserId}`,
+      EMPLOYEE_DETAILS_BY_ID: (employeeUserId) =>
+        `/api/v1/user/employeedetailsbyid/${employeeUserId}`,
     },
   },
 

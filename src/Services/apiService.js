@@ -155,7 +155,6 @@ const normalizeInventory = (payload) => {
   };
 };
 
-/* Restaurant performance — used by the Performance page + chart */
 const normalizeRestaurantPerformance = (payload) => {
   const d = safeObj(payload?.data || payload);
   const chartSource =
@@ -176,7 +175,6 @@ const normalizeRestaurantPerformance = (payload) => {
   };
 };
 
-/* Subscription renewal normalizer */
 const normalizeRenewal = (payload) => {
   const d = safeObj(payload);
   return {
@@ -186,15 +184,143 @@ const normalizeRenewal = (payload) => {
     firstPurchaseOn: d.First_Purchase_On ?? d.FirstPurchaseOn ?? null,
     noOfRenewals: num(d.No_of_Renewals ?? d.NoOfRenewals ?? 0),
     renewalMessage: d.Renewal_Message ?? d.RenewalMessage ?? '',
-    // toggle timings
-    notifyTwoWeeksAgo: Boolean(
-      d.Two_Weeks_Ago ?? d.NotifyTwoWeeksAgo ?? true
-    ),
-    notifyOneWeekAgo: Boolean(
-      d.One_Week_Ago ?? d.NotifyOneWeekAgo ?? true
-    ),
+    notifyTwoWeeksAgo: Boolean(d.Two_Weeks_Ago ?? d.NotifyTwoWeeksAgo ?? true),
+    notifyOneWeekAgo: Boolean(d.One_Week_Ago ?? d.NotifyOneWeekAgo ?? true),
     notifyOneDayAgo: Boolean(d.One_Day_Ago ?? d.NotifyOneDayAgo ?? true),
     raw: d,
+  };
+};
+
+/* ---------------- Employees ---------------- */
+const normalizeEmployee = (e) => {
+  const src = safeObj(e);
+  const status =
+    src.Status ?? src.status ?? src.isActive ?? src.IsActive ?? null;
+  const isActive =
+    status === true ||
+    status === 1 ||
+    status === 'true' ||
+    status === 'Active' ||
+    status === 'active';
+
+  return {
+    userId: src.user_id ?? src.User_id ?? src._id ?? src.id ?? null,
+    name:
+      src.Name ||
+      src.name ||
+      src.Employee_Name ||
+      `${src.FirstName || ''} ${src.LastName || ''}`.trim() ||
+      '—',
+    email: src.email || src.Email || '—',
+    phone: src.Phone || src.phone || src.Mobile || '—',
+    role:
+      src.Role ||
+      src.role ||
+      src.Designation ||
+      src.Role_Name ||
+      'Unassigned',
+    image:
+      src.Image || src.image || src.profile_image || src.Profile_Image || null,
+    status,
+    isActive,
+    timing:
+      src.Timing ||
+      src.timing ||
+      src.Shift ||
+      src.Working_Hours ||
+      src.Timing_Details ||
+      null,
+    performance: {
+      orders: Number(
+        src.TotalOrders ?? src.Orders ?? src.orders ?? src.Order_Count ?? 0
+      ),
+      revenue: Number(
+        src.TotalRevenue ?? src.Revenue ?? src.revenue ?? src.Sales ?? 0
+      ),
+      rating: src.Rating ?? src.rating ?? null,
+    },
+    raw: src,
+  };
+};
+
+const normalizeEmployeeList = (payload) => {
+  const root = safeObj(payload);
+  const data = safeObj(root.data || root);
+
+  // Find the actual array in any of the possible keys
+  const possibleArrays = [
+    data.employees,
+    data.Employees,
+    data.employee,
+    data.employeeList,
+    data.EmployeesList,
+    data.data,
+    root.data,
+    root.employees,
+  ];
+  const rawList =
+    possibleArrays.find((a) => Array.isArray(a)) ||
+    (Array.isArray(root.data) ? root.data : []);
+
+  const employees = safeArray(rawList).map(normalizeEmployee);
+
+  // Role counts — support both object and array shapes
+  const roleCountsSource =
+    data.roleCounts ||
+    data.RoleCounts ||
+    data.EmployeeCountByRole ||
+    data.employeeCountByRole ||
+    root.roleCounts ||
+    [];
+
+  let roleCounts = [];
+  if (Array.isArray(roleCountsSource)) {
+    roleCounts = roleCountsSource.map((r) => ({
+      role: r.role || r.Role || r.name || r.Name || '—',
+      count: Number(r.count || r.Count || r.total || 0),
+    }));
+  } else if (roleCountsSource && typeof roleCountsSource === 'object') {
+    roleCounts = Object.entries(roleCountsSource).map(([role, count]) => ({
+      role,
+      count: Number(count) || 0,
+    }));
+  }
+
+  // If no roleCounts provided, derive from employees
+  if (roleCounts.length === 0 && employees.length > 0) {
+    const map = employees.reduce((acc, emp) => {
+      const key = emp.role || 'Unassigned';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+    roleCounts = Object.entries(map).map(([role, count]) => ({
+      role,
+      count,
+    }));
+  }
+
+  // Group by role
+  const grouped = employees.reduce((acc, emp) => {
+    const key = emp.role || 'Unassigned';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(emp);
+    return acc;
+  }, {});
+
+  const total =
+    data.total ??
+    data.Total ??
+    data.TotalEmployees ??
+    root.total ??
+    root.count ??
+    employees.length;
+
+  return {
+    employees,
+    grouped,
+    roleCounts,
+    total: Number(total) || employees.length,
+    raw: data,
   };
 };
 
@@ -242,7 +368,6 @@ export const forgotPasswordService = {
     );
     return response.data;
   },
-
   resendOtp: async (email) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.RESEND_OTP,
@@ -250,7 +375,6 @@ export const forgotPasswordService = {
     );
     return response.data;
   },
-
   verifyOtp: async (email, otp, newPassword) => {
     const response = await apiClient.post(
       ENDPOINTS.AUTH.FORGOT_PASSWORD.VERIFY_OTP,
@@ -415,7 +539,9 @@ export const clientService = {
   },
 
   getClientById: async (id) => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.CLIENTS.GET_BY_ID(id));
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.CLIENTS.GET_BY_ID(id)
+    );
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load client details');
@@ -459,6 +585,45 @@ export const clientService = {
 };
 
 /* ------------------------------------------------------------------ */
+/*  EMPLOYEES                                                          */
+/* ------------------------------------------------------------------ */
+export const employeeService = {
+  getByClient: async (clientId) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.USER.EMPLOYEES_BY_CLIENT(clientId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load employees');
+    }
+    return normalizeEmployeeList(payload);
+  },
+
+  getByRestaurant: async (restaurantUserId) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.USER.EMPLOYEES_BY_RESTAURANT(restaurantUserId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to load employees');
+    }
+    return normalizeEmployeeList(payload);
+  },
+
+  getById: async (employeeUserId) => {
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.USER.EMPLOYEE_DETAILS_BY_ID(employeeUserId)
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Employee not found');
+    }
+    const data = safeObj(payload?.data || payload);
+    return { ...normalizeEmployee(data), raw: data };
+  },
+};
+
+/* ------------------------------------------------------------------ */
 /*  SUBSCRIPTION                                                       */
 /* ------------------------------------------------------------------ */
 export const subscriptionService = {
@@ -478,9 +643,10 @@ export const subscriptionService = {
   getAllPlans: async (subscriptionType) => {
     const params = {};
     if (subscriptionType) params.Subscription_Type = subscriptionType;
-    const response = await apiClient.get(ENDPOINTS.ADMIN.SUBSCRIPTION.GET_ALL, {
-      params,
-    });
+    const response = await apiClient.get(
+      ENDPOINTS.ADMIN.SUBSCRIPTION.GET_ALL,
+      { params }
+    );
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load plans');
@@ -490,10 +656,7 @@ export const subscriptionService = {
       : Array.isArray(payload?.data?.data)
         ? payload.data.data
         : [];
-    return {
-      data,
-      count: payload?.count ?? payload?.data?.count ?? data.length,
-    };
+    return { data, count: payload?.count ?? payload?.data?.count ?? data.length };
   },
 
   getPublicPlans: async (subscriptionType) => {
@@ -510,10 +673,7 @@ export const subscriptionService = {
       : Array.isArray(payload?.data?.data)
         ? payload.data.data
         : [];
-    return {
-      data,
-      count: payload?.count ?? payload?.data?.count ?? data.length,
-    };
+    return { data, count: payload?.count ?? payload?.data?.count ?? data.length };
   },
 
   getPlanById: async (id) => {
@@ -540,10 +700,7 @@ export const subscriptionService = {
       : Array.isArray(payload?.data?.data)
         ? payload.data.data
         : [];
-    return {
-      data,
-      count: payload?.count ?? payload?.data?.count ?? data.length,
-    };
+    return { data, count: payload?.count ?? payload?.data?.count ?? data.length };
   },
 
   createPlan: async (payload) => {
@@ -587,7 +744,9 @@ export const subscriptionService = {
     });
     const payload = response.data;
     if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load subscription history');
+      throw new Error(
+        payload?.message || 'Failed to load subscription history'
+      );
     }
     return {
       data: payload?.data || [],
@@ -710,7 +869,6 @@ export const reportService = {
     };
   },
 
-  /* -------- Analytics (normalized) -------- */
   getRevenueReport: async ({
     dateRange = 'last30days',
     location = 'all',
@@ -754,7 +912,9 @@ export const reportService = {
     );
     const payload = response.data;
     if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load subscription report');
+      throw new Error(
+        payload?.message || 'Failed to load subscription report'
+      );
     }
     return normalizeSubscriptions(payload);
   },
@@ -765,12 +925,13 @@ export const reportService = {
     );
     const payload = response.data;
     if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load restaurant dashboard');
+      throw new Error(
+        payload?.message || 'Failed to load restaurant dashboard'
+      );
     }
     return payload?.data || null;
   },
 
-  // NEW ↓ — Performance cards + chart
   getRestaurantPerformance: async ({ restaurantId, filter = '24H' } = {}) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.REPORTS.RESTAURANT_PERFORMANCE,
@@ -804,7 +965,9 @@ export const reportService = {
     );
     const payload = response.data;
     if (payload?.success === false) {
-      throw new Error(payload?.message || 'Failed to load hardware sales report');
+      throw new Error(
+        payload?.message || 'Failed to load hardware sales report'
+      );
     }
     return normalizeHardwareSales(payload);
   },
@@ -998,7 +1161,7 @@ export const supportTicketService = {
 };
 
 /* ------------------------------------------------------------------ */
-/*  HAM (Hardware Asset Mgmt)                                          */
+/*  HAM                                                                */
 /* ------------------------------------------------------------------ */
 export const hamService = {
   getMyDevices: async () => {
@@ -1028,7 +1191,6 @@ export const hamService = {
   },
 
   getInventoryStatus: async () => {
-    // Delegate to the single source of truth
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.POS_HARDWARE.INVENTORY_STATUS
     );
@@ -1215,8 +1377,10 @@ export const subadminService = {
   },
 
   update: async (id, payload) => {
-    const url = ENDPOINTS.ADMIN.SUBADMIN.UPDATE(id);
-    const response = await apiClient.put(url, payload);
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.SUBADMIN.UPDATE(id),
+      payload
+    );
     const data = response.data;
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to update subadmin');
@@ -1236,7 +1400,6 @@ export const subadminService = {
     return data?.data || null;
   },
 
-  // 🔴 FIXED: was previously calling PAYMENT_OPTIONS.DELETE
   remove: async (id) => {
     const response = await apiClient.delete(
       ENDPOINTS.ADMIN.SUBADMIN.DELETE(id)
@@ -1300,8 +1463,10 @@ export const accountSettingsService = {
   },
 
   updateDateTime: async (payload) => {
-    const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME;
-    const response = await apiClient.put(url, payload);
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.DATE_TIME,
+      payload
+    );
     const data = response.data;
     if (data?.success === false) {
       throw new Error(data?.message || 'Failed to update date/time settings');
@@ -1400,15 +1565,14 @@ export const accountSettingsService = {
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to create API key');
     }
-    return {
-      data: payload?.data || null,
-      warning: payload?.warning || null,
-    };
+    return { data: payload?.data || null, warning: payload?.warning || null };
   },
 
   revokeApiKey: async (keyId) => {
-    const url = ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.REVOKE_API_KEY(keyId);
-    const response = await apiClient.post(url, {});
+    const response = await apiClient.post(
+      ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.REVOKE_API_KEY(keyId),
+      {}
+    );
     return response.data?.data || null;
   },
 
@@ -1435,10 +1599,9 @@ export const accountSettingsService = {
   },
 
   addTrustedDevice: async ({ device_name, device_type }) => {
-    const payload = { name: device_name, type: device_type };
     const response = await apiClient.post(
       ENDPOINTS.ADMIN.ACCOUNT_SETTINGS.TRUSTED_DEVICES,
-      payload
+      { name: device_name, type: device_type }
     );
     const data = response.data;
     if (data?.success === false) {
