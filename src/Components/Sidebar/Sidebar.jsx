@@ -1,16 +1,15 @@
 // src/Components/Sidebar/Sidebar.jsx
 
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { BarChart3, Activity, MonitorSmartphone } from 'lucide-react';
 
 import logo from '../../assets/LOGOPlande.svg';
-import profileAvatar from '../../assets/Images/admin/SidebarIcon/profileAvatar.png';
 import SignOutModal from './SignOutModal';
 import image1 from '../../assets/Images/admin/SidebarIcon/1.png';
 import image2 from '../../assets/Images/admin/SidebarIcon/2.png';
 import image3 from '../../assets/Images/admin/SidebarIcon/3.png';
-import image4 from '../../assets/Images/admin/SidebarIcon/4.png';
 import image5 from '../../assets/Images/admin/SidebarIcon/5.png';
 import image6 from '../../assets/Images/admin/SidebarIcon/6.png';
 import image7 from '../../assets/Images/admin/SidebarIcon/7.png';
@@ -42,26 +41,32 @@ const CHILDREN_MAP = {
 };
 
 const itemBaseClasses =
-  'flex items-center gap-[8px] sm:gap-[10px] px-4 sm:px-[22px] py-2 sm:py-3 rounded-[20px] sm:rounded-[24px] transition-all duration-300 min-h-[44px] sm:min-h-[48px] w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A1B9A] focus-visible:ring-offset-2';
+  'flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-200 min-h-[46px] w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6A1B9A] focus-visible:ring-offset-2';
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isSignOutOpen, setSignOutOpen] = useState(false);
   const { t } = useTranslation();
 
-  // Split into navigable items and the sign-out action
+  const dashboardItem = {
+    icon: image1,
+    label: t('nav.dashboard'),
+    route: '/Dashboard',
+  };
+
   const navItems = [
-    { icon: image1, label: t('nav.dashboard'), route: '/Dashboard' },
     { icon: image2, label: t('nav.clients'), route: '/clients' },
     { icon: image3, label: t('nav.subscriptions'), route: '/subscription-list' },
-    { icon: image4, label: t('nav.reports'), route: '/report' },
-    { icon: image4, label: t('nav.ham'), route: '/ham' },
-    { icon: image4, label: t('nav.momDevice'), route: '/mom' },
+    { icon: BarChart3, label: t('nav.reports'), route: '/report', isLucide: true },
+    { icon: Activity, label: t('nav.ham'), route: '/ham', isLucide: true },
+    { icon: MonitorSmartphone, label: t('nav.momDevice'), route: '/mom', isLucide: true },
     { icon: image5, label: t('nav.auditLog'), route: '/audit-log' },
     { icon: image6, label: t('nav.supports'), route: '/supports' },
     { icon: image7, label: t('nav.posDevice'), route: '/pos-device' },
     { icon: image8, label: t('nav.settings'), route: '/settings' },
   ];
+
   const signOutItem = { icon: image9, label: t('nav.signOut') };
 
   const checkIsSelected = (route) => {
@@ -81,78 +86,101 @@ export default function Sidebar() {
       console.error('Logout error:', error);
     } finally {
       setSignOutOpen(false);
-      // Navigate via router in caller or window.location — your existing logic
-      // used navigate('/'), which you can keep if you re-add useNavigate.
+      navigate('/');
     }
+  };
+
+  const renderItem = ({ icon, label, route, isLucide }, isSelected) => {
+    // Render Lucide icon component OR image
+    const IconEl = isLucide ? (
+      React.createElement(icon, {
+        'aria-hidden': 'true',
+        className: `w-5 h-5 flex-shrink-0 transition-all duration-200 ${
+          isSelected ? 'text-white' : 'text-gray-500'
+        }`,
+        strokeWidth: 2,
+      })
+    ) : (
+      <img
+        src={icon}
+        alt=""
+        aria-hidden="true"
+        className={`w-5 h-5 object-contain transition-all duration-200 flex-shrink-0 ${
+          isSelected ? 'filter brightness-0 invert' : 'opacity-70'
+        }`}
+      />
+    );
+
+    return (
+      <Link
+        to={route}
+        aria-current={isSelected ? 'page' : undefined}
+        className={`${itemBaseClasses} ${
+          isSelected
+            ? 'bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] shadow-[0_4px_12px_rgba(106,27,154,0.25)]'
+            : 'bg-transparent hover:bg-gray-50 text-gray-700 hover:text-gray-900'
+        }`}
+      >
+        {IconEl}
+        <span
+          className={`font-semibold text-[15px] leading-tight transition-colors duration-200 truncate ${
+            isSelected ? 'text-white' : ''
+          }`}
+        >
+          {label}
+        </span>
+      </Link>
+    );
   };
 
   return (
     <>
       <nav
         aria-label="Primary"
-        className="fixed left-0 top-0 w-[250px] sm:w-[280px] md:w-[250px] h-screen bg-gradient-to-b from-[rgba(106,27,154,0.1)] to-[rgba(211,47,47,0.1)] flex flex-col z-40 overflow-hidden"
+        className="fixed left-0 top-0 w-[250px] sm:w-[260px] h-screen bg-white border-r border-gray-100 flex flex-col z-40 overflow-hidden"
       >
-        <div className="flex flex-col h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-transparent">
-          <div className="flex items-center justify-center gap-[8.83px] mt-4 sm:mt-8  sm:mb-6  flex-shrink-0">
-            <img
-              src={logo}
-              className="w-[130px] sm:w-[120px] h-[65px]"
-              alt="Logo"
-            />
-          </div>
+        {/* ───── Logo — aligned perfectly with Topbar padding ───── */}
+        <div className="flex items-center px-6 h-[72px] flex-shrink-0 border-b border-transparent">
+          <img
+            src={logo}
+            className="w-[140px] h-auto object-contain"
+            alt="Triaxx POS"
+          />
+        </div>
 
-          <ul className="flex flex-col gap-3 sm:gap-2 md:gap-[12px] px-3 sm:px-4 md:px-[20.5px] pb-6 flex-1 list-none m-0">
-            {navItems.map(({ icon, label, route }) => {
-              const isSelected = checkIsSelected(route);
-              return (
-                <li key={route}>
-                  <Link
-                    to={route}
-                    aria-current={isSelected ? 'page' : undefined}
-                    className={`${itemBaseClasses} ${
-                      isSelected
-                        ? 'bg-gradient-to-r from-[#6A1B9A] to-[#D32F2F] shadow-lg scale-[1.02] sm:scale-105'
-                        : 'bg-transparent hover:bg-white/10'
-                    }`}
-                  >
-                    <img
-                      src={icon}
-                      alt=""
-                      aria-hidden="true"
-                      className={`w-5 sm:w-6 h-5 sm:h-6 transition-all duration-300 flex-shrink-0 ${
-                        isSelected ? 'filter brightness-0 invert' : ''
-                      }`}
-                    />
-                    <span
-                      className={`font-bold text-base sm:text-lg leading-[120%] transition-colors duration-300 truncate ${
-                        isSelected ? 'text-white' : 'text-black'
-                      }`}
-                    >
-                      {label}
-                    </span>
-                  </Link>
-                </li>
-              );
-            })}
+        {/* ───── Dashboard — pinned to top ───── */}
+        <div className="px-4 pt-2 pb-1 flex-shrink-0">
+          {renderItem(dashboardItem, checkIsSelected(dashboardItem.route))}
+        </div>
 
-            <li>
-              <button
-                type="button"
-                onClick={() => setSignOutOpen(true)}
-                className={`${itemBaseClasses} bg-transparent hover:bg-white/10`}
-              >
-                <img
-                  src={signOutItem.icon}
-                  alt=""
-                  aria-hidden="true"
-                  className="w-5 sm:w-6 h-5 sm:h-6 flex-shrink-0"
-                />
-                <span className="font-bold text-base sm:text-lg leading-[120%] truncate text-black">
-                  {signOutItem.label}
-                </span>
-              </button>
-            </li>
+        {/* ───── Middle scrollable ───── */}
+        <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 scrollbar-track-transparent px-4 py-2">
+          <ul className="flex flex-col gap-1 list-none m-0">
+            {navItems.map((item) => (
+              <li key={item.route}>
+                {renderItem(item, checkIsSelected(item.route))}
+              </li>
+            ))}
           </ul>
+        </div>
+
+        {/* ───── Sign Out — pinned bottom ───── */}
+        <div className="px-4 pb-6 pt-4 flex-shrink-0 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={() => setSignOutOpen(true)}
+            className={`${itemBaseClasses} bg-transparent hover:bg-red-50 group`}
+          >
+            <img
+              src={signOutItem.icon}
+              alt=""
+              aria-hidden="true"
+              className="w-5 h-5 object-contain flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity"
+            />
+            <span className="font-semibold text-[15px] leading-tight truncate text-gray-700 group-hover:text-red-600 transition-colors">
+              {signOutItem.label}
+            </span>
+          </button>
         </div>
       </nav>
 
