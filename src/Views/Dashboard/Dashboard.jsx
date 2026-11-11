@@ -1,6 +1,6 @@
 // src/Views/Dashboard/Dashboard.jsx
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import {
   ChevronDown,
   LoaderCircle,
@@ -33,6 +33,7 @@ import {
   setDashboardLoading,
   setDashboardData,
   setDashboardError,
+  setDashboardDateFilter,
   setCompleteDashboardLoading,
   setCompleteDashboardData,
   setCompleteDashboardError,
@@ -43,9 +44,6 @@ const Dashboard = () => {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation();  // ✅ translation hook
 
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-
   // ✅ Read dashboard data from Redux
   const {
     kpis,
@@ -54,10 +52,8 @@ const Dashboard = () => {
     lastUpdated,
     loading,
     hasLoaded,
-    completeDashboardLoaded,
+    dateFilter: selectedPeriod,
   } = useAppSelector((state) => state.dashboard);
-
-  const fetchedComplete = useRef(false);
 
   // ✅ Fetch main dashboard
   useEffect(() => {
@@ -94,26 +90,29 @@ const Dashboard = () => {
 
   // ✅ Fetch complete dashboard
   useEffect(() => {
-    if (completeDashboardLoaded || fetchedComplete.current) return;
-    fetchedComplete.current = true;
-
+    let active = true;
     const fetchComplete = async () => {
       dispatch(setCompleteDashboardLoading(true));
       try {
-        const data = await dashboardService.getCompleteDashboard();
-        dispatch(setCompleteDashboardData(data));
+        const data = await dashboardService.getCompleteDashboard(selectedPeriod);
+        if (active) dispatch(setCompleteDashboardData(data));
       } catch (err) {
         console.error('Complete dashboard fetch error:', err);
-        dispatch(
-          setCompleteDashboardError(
-            err?.message || 'Failed to load dashboard widgets'
-          )
-        );
+        if (active) {
+          dispatch(
+            setCompleteDashboardError(
+              err?.message || 'Failed to load dashboard widgets'
+            )
+          );
+        }
       }
     };
 
     fetchComplete();
-  }, [dispatch, completeDashboardLoaded]);
+    return () => {
+      active = false;
+    };
+  }, [dispatch, selectedPeriod]);
 
   // ---------------------------------------------------------------------
   // Helpers
@@ -145,6 +144,7 @@ const Dashboard = () => {
   // Period options (translated)
   // ---------------------------------------------------------------------
   const periodOptions = [
+    { value: 'all', key: 'period.all' },
     { value: 'today', key: 'period.today' },
     { value: 'yesterday', key: 'period.yesterday' },
     { value: 'this_week', key: 'period.thisWeek' },
@@ -205,7 +205,7 @@ const Dashboard = () => {
     },
     {
       title: t('dashboard.offlineDevices'),
-      value: '—',
+      value: formatNumber(kpis?.offlineDevices),
       icon: WifiOff,
       bgColor: 'bg-gray-100',
       iconColor: 'text-gray-500',
@@ -228,50 +228,38 @@ const Dashboard = () => {
         </div>
 
         {/* Period Dropdown */}
-        <div className="relative z-20">
-          <button
-            onClick={() => setDropdownOpen(!dropdownOpen)}
+        <div className="relative z-20 w-full sm:w-auto">
+          <label htmlFor="dashboard-date-filter" className="sr-only">
+            {t('dashboard.dateFilter')}
+          </label>
+          <select
+            id="dashboard-date-filter"
+            value={selectedPeriod}
+            onChange={(event) =>
+              dispatch(setDashboardDateFilter(event.target.value))
+            }
             aria-busy={loading}
-            className="flex items-center gap-2 w-[129px] h-[35px] px-4 py-2 bg-white border border-black rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+            className="h-10 w-full sm:w-48 appearance-none rounded-lg border border-gray-200 bg-white px-4 pr-10 text-sm font-medium text-gray-700 shadow-sm transition hover:border-gray-400 focus:border-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-100"
           >
-            <span className="text-gray-700 text-sm font-medium">
-              {t(periodOptions.find((p) => p.value === selectedPeriod)?.key) ||
-                selectedPeriod}
-            </span>
+            {periodOptions.map((period) => (
+              <option key={period.value} value={period.value}>
+                {t(period.key) || period.value}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
             {loading ? (
               <LoaderCircle
-                className="w-4 h-4 text-purple-700 animate-spin"
+                className="h-4 w-4 animate-spin text-purple-700"
                 aria-hidden="true"
               />
             ) : (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
+              <ChevronDown
+                className="h-4 w-4 text-gray-500"
+                aria-hidden="true"
+              />
             )}
-          </button>
-
-          {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-[246px] bg-white shadow rounded-lg flex flex-col px-3 py-5 gap-2 border">
-              {periodOptions.map((period) => (
-                <button
-                  key={period.value}
-                  onClick={() => {
-                    setSelectedPeriod(period.value);
-                    setDropdownOpen(false);
-                  }}
-                  className={`
-                    w-full text-left px-2 py-2 rounded 
-                    text-sm font-medium font-[Manrope] 
-                    ${
-                      selectedPeriod === period.value
-                        ? 'bg-gradient-to-b from-[#6A1B9A] to-[#D32F2F] text-white'
-                        : 'hover:bg-gray-100 text-black'
-                    }
-                  `}
-                >
-                  {t(period.key) || period.value}
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
         </div>
       </div>
 

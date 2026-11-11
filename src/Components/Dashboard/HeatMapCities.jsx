@@ -16,25 +16,29 @@ const HeatMapCities = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const { heatmap, heatmapLoading } = useAppSelector((state) => state.dashboard);
+  const { heatmap, heatmapLoading, dateFilter } = useAppSelector(
+    (state) => state.dashboard
+  );
 
-  // ✅ Fetch on mount
+  // Reload this widget whenever the shared dashboard period changes.
   useEffect(() => {
-    if (heatmap) return;
-
+    let active = true;
     const fetchHeatmap = async () => {
       dispatch(setHeatmapLoading(true));
       try {
-        const data = await dashboardService.getHeatmap();
-        dispatch(setHeatmapData(data));
+        const data = await dashboardService.getHeatmap(dateFilter);
+        if (active) dispatch(setHeatmapData(data));
       } catch (err) {
         console.error('Heatmap fetch error:', err);
-        dispatch(setHeatmapLoading(false));
+        if (active) dispatch(setHeatmapLoading(false));
       }
     };
 
     fetchHeatmap();
-  }, [dispatch, heatmap]);
+    return () => {
+      active = false;
+    };
+  }, [dispatch, dateFilter]);
 
   // ✅ Transform API data → pie slices
   const rawData = heatmap?.data || [];

@@ -10,6 +10,7 @@ const initialState = {
   kpis: { totalRevenue: 0, monthlySecurity: 0, totalPOSClients: 0 },
   dailyActivity: { title: '', subtitle: '', data: [] },
   monthlyGrowth: { title: '', subtitle: '', data: [] },
+  dateFilter: 'today',
   lastUpdated: null,
   loading: false,
   error: null,
@@ -57,6 +58,9 @@ const dashboardSlice = createSlice({
   initialState,
   reducers: {
     // ---------------- MAIN ----------------
+    setDashboardDateFilter: (state, action) => {
+      state.dateFilter = action.payload;
+    },
     setDashboardLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -171,6 +175,7 @@ const dashboardSlice = createSlice({
 // ---------------------------------------------------------------------------
 export const {
   // Main
+  setDashboardDateFilter,
   setDashboardLoading,
   setDashboardData,
   setDashboardError,

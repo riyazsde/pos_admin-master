@@ -455,9 +455,10 @@ export const dashboardService = {
     return payload?.data || null;
   },
 
-  getProfitAfterTax: async () => {
+  getProfitAfterTax: async (filter) => {
     const response = await apiClient.get(
-      ENDPOINTS.ADMIN.DASHBOARD.PROFIT_AFTER_TAX
+      ENDPOINTS.ADMIN.DASHBOARD.PROFIT_AFTER_TAX,
+      { params: filter ? { filter } : undefined }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -466,10 +467,10 @@ export const dashboardService = {
     return payload?.data || null;
   },
 
-  getTopPerformers: async (page = 1, limit = 10) => {
+  getTopPerformers: async (page = 1, limit = 10, filter) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.DASHBOARD.TOP_PERFORMERS,
-      { params: { page, limit } }
+      { params: { page, limit, ...(filter ? { filter } : {}) } }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -481,10 +482,10 @@ export const dashboardService = {
     };
   },
 
-  getSubscriptions: async (page = 1, limit = 10) => {
+  getSubscriptions: async (page = 1, limit = 10, filter) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.DASHBOARD.SUBSCRIPTIONS,
-      { params: { page, limit } }
+      { params: { page, limit, ...(filter ? { filter } : {}) } }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -496,8 +497,10 @@ export const dashboardService = {
     };
   },
 
-  getHeatmap: async () => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.HEATMAP);
+  getHeatmap: async (filter) => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.HEATMAP, {
+      params: filter ? { filter } : undefined,
+    });
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load heatmap');
@@ -505,10 +508,10 @@ export const dashboardService = {
     return payload?.data || null;
   },
 
-  getSupportTickets: async (page = 1, limit = 5, status = 'Open') => {
+  getSupportTickets: async (page = 1, limit = 5, status = 'Open', filter) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.DASHBOARD.SUPPORT_TICKETS,
-      { params: { page, limit, status } }
+      { params: { page, limit, status, ...(filter ? { filter } : {}) } }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -520,10 +523,10 @@ export const dashboardService = {
     };
   },
 
-  getRenewalAlerts: async (page = 1, limit = 10) => {
+  getRenewalAlerts: async (page = 1, limit = 10, filter) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.DASHBOARD.RENEWAL_ALERTS,
-      { params: { page, limit } }
+      { params: { page, limit, ...(filter ? { filter } : {}) } }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -535,8 +538,10 @@ export const dashboardService = {
     };
   },
 
-  getCompleteDashboard: async () => {
-    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.COMPLETE);
+  getCompleteDashboard: async (filter) => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.DASHBOARD.COMPLETE, {
+      params: filter ? { filter } : undefined,
+    });
     const payload = response.data;
     if (payload?.success === false) {
       throw new Error(payload?.message || 'Failed to load complete dashboard');
@@ -933,10 +938,11 @@ export const reportService = {
     threshold = 10,
     location = 'all',
     search = '',
+    filter,
   } = {}) => {
     const response = await apiClient.get(
       ENDPOINTS.ADMIN.REPORTS.LOW_STOCK_ALERTS,
-      { params: { threshold, location, search } }
+      { params: { threshold, location, search, ...(filter ? { filter } : {}) } }
     );
     const payload = response.data;
     if (payload?.success === false) {
@@ -1220,9 +1226,10 @@ export const hamService = {
     };
   },
 
-  getSoldInRestaurant: async () => {
+  getSoldInRestaurant: async (filter) => {
     const response = await apiClient.get(
-      ENDPOINTS.ADMIN.HAM.SOLD_IN_RESTAURANT
+      ENDPOINTS.ADMIN.HAM.SOLD_IN_RESTAURANT,
+      { params: filter ? { filter } : undefined }
     );
     const payload = response.data;
     if (payload?.success === false) {

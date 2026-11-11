@@ -22,7 +22,7 @@ const SubscriptionRenewalAlert = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Keep in sync with your API limit
 
-  const { renewalAlerts, renewalAlertsLoading } = useAppSelector(
+  const { renewalAlerts, renewalAlertsLoading, dateFilter } = useAppSelector(
     (state) => state.dashboard
   );
 
@@ -56,7 +56,8 @@ const SubscriptionRenewalAlert = () => {
         // Pass currentPage and itemsPerPage to API
         const result = await dashboardService.getRenewalAlerts(
           currentPage,
-          itemsPerPage
+          itemsPerPage,
+          dateFilter
         );
         dispatch(setRenewalAlertsData(result));
       } catch (err) {
@@ -66,7 +67,7 @@ const SubscriptionRenewalAlert = () => {
     };
 
     fetchRenewals();
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, dateFilter]);
 
   // ✅ Handle "Send Alert" click
   const handleSendAlert = (subscription) => {
@@ -169,12 +170,16 @@ const SubscriptionRenewalAlert = () => {
               {renewalAlerts.map((item, index) => {
                 const id = item.id || String(index + 1).padStart(2, '0');
                 const businessName =
+                  item.Business_Name ||
                   item.businessName ||
                   item.CompanyName ||
                   item.companyName ||
                   `${t('dashboard.businessLabel')} #${index + 1}`;
                 const renewalDate =
-                  item.renewalDate || item.RenewalDate || item.nextRenewalDate;
+                  item.ExpiryDate ||
+                  item.renewalDate ||
+                  item.RenewalDate ||
+                  item.nextRenewalDate;
                 const urgent = isUrgent(renewalDate);
 
                 return (

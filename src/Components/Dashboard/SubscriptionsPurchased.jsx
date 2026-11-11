@@ -22,7 +22,7 @@ const SubscriptionsPurchased = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const { subscriptions, subscriptionsLoading } = useAppSelector(
+  const { subscriptions, subscriptionsLoading, dateFilter } = useAppSelector(
     (state) => state.dashboard
   );
 
@@ -34,7 +34,8 @@ const SubscriptionsPurchased = () => {
         // Pass page and limit to API
         const result = await dashboardService.getSubscriptions(
           currentPage,
-          itemsPerPage
+          itemsPerPage,
+          dateFilter
         );
         dispatch(setSubscriptionsData(result));
       } catch (err) {
@@ -44,7 +45,7 @@ const SubscriptionsPurchased = () => {
     };
 
     fetchSubscriptions();
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, dateFilter]);
 
   // ✅ Locale-aware date
   const formatDate = (iso) => {

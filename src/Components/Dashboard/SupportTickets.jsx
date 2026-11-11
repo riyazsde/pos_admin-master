@@ -1,6 +1,6 @@
 // src/Components/Dashboard/SupportTickets.jsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LifeBuoy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -66,37 +66,59 @@ const SupportTickets = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+  const [status, setStatus] = useState('Open');
 
-  const { supportTickets, supportTicketsLoading } = useAppSelector(
+  const { supportTickets, supportTicketsLoading, dateFilter } = useAppSelector(
     (state) => state.dashboard
   );
 
   // ✅ Fetch on mount
   useEffect(() => {
-    if (supportTickets && supportTickets.length > 0) return;
-
+    let active = true;
     const fetchTickets = async () => {
       dispatch(setSupportTicketsLoading(true));
       try {
-        const result = await dashboardService.getSupportTickets(1, 5, 'Open');
-        dispatch(setSupportTicketsData(result));
+        const result = await dashboardService.getSupportTickets(
+          1,
+          5,
+          status,
+          dateFilter
+        );
+        if (active) dispatch(setSupportTicketsData(result));
       } catch (err) {
         console.error('Support tickets fetch error:', err);
-        dispatch(setSupportTicketsLoading(false));
+        if (active) dispatch(setSupportTicketsLoading(false));
       }
     };
 
     fetchTickets();
-  }, [dispatch, supportTickets]);
+    return () => {
+      active = false;
+    };
+  }, [dispatch, status, dateFilter]);
 
   // ✅ Loading skeleton
   if (supportTicketsLoading && supportTickets.length === 0) {
     return (
       <div className="w-full h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-            {t('dashboard.openTicket')}
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+              {t('dashboard.openTicket')}
+            </h2>
+            <select
+              aria-label={t('dashboard.ticketStatusFilter')}
+              value={status}
+              onChange={(event) => setStatus(event.target.value)}
+              className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700"
+            >
+              {['Pending', 'Open', 'Process', 'Solve', 'Close'].map((value) => (
+                <option key={value} value={value}>
+                  {t(`dashboard.ticketStatuses.${value.toLowerCase()}`)}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="bg-white border border-gray-200 rounded-[30px] shadow-sm h-[400px] p-5 animate-pulse">
           {[...Array(5)].map((_, i) => (
@@ -120,9 +142,23 @@ const SupportTickets = () => {
     <div className="w-full h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
-          {t('dashboard.openTicket')}
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+            {t('dashboard.openTicket')}
+          </h2>
+          <select
+            aria-label={t('dashboard.ticketStatusFilter')}
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+            className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700"
+          >
+            {['Pending', 'Open', 'Process', 'Solve', 'Close'].map((value) => (
+              <option key={value} value={value}>
+                {t(`dashboard.ticketStatuses.${value.toLowerCase()}`)}
+              </option>
+            ))}
+          </select>
+        </div>
         <button
           className="text-xs sm:text-sm font-semibold text-black font-['Poppins'] hover:underline"
           onClick={() => navigate('/supports')}

@@ -20,7 +20,7 @@ const TopPerformers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  const { topPerformers, topPerformersLoading } = useAppSelector(
+  const { topPerformers, topPerformersLoading, dateFilter } = useAppSelector(
     (state) => state.dashboard
   );
 
@@ -31,7 +31,8 @@ const TopPerformers = () => {
       try {
         const result = await dashboardService.getTopPerformers(
           currentPage,
-          itemsPerPage
+          itemsPerPage,
+          dateFilter
         );
         dispatch(setTopPerformersData(result));
       } catch (err) {
@@ -41,7 +42,7 @@ const TopPerformers = () => {
     };
 
     fetchPerformers();
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, dateFilter]);
 
   // ✅ Loading skeleton
   if (topPerformersLoading && (!topPerformers || topPerformers.length === 0)) {

@@ -23,25 +23,29 @@ const ProfitAfterTax = () => {
   const dispatch = useAppDispatch();
   const { t, i18n } = useTranslation();
 
-  const { profit, profitLoading } = useAppSelector((state) => state.dashboard);
+  const { profit, profitLoading, dateFilter } = useAppSelector(
+    (state) => state.dashboard
+  );
 
-  // ✅ Fetch on mount if not already loaded
+  // Reload this widget whenever the shared dashboard period changes.
   useEffect(() => {
-    if (profit) return;
-
+    let active = true;
     const fetchProfit = async () => {
       dispatch(setProfitLoading(true));
       try {
-        const data = await dashboardService.getProfitAfterTax();
-        dispatch(setProfitData(data));
+        const data = await dashboardService.getProfitAfterTax(dateFilter);
+        if (active) dispatch(setProfitData(data));
       } catch (err) {
         console.error('Profit fetch error:', err);
-        dispatch(setProfitLoading(false));
+        if (active) dispatch(setProfitLoading(false));
       }
     };
 
     fetchProfit();
-  }, [dispatch, profit]);
+    return () => {
+      active = false;
+    };
+  }, [dispatch, dateFilter]);
 
   // ⚠️ Placeholder monthly trend until backend provides it
   const chartData =
@@ -98,11 +102,6 @@ const ProfitAfterTax = () => {
         <h2 className="text-xl font-bold text-black whitespace-nowrap">
           {t('profitAfterTax.title')}
         </h2>
-        <select className="text-sm border border-gray-400 rounded-md px-3 py-1.5 bg-white text-black focus:outline-none">
-          <option>{t('period.thisMonth')}</option>
-          <option>{t('period.lastMonth')}</option>
-          <option>{t('period.thisYear')}</option>
-        </select>
       </div>
 
       {/* Card */}

@@ -6,7 +6,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 const UpcommingRenewals = () => {
-  const { renewalAlerts, completeDashboardLoading } = useAppSelector(
+  const { renewalAlerts, subscriptions, completeDashboardLoading } = useAppSelector(
     (state) => state.dashboard
   );
   const { t, i18n } = useTranslation();
@@ -32,22 +32,37 @@ const UpcommingRenewals = () => {
   };
 
   // Normalize incoming data (flexible field names)
-  const rows = (renewalAlerts || []).map((item, index) => ({
+  const rows = (renewalAlerts || []).map((item, index) => {
+    const subscription = subscriptions.find(
+      (entry) =>
+        String(entry.Admin_Plan_Buy_Restaurant_id) ===
+        String(item.Admin_Plan_Buy_Restaurant_id)
+    );
+    const amount = subscription?.Price;
+    return {
     id: item.id || String(index + 1).padStart(2, '0'),
     restaurant:
+      item.Business_Name ||
       item.businessName ||
       item.restaurantName ||
       item.CompanyName ||
       item.companyName ||
       `${t('upcomingRenewals.clientLabel')} #${index + 1}`,
-    plan: item.Plan || item.plan || '—',
+    plan: item.Plan_Name || item.Plan || item.plan || '—',
     date: formatDate(
-      item.renewalDate || item.RenewalDate || item.nextRenewalDate
+      item.ExpiryDate ||
+        item.renewalDate ||
+        item.RenewalDate ||
+        item.nextRenewalDate
     ),
-    amount: item.amount
-      ? formatAmount(item.amount, item.currency)
-      : item.Amount || '—',
-  }));
+    amount:
+      amount !== null && amount !== undefined
+        ? formatAmount(amount, subscription.Currency || 'XOF')
+        : item.amount
+          ? formatAmount(item.amount, item.currency)
+          : item.Amount || '—',
+    };
+  });
 
   const hasData = rows.length > 0;
 
