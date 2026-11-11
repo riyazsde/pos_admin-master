@@ -25,6 +25,8 @@ export const ENDPOINTS = {
 
   // ----------------------------- ADMIN -----------------------------
   ADMIN: {
+    SEARCH: '/api/v1/admin/search',
+
     ACCOUNT_SETTINGS: {
       DATE_TIME: '/api/v1/admin/account-settings/date-time',
       PROFILE: '/api/v1/user/getbyauth',

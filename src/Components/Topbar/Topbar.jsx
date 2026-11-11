@@ -1,6 +1,6 @@
 // src/Components/Topbar/Topbar.jsx
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Search,
   Menu,
@@ -22,13 +22,19 @@ import {
   Lock,
   Calendar,
   Globe,
+  Building2,
+  LifeBuoy,
+  MonitorSmartphone,
+  Sparkles,
+  LoaderCircle,
+  ArrowUpRight,
 } from 'lucide-react';
 import porfileImg from '../../assets/Images/admin/Avatar.png';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
-import { authService } from '../../Services/apiService';
+import { authService, searchService } from '../../Services/apiService';
 import {
   getFullName,
   getRoleName,
@@ -43,8 +49,86 @@ import {
   getCodeForLanguage,
 } from '../../Store/Features/language/languageSlice';
 
+const getSearchResultLabel = (result) => {
+  if (typeof result === 'string' || typeof result === 'number') {
+    return String(result);
+  }
+  const label =
+    result?.name ||
+    result?.Name ||
+    result?.businessName ||
+    result?.BusinessName ||
+    result?.title ||
+    result?.email ||
+    result?.phone ||
+    result?.id ||
+    result?._id ||
+    'Search result';
+  return String(label);
+};
+
+const getSearchResultType = (result) =>
+  String(result?.type || result?.entity || result?.category || 'Record');
+
+const getSearchResultIcon = (type) => {
+  const normalizedType = type.toLowerCase();
+  if (/client|restaurant|business/.test(normalizedType)) return Building2;
+  if (/ticket|support/.test(normalizedType)) return LifeBuoy;
+  if (/device|hardware/.test(normalizedType)) return MonitorSmartphone;
+  if (/subscription|plan/.test(normalizedType)) return CreditCard;
+  return Search;
+};
+
+const getSearchResultDestination = (result) => {
+  const type = String(
+    result?.type || result?.entity || result?.category || ''
+  ).toLowerCase();
+  const resultPath = result?.route || result?.path || result?.url;
+  const id =
+    result?.id ??
+    result?._id ??
+    result?.clientId ??
+    result?.Client_id ??
+    result?.userId ??
+    result?.User_id;
+
+  if (
+    typeof resultPath === 'string' &&
+    resultPath.startsWith('/') &&
+    !resultPath.startsWith('//')
+  ) {
+    return { pathname: resultPath, state: result?.state };
+  }
+  if (/client|restaurant|business/.test(type) && id != null) {
+    return { pathname: `/client-details?id=${encodeURIComponent(id)}` };
+  }
+  if (/ticket|support/.test(type)) {
+    return { pathname: '/ticket-details', state: { ticket: result } };
+  }
+  if (/subscription|plan/.test(type)) {
+    return { pathname: '/subscription-list' };
+  }
+  if (/device|hardware/.test(type)) {
+    return { pathname: '/pos-device' };
+  }
+  if (/audit/.test(type)) {
+    return { pathname: '/audit-log' };
+  }
+  if (/employee|sub.?admin|admin/.test(type)) {
+    return { pathname: '/sub-admin' };
+  }
+  if (/report/.test(type)) {
+    return { pathname: '/report' };
+  }
+  return null;
+};
+
 const Topbar = ({ onMenuClick }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -53,6 +137,40 @@ const Topbar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (!query) {
+      setSearchResults([]);
+      setSearchError('');
+      setIsSearchLoading(false);
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      setIsSearchLoading(true);
+      setSearchError('');
+      try {
+        const results = await searchService.search(query, 5, controller.signal);
+        setSearchResults(results);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setSearchResults([]);
+          setSearchError(error.message || 'Search failed. Please try again.');
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsSearchLoading(false);
+        }
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [searchQuery]);
 
   // ---------- Redux state ----------
   const reduxUser = useAppSelector((state) => state.auth?.user);
@@ -140,6 +258,13 @@ const Topbar = ({ onMenuClick }) => {
     }
   };
 
+  const handleSearchResultClick = (result) => {
+    const destination = getSearchResultDestination(result);
+    if (!destination) return;
+    navigate(destination.pathname, { state: destination.state });
+    setIsSearchOpen(false);
+  };
+
   return (
     <>
       <div className="w-full bg-white border-b border-gray-200 shadow-sm">
@@ -154,19 +279,198 @@ const Topbar = ({ onMenuClick }) => {
             </button>
 
             <div className="relative hidden md:block">
-              <div className="flex items-center bg-gradient-to-r from-purple-50 to-red-50 rounded-full px-4 py-2 min-w-[300px]">
+              <form
+                role="search"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setIsSearchOpen(true);
+                }}
+                className="flex items-center bg-gradient-to-r from-purple-50 to-red-50 rounded-full px-4 py-2 min-w-[300px]"
+              >
                 <Menu className="w-5 h-5 text-gray-700 mr-3" />
                 <input
                   type="text"
                   placeholder={t('common.search') || 'Search'}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value);
+                    setSearchResults([]);
+                    setSearchError('');
+                    setIsSearchLoading(Boolean(event.target.value.trim()));
+                    setIsSearchOpen(true);
+                  }}
+                  onFocus={() => setIsSearchOpen(true)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Escape') setIsSearchOpen(false);
+                  }}
+                  aria-label={t('common.search') || 'Search'}
+                  aria-expanded={isSearchOpen && Boolean(searchQuery.trim())}
+                  aria-controls="admin-search-results"
                   className="bg-transparent border-none outline-none flex-1 text-gray-700 placeholder-gray-500"
                 />
-                <button className="ml-3 p-1 hover:bg-white rounded-full transition-colors">
+                <button
+                  type="submit"
+                  aria-label="Search"
+                  className="ml-3 p-1 hover:bg-white rounded-full transition-colors"
+                >
                   <Search className="w-4 h-4 text-gray-500" />
                 </button>
-              </div>
+              </form>
+
+              {isSearchOpen && searchQuery.trim() && (
+                <div
+                  id="admin-search-results"
+                  role="listbox"
+                  aria-label="Search results"
+                  aria-live="polite"
+                  className="absolute left-0 top-full mt-3 w-[min(420px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_20px_60px_-15px_rgba(15,23,42,0.28)] ring-1 ring-black/5 z-50"
+                >
+                  <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 text-purple-700">
+                        <Sparkles className="h-4 w-4" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          Global search
+                        </p>
+                        <p className="text-[11px] text-gray-500">
+                          Results for “{searchQuery.trim()}”
+                        </p>
+                      </div>
+                    </div>
+                    {!isSearchLoading &&
+                      !searchError &&
+                      searchResults.length > 0 && (
+                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                          {searchResults.length}{' '}
+                          {searchResults.length === 1 ? 'result' : 'results'}
+                        </span>
+                      )}
+                  </div>
+
+                  {isSearchLoading ? (
+                    <div className="flex items-center gap-3 px-4 py-6">
+                      <LoaderCircle
+                        className="h-5 w-5 animate-spin text-purple-600"
+                        aria-hidden="true"
+                      />
+                      <p className="text-sm text-gray-600">
+                        Searching your workspace…
+                      </p>
+                    </div>
+                  ) : searchError ? (
+                    <div
+                      role="alert"
+                      className="m-3 rounded-xl border border-red-100 bg-red-50 px-3 py-3 text-sm text-red-700"
+                    >
+                      {searchError}
+                    </div>
+                  ) : searchResults.length === 0 ? (
+                    <div className="px-5 py-8 text-center">
+                      <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                        <Search className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <p className="text-sm font-medium text-gray-800">
+                        No matches found
+                      </p>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Try another name, email, or keyword.
+                      </p>
+                    </div>
+                  ) : (
+                    <ul className="max-h-[min(60vh,420px)] overflow-y-auto p-2">
+                      {searchResults.map((result, index) => {
+                        const destination =
+                          getSearchResultDestination(result);
+                        const label = getSearchResultLabel(result);
+                        const type = getSearchResultType(result);
+                        const ResultIcon = getSearchResultIcon(type);
+                        const rawDescription =
+                          result?.description ||
+                          result?.email ||
+                          result?.phone ||
+                          result?.subtitle ||
+                          result?.data?.Email ||
+                          result?.data?.email;
+                        const description = rawDescription
+                          ? String(rawDescription)
+                          : '';
+                        const key =
+                          result?.id ??
+                          result?._id ??
+                          `${label}-${index}`;
+                        const className =
+                          'group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-purple-50 focus:bg-purple-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500';
+                        const resultContent = (
+                          <>
+                            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-500 ring-1 ring-gray-100 transition-colors group-hover:bg-white group-hover:text-purple-700">
+                              <ResultIcon
+                                className="h-[18px] w-[18px]"
+                                aria-hidden="true"
+                              />
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex items-center gap-2">
+                                <span className="truncate text-sm font-semibold text-gray-800">
+                                  {label}
+                                </span>
+                                {type !== 'Record' && (
+                                  <span className="flex-shrink-0 rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium capitalize text-gray-600">
+                                    {type}
+                                  </span>
+                                )}
+                              </span>
+                              {description && (
+                                <span className="mt-1 block truncate text-xs text-gray-500">
+                                  {description}
+                                </span>
+                              )}
+                            </span>
+                            {destination && (
+                              <ArrowUpRight
+                                className="h-4 w-4 flex-shrink-0 text-gray-300 transition-colors group-hover:text-purple-600"
+                                aria-hidden="true"
+                              />
+                            )}
+                          </>
+                        );
+
+                        return (
+                          <li key={key}>
+                            {destination ? (
+                              <button
+                                type="button"
+                                role="option"
+                                aria-selected="false"
+                                onClick={() =>
+                                  handleSearchResultClick(result)
+                                }
+                                className={className}
+                              >
+                                {resultContent}
+                              </button>
+                            ) : (
+                              <div
+                                role="option"
+                                aria-selected="false"
+                                className={className}
+                              >
+                                {resultContent}
+                              </div>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  <div className="border-t border-gray-100 bg-gray-50/70 px-4 py-2.5">
+                    <p className="text-[11px] text-gray-500">
+                      Search across all admin records
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

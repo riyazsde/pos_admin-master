@@ -559,6 +559,56 @@ export const dashboardService = {
 /* ------------------------------------------------------------------ */
 /*  CLIENT                                                             */
 /* ------------------------------------------------------------------ */
+export const searchService = {
+  search: async (q, limit = 5, signal) => {
+    const response = await apiClient.get(ENDPOINTS.ADMIN.SEARCH, {
+      params: { q, limit },
+      signal,
+    });
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to search admin records');
+    }
+
+    const containers = [
+      payload?.results,
+      payload?.data?.results,
+      payload?.data?.items,
+      payload?.data?.result,
+      payload?.data?.data,
+      payload?.data,
+      payload,
+    ];
+    const resultList = containers.find(Array.isArray);
+    if (resultList) return resultList;
+
+    const groupedResults = containers.find(
+      (value) => value && typeof value === 'object' && !Array.isArray(value)
+    );
+    if (groupedResults) {
+      return Object.entries(groupedResults).flatMap(([type, group]) => {
+        const groupResults = Array.isArray(group)
+          ? group
+          : Array.isArray(group?.results)
+            ? group.results
+            : null;
+        return groupResults
+          ? groupResults.map((item) =>
+              item && typeof item === 'object' && !Array.isArray(item)
+                ? {
+                    ...item,
+                    type: item.type || item.entity || item.category || type,
+                  }
+                : item
+            )
+          : [];
+      });
+    }
+
+    throw new Error('Search response did not contain a results list');
+  },
+};
+
 export const clientService = {
   createClient: async (payload) => {
     const response = await apiClient.post(
