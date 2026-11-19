@@ -23,14 +23,15 @@ import {
 } from '../../Store/Features/clients/clientsSlice';
 import { clientService } from '../../Services/apiService';
 import ResetPasswordModal from './ResetPasswordModal';
+import {
+  BUSINESS_TIME_ZONE,
+  getDaysLeft,
+} from './clientRenewalDate';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 const PER_PAGE = 8;
-
-// IANA timezone your back office treats as "today".
-const BUSINESS_TZ = 'Africa/Johannesburg';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -51,35 +52,6 @@ const formatDate = (iso, locale = 'en-US') => {
 const formatNumber = (n, locale = 'en-US') => {
   if (n === null || n === undefined) return '0';
   return Number(n).toLocaleString(locale);
-};
-
-// Format a Date as YYYY-MM-DD in a specific IANA timezone.
-const toZonedDateKey = (date, timeZone) => {
-  const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(date);
-  const get = (type) => parts.find((p) => p.type === type)?.value;
-  return `${get('year')}-${get('month')}-${get('day')}`;
-};
-
-// Whole calendar days from today (in `timeZone`) to `iso`.
-// Returns null for missing/invalid dates. Negative = overdue.
-const getDaysLeft = (iso, timeZone = BUSINESS_TZ, now = new Date()) => {
-  if (!iso) return null;
-  const target = new Date(iso);
-  if (Number.isNaN(target.getTime())) return null;
-
-  const todayKey = toZonedDateKey(now, timeZone);
-  const targetKey = toZonedDateKey(target, timeZone);
-  if (targetKey === todayKey) return 0;
-
-  const msPerDay = 86_400_000;
-  const todayUtc = Date.parse(`${todayKey}T00:00:00Z`);
-  const targetUtc = Date.parse(`${targetKey}T00:00:00Z`);
-  return Math.round((targetUtc - todayUtc) / msPerDay);
 };
 
 // Status may come back as true/false, 1/0, "true"/"false", or "Active"/"Inactive".
@@ -167,46 +139,42 @@ const Clients = () => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
-  // Stable per calendar day so countdowns don't change on re-renders.
-  const todayKey = useMemo(() => toZonedDateKey(new Date(), BUSINESS_TZ), []);
+  const now = new Date();
 
-  // Precompute countdowns once per data/page/day change.
-  const rows = useMemo(() => {
-    return paginatedClients.map((client) => {
-      // Prefer nested About fields if present
-      const about = client.About || {};
-      const sub = client.AccountSubscriptionDetails || {};
+  // Use one timestamp for every row so countdowns cannot straddle midnight.
+  const rows = paginatedClients.map((client) => {
+    // Prefer subscription details when available.
+    const sub = client.AccountSubscriptionDetails || {};
 
-      // Only compute countdown from an actual renewal date.
-      const renewalSource =
-        sub.RenewalDate ?? client.RenewalDate ?? null;
-      const fallback = client.CreateAt ?? client.CreatedAt ?? null;
-      const fallbackFresh =
-        fallback && getDaysLeft(fallback, BUSINESS_TZ) > -365
-          ? fallback
-          : null;
-      const daysLeft = getDaysLeft(
-        renewalSource ?? fallbackFresh,
-        BUSINESS_TZ
-      );
+    // Only compute countdown from an actual renewal date.
+    const renewalSource =
+      sub.RenewalDate ?? client.RenewalDate ?? null;
+    const fallback = client.CreateAt ?? client.CreatedAt ?? null;
+    const fallbackFresh =
+      fallback && getDaysLeft(fallback, BUSINESS_TIME_ZONE, now) > -365
+        ? fallback
+        : null;
+    const daysLeft = getDaysLeft(
+      renewalSource ?? fallbackFresh,
+      BUSINESS_TIME_ZONE,
+      now
+    );
 
-      return {
-        client,
-        daysLeft,
-        plan:
-          sub.CurrentPlan?.PlanName ||
-          client.Plan ||
-          client.PlanName ||
-          null,
-        paymentMethod:
-          sub.PaymentMethod ||
-          client.PaymentMethod ||
-          client.Payment_Method ||
-          null,
-      };
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginatedClients, todayKey]);
+    return {
+      client,
+      daysLeft,
+      plan:
+        sub.CurrentPlan?.PlanName ||
+        client.Plan ||
+        client.PlanName ||
+        null,
+      paymentMethod:
+        sub.PaymentMethod ||
+        client.PaymentMethod ||
+        client.Payment_Method ||
+        null,
+    };
+  });
 
   // Selection Logic
   useEffect(() => {

@@ -213,7 +213,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen p-4 md:p-3 w-full">
+    <div className="dashboard-typography min-h-screen min-w-0 w-full p-4 md:p-3">
       {/* ------------------------------ Topbar ------------------------------ */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
@@ -329,10 +329,10 @@ const Dashboard = () => {
 
       {/* --------------------------- Section 1: Charts --------------------------- */}
       <div className="flex flex-col lg:flex-row gap-4 mb-6 items-stretch">
-        <div className="w-full lg:w-3/5 flex">
+        <div className="w-full min-w-0 lg:w-3/5 flex">
           <CurrentMonthActivity data={dailyActivity} />
         </div>
-        <div className="w-full lg:w-2/5 flex">
+        <div className="w-full min-w-0 lg:w-2/5 flex">
           <MonthlyGrowthChart data={monthlyGrowth} />
         </div>
       </div>

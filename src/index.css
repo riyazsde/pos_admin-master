@@ -1,6 +1,9 @@
 @import "tailwindcss";
 
-
+:root {
+  --dashboard-font-family: system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
 
 .poppins-text {
   font-family: 'Poppins', sans-serif;
@@ -72,14 +75,14 @@
     border-bottom-color: #6A1B9A !important;
 }
 .dashboard-typography {
-  font-family: inherit;
+  font-family: var(--dashboard-font-family);
 }
 
-/* Recharts SVG labels and tooltip content follow the same interface font. */
-.dashboard-typography .recharts-cartesian-axis-tick-value,
+/* Keep chart text on the same local system font as dashboard headings. */
+.dashboard-typography svg text,
 .dashboard-typography .recharts-label,
 .dashboard-typography .recharts-legend-item-text,
 .dashboard-typography .recharts-tooltip-label,
 .dashboard-typography .recharts-tooltip-item {
-  font-family: inherit;
+  font-family: var(--dashboard-font-family);
 }

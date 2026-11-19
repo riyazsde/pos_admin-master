@@ -19,6 +19,11 @@ import {
   gradientStops,
   legendSwatchStyle,
 } from '../../theme/chartSeries';
+import {
+  getDashboardChartData,
+  getDashboardChartMax,
+  getDashboardTooltipEntries,
+} from './dashboardChartData';
 
 const CustomDot = (props) => {
   const { cx, cy, stroke } = props;
@@ -36,17 +41,9 @@ export default function MonthlyGrowthChart({ data }) {
     return Number(n).toLocaleString(locale);
   };
 
-  const chartData =
-    data?.data?.map((item) => ({
-      month: item.month,
-      newClients: item.newClients,
-      renewals: item.existingClientsRenewal,
-    })) || [];
+  const chartData = getDashboardChartData(data?.data, 'month');
 
-  const maxValue = Math.max(
-    100,
-    ...chartData.flatMap((d) => [d.newClients, d.renewals])
-  );
+  const maxValue = Math.max(100, getDashboardChartMax(chartData));
   const yMax = Math.ceil(maxValue / 100) * 100;
   const yTicks = [0, Math.round(yMax / 4), Math.round(yMax / 2), yMax];
 
@@ -54,21 +51,24 @@ export default function MonthlyGrowthChart({ data }) {
   const lastVal = chartData[chartData.length - 1]?.newClients ?? 0;
   const percent =
     firstVal > 0 ? (((lastVal - firstVal) / firstVal) * 100).toFixed(1) : '0.0';
-  const period1 = chartData[0]?.month ?? '';
-  const period2 = chartData[chartData.length - 1]?.month ?? '';
+  const period1 = chartData[0]?.period ?? '';
+  const period2 = chartData[chartData.length - 1]?.period ?? '';
   const hasPeriods = period1 && period2 && chartData.length > 1;
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
+      const row = payload[0].payload;
       return (
         <div className="bg-black text-white p-2 rounded shadow-md text-xs ">
-          <p className="font-semibold mb-1">{label}</p>
-          {payload.map((entry, idx) => (
-            <p key={idx}>
-              {entry.dataKey === 'newClients'
-                ? t(SERIES.newClients.labelKey)
-                : t(SERIES.clientRenewals.labelKey)}
-              : {formatNumber(entry.value)}
+          <p className="font-semibold mb-1">{row.period}</p>
+          {getDashboardTooltipEntries(row).map(({ dataKey, value }) => (
+            <p key={dataKey}>
+              {t(
+                dataKey === 'newClients'
+                  ? SERIES.newClients.labelKey
+                  : SERIES.clientRenewals.labelKey
+              )}
+              : {formatNumber(value)}
             </p>
           ))}
         </div>
@@ -159,7 +159,7 @@ export default function MonthlyGrowthChart({ data }) {
                 <CartesianGrid stroke="#F0F0F2" strokeWidth={1} vertical={false} horizontal={true} />
 
                 <XAxis
-                  dataKey="month"
+                  dataKey="period"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fontFamily: 'inherit', fontWeight: 500, fill: '#1a1a1a' }}

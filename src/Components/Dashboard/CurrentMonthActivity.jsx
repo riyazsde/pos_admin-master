@@ -17,6 +17,11 @@ import {
   gradientStops,
   legendSwatchStyle,
 } from '../../theme/chartSeries';
+import {
+  getDashboardChartData,
+  getDashboardChartMax,
+  getDashboardTooltipEntries,
+} from './dashboardChartData';
 
 const CurrentMonthActivity = ({ data }) => {
   const { t, i18n } = useTranslation();
@@ -27,40 +32,34 @@ const CurrentMonthActivity = ({ data }) => {
     return Number(n).toLocaleString(locale);
   };
 
-  const chartData =
-    data?.data?.map((item) => ({
-      name: item.day,
-      newClients: item.newClients,
-      renewals: item.existingClientsRenewal,
-    })) || [];
+  const chartData = getDashboardChartData(data?.data, 'day');
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
+      const row = payload[0].payload;
       return (
         <div className="bg-black text-white p-2 rounded shadow-md text-xs ">
-          <p className="font-semibold">{payload[0].payload.name}</p>
-          <p>
-            {t(SERIES.newClients.labelKey)}:{' '}
-            {formatNumber(payload[0].payload.newClients)}
-          </p>
-          <p>
-            {t(SERIES.clientRenewals.labelKey)}:{' '}
-            {formatNumber(payload[0].payload.renewals)}
-          </p>
+          <p className="font-semibold">{row.period}</p>
+          {getDashboardTooltipEntries(row).map(({ dataKey, value }) => (
+            <p key={dataKey}>
+              {t(
+                dataKey === 'newClients'
+                  ? SERIES.newClients.labelKey
+                  : SERIES.clientRenewals.labelKey
+              )}
+              : {formatNumber(value)}
+            </p>
+          ))}
         </div>
       );
     }
     return null;
   };
 
-  const maxValue = Math.max(
-    100,
-    ...chartData.map((d) => Math.max(d.newClients, d.renewals))
-  );
+  const maxValue = Math.max(100, getDashboardChartMax(chartData));
   const yTicks = [0, Math.round(maxValue / 4), Math.round(maxValue / 2), maxValue];
 
   const [renewFrom] = gradientStops('clientRenewals');
-  const [newFrom] = gradientStops('newClients');
 
   return (
     <div className="dashboard-typography w-full">
@@ -128,7 +127,7 @@ const CurrentMonthActivity = ({ data }) => {
 
                 <CartesianGrid stroke="#F3F3F5" vertical={false} />
                 <XAxis
-                  dataKey="name"
+                  dataKey="period"
                   stroke="#000"
                   tick={{ fontSize: 12, fontFamily: 'inherit', fill: '#000' }}
                   axisLine={false}
