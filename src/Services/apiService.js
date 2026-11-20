@@ -1227,6 +1227,18 @@ export const supportTicketService = {
     return payload?.data || null;
   },
 
+  assignTicket: async (id, employee_id) => {
+    const response = await apiClient.put(
+      ENDPOINTS.ADMIN.SUPPORT_TICKETS.UPDATE,
+      { id, employee_id }
+    );
+    const payload = response.data;
+    if (payload?.success === false) {
+      throw new Error(payload?.message || 'Failed to save ticket assignment');
+    }
+    return payload?.data || null;
+  },
+
   createReply: async ({
     support_ticket_id,
     reply,

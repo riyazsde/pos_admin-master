@@ -57,6 +57,18 @@ const supportTicketsSlice = createSlice({
       t.Ticket_status = status;         // overwrite the field the mapper reads
       if ('Status' in t) t.Status = true;
     },
+    patchTicketAssignment: (s, a) => {
+      const { id, employeeId } = a.payload;
+      const t = s.tickets.find(
+        (x) =>
+          x.Support_Ticket_id === id ||
+          x.support_ticket_id === id ||
+          x.id === id ||
+          String(x.Support_Ticket_id ?? x.support_ticket_id ?? x.id) ===
+            String(id)
+      );
+      if (t) t.employee_id = employeeId;
+    },
 
     setSupportTicketsError: (s, a) => {
       s.error = a.payload;
@@ -74,6 +86,7 @@ export const {
   setTicketsLoading, setTicketsData,
   setChartLoading, setChartData, setChartFilter,
   setUpdating, patchTicketStatus,
+  patchTicketAssignment,
   setSupportTicketsError, resetSupportTickets,
 } = supportTicketsSlice.actions;
 

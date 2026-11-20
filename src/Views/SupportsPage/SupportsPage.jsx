@@ -42,6 +42,7 @@ import {
   setSupportTicketsError,
 } from '../../Store/Features/supportTickets/supportTicketsSlice';
 import { supportTicketService } from '../../Services/apiService';
+import { getTicketAssigneeId } from '../../Components/Supports/ticketAssignment';
 
 // ===========================================================================
 // STATUS MAPS
@@ -559,6 +560,7 @@ const SupportsPage = () => {
         description: t.Description || t.question || 'No description',
         userName: getBusinessName(t),
         email: t.email,
+        employeeId: getTicketAssigneeId(t),
         priority: t.Priority || 'Normal',
         createdDate: t.CreatedDate || t.CreateAt,
       };

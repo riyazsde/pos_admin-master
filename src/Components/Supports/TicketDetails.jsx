@@ -11,6 +11,7 @@ import { useAppDispatch, useAppSelector } from '../../Store/hooks';
 import {
   setUpdating,
   patchTicketStatus,
+  patchTicketAssignment,
   setSupportTicketsError,
 } from '../../Store/Features/supportTickets/supportTicketsSlice';
 import { supportTicketService } from '../../Services/apiService';
@@ -18,6 +19,10 @@ import {
   mapBackendStatus,
   mapUiStatusToBackend,
 } from './ticketStatus';
+import {
+  getTicketAssigneeId,
+  normalizeAgentId,
+} from './ticketAssignment';
 
 // ---------------------------------------------------------------------------
 // Status dropdown — FULLY CONTROLLED, no local status state
@@ -107,7 +112,11 @@ const AssignAgentDropdown = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedAgent = agents.find((a) => a.id === value);
-  const label = selectedAgent ? selectedAgent.name : 'Select...';
+  const label = selectedAgent
+    ? selectedAgent.name
+    : value
+      ? `Agent #${value}`
+      : 'Select...';
 
   return (
     <div className="relative w-full max-w-[280px]">
@@ -175,7 +184,11 @@ const TicketDetails = () => {
   const initial = location.state?.ticket || {};
 
   const [ticketId] = useState(initial.id || '2023-CS123');
-  const [ticketDbId] = useState(initial.dbId || 1);
+  const ticketDbId =
+    initial.dbId ??
+    initial.Support_Ticket_id ??
+    initial.support_ticket_id ??
+    null;
   const [email, setEmail] = useState(initial.email || 'AOHBars@gmail.com');
   const [businessName, setBusinessName] = useState(
     initial.userName || 'AOH BARS'
@@ -192,12 +205,14 @@ const TicketDetails = () => {
   // Assignee state
   const [agents, setAgents] = useState([]);
   const [agentsLoading, setAgentsLoading] = useState(true);
-  const [assignedAgent, setAssignedAgent] = useState(
-    initial.employeeId ??
-      initial.employee_id ??
-      initial.assignedAgentId ??
-      null
+  const [assignedAgent, setAssignedAgent] = useState(() =>
+    getTicketAssigneeId(initial)
   );
+  const [savedAssignedAgent, setSavedAssignedAgent] = useState(() =>
+    getTicketAssigneeId(initial)
+  );
+  const assignmentChanged =
+    normalizeAgentId(assignedAgent) !== normalizeAgentId(savedAssignedAgent);
 
   // -------------------------------------------------------------------------
   // Load assignable users
@@ -213,7 +228,9 @@ const TicketDetails = () => {
 
         setAgents(
           raw.map((u) => ({
-            id: u.id ?? u.employee_id ?? u.Employee_id ?? u.user_id,
+            id: normalizeAgentId(
+              u.id ?? u.employee_id ?? u.Employee_id ?? u.user_id
+            ),
             name:
               u.name ??
               u.full_name ??
@@ -222,6 +239,7 @@ const TicketDetails = () => {
                 u.email ||
                 `User #${u.id ?? u.employee_id ?? ''}`),
           }))
+          .filter((agent) => agent.id !== null)
         );
       } catch (err) {
         console.error('Failed to load assignable users:', err);
@@ -236,6 +254,47 @@ const TicketDetails = () => {
       cancelled = true;
     };
   }, []);
+
+  const handleSaveAssignment = async () => {
+    if (ticketDbId === null || ticketDbId === undefined) {
+      toast.error('Unable to identify this ticket.');
+      return;
+    }
+
+    if (!assignmentChanged) return;
+
+    dispatch(setUpdating(true));
+    const toastId = toast.loading('Saving assignment...');
+    try {
+      const result = await supportTicketService.assignTicket(
+        ticketDbId,
+        assignedAgent
+      );
+      const savedAgentId =
+        getTicketAssigneeId(result) ?? normalizeAgentId(assignedAgent);
+
+      setAssignedAgent(savedAgentId);
+      setSavedAssignedAgent(savedAgentId);
+      dispatch(
+        patchTicketAssignment({
+          id: ticketDbId,
+          employeeId: savedAgentId,
+        })
+      );
+      toast.success('Assignment saved', { id: toastId, duration: 2000 });
+    } catch (err) {
+      console.error('Assignment save error:', err);
+      toast.error('Failed to save assignment', {
+        id: toastId,
+        description:
+          err?.response?.data?.message ||
+          err?.message ||
+          'Please try again.',
+      });
+    } finally {
+      dispatch(setUpdating(false));
+    }
+  };
 
   // -------------------------------------------------------------------------
   // Status change — optimistic + rollback + Redux patch with BACKEND value
@@ -383,13 +442,28 @@ const TicketDetails = () => {
             <label className="font-poppins text-sm font-medium text-gray-800">
               Assign Agent
             </label>
-            <AssignAgentDropdown
-              value={assignedAgent}
-              onChange={setAssignedAgent}
-              agents={agents}
-              disabled={updating}
-              loading={agentsLoading}
-            />
+            <div className="flex flex-wrap items-center gap-3">
+              <AssignAgentDropdown
+                value={assignedAgent}
+                onChange={setAssignedAgent}
+                agents={agents}
+                disabled={updating}
+                loading={agentsLoading}
+              />
+              <button
+                type="button"
+                onClick={handleSaveAssignment}
+                disabled={
+                  updating ||
+                  agentsLoading ||
+                  !assignmentChanged ||
+                  ticketDbId === null
+                }
+                className="px-5 py-2.5 rounded-md bg-purple-700 text-white text-sm font-semibold hover:bg-purple-800 transition-colors disabled:opacity-50"
+              >
+                {updating ? 'Saving...' : 'Save Assignment'}
+              </button>
+            </div>
           </div>
 
           <div className="space-y-3">

@@ -33,6 +33,7 @@ import {
   setMdmError,
 } from '../../Store/Features/mdm/mdmSlice';
 import { mdmService } from '../../Services/apiService';
+import { getNumericMdmDeviceId } from './mdmDeviceId';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -1304,8 +1305,9 @@ const MdmPage = () => {
   const handleLockAction = async (reason) => {
     const device = modal?.device;
     const action = modal?.action;
+    const id = getNumericMdmDeviceId(device);
 
-    if (!device || device.MyDevices_id == null) {
+    if (id === null) {
       toast.error('Unable to identify the selected device.');
       return;
     }
@@ -1315,7 +1317,6 @@ const MdmPage = () => {
       return;
     }
 
-    const id = device.MyDevices_id;
     const isUnlock = action === 'unlock';
 
     setLocalActionLoading(true);
