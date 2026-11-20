@@ -690,6 +690,23 @@
     "noData": "No sub-admins found",
     "noDataDesc": "Sub-admins you add will appear here.",
     "noPermissions": "No permissions",
+    "permissions": {
+      "dashboard": "Dashboard",
+      "clients": "Clients",
+      "subscriptions": "Subscriptions",
+      "reports": "Reports",
+      "momDevice": "MOM Device",
+      "inventory": "Inventory",
+      "auditLog": "Audit Log",
+      "supportTickets": "Support Tickets",
+      "posDevices": "POS Devices",
+      "settings": "Settings"
+    },
+    "responsibilities": {
+      "owner": "Restaurant Owner",
+      "manager": "Manager",
+      "cashier": "Cashier"
+    },
     "active": "Active",
     "inactive": "Inactive",
     "activate": "Activate",
@@ -1236,7 +1253,7 @@
   },
 
   "mdm": {
-    "title": "MDM Device Management",
+    "title": "MOM Device Management",
     "subtitle": "{{count}} device{{count, plural}} in fleet",
     "subtitle_one": "{{count}} device in fleet",
     "subtitle_other": "{{count}} devices in fleet",
@@ -1303,7 +1320,7 @@
       "provisioningType": "Provisioning Type",
       "deviceOwnership": "Device Ownership",
       "kioskProfile": "Kiosk Profile",
-      "mdmPolicyAssignment": "MDM Policy Assignment",
+      "mdmPolicyAssignment": "MOM Policy Assignment",
       "location": "Location",
       "enrollmentMode": "Enrollment Mode",
       "selectOne": "Select one...",

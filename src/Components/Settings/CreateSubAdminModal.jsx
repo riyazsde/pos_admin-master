@@ -7,29 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Loader2, Check } from 'lucide-react';
 
 import { subadminService } from '../../Services/apiService';
-
-// =====================================================
-// CENTRALIZED PERMISSION GLOSSARY
-// Labels must match the sidebar navigation.
-// Values must match the backend permission types.
-// =====================================================
-
-export const PERMISSION_TYPES = [
-  { label: 'Dashboard', value: 'Dashboard' },
-  { label: 'Clients', value: 'Clients' },
-  { label: 'Subscriptions', value: 'Subscriptions' },
-  { label: 'Reports', value: 'Reports' },
-
-  // Sidebar label: MOM Device
-  // Backend value: MDM Device
-  { label: 'MOM Device', value: 'MDM Device' },
-
-  { label: 'Inventory', value: 'Inventory' },
-  { label: 'Audit Log', value: 'Audits Log' },
-  { label: 'Support Tickets', value: 'Support Tickets' },
-  { label: 'POS Devices', value: 'POS Devices' },
-  { label: 'Settings', value: 'Settings' },
-];
+import { PERMISSION_TYPES } from './subadminPermissions';
 
 export default function CreateSubAdminModal({
   onClose,
@@ -411,9 +389,9 @@ export default function CreateSubAdminModal({
                 disabled={isSubmitting}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white"
               >
-                <option value={1}>Restaurant Owner</option>
-                <option value={2}>Manager</option>
-                <option value={3}>Cashier</option>
+                <option value={1}>{t('subadmin.responsibilities.owner')}</option>
+                <option value={2}>{t('subadmin.responsibilities.manager')}</option>
+                <option value={3}>{t('subadmin.responsibilities.cashier')}</option>
               </select>
             </div>
 
@@ -463,14 +441,14 @@ export default function CreateSubAdminModal({
               {PERMISSION_TYPES.map((permission) => {
 
                 const isChecked =
-                  form.permissions.includes(permission.value);
+                  form.permissions.includes(permission.createValue);
 
                 return (
                   <button
-                    key={permission.value}
+                    key={permission.createValue}
                     type="button"
                     onClick={() =>
-                      togglePermission(permission.value)
+                      togglePermission(permission.createValue)
                     }
                     disabled={isSubmitting}
                     aria-pressed={isChecked}
@@ -494,7 +472,7 @@ export default function CreateSubAdminModal({
                     </span>
 
                     <span className="truncate">
-                      {permission.label}
+                      {t(permission.labelKey)}
                     </span>
 
                   </button>

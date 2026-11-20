@@ -19,6 +19,10 @@ import withAdminLayout from '../../Views/AdminPanel/withAdminLayout';
 import arrow from '../../assets/Images/Home/arrow.png';
 import deleteIcon from '../../assets/Images/Settings/1.png';
 import CreateSubAdminModal from './CreateSubAdminModal';
+import {
+  getPermissionLabelKey,
+  PERMISSION_TYPES,
+} from './subadminPermissions';
 import ConfirmationModal from './ConfirmationModalAdmin';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
@@ -31,22 +35,6 @@ import {
   setDeleting,
 } from '../../Store/Features/subadmin/subadminSlice';
 import { subadminService } from '../../Services/apiService';
-
-// ---------------------------------------------------------------------------
-// Permission types
-// ---------------------------------------------------------------------------
-const PERMISSION_TYPES = [
-  { key: 'Dashboard', value: 'dashboard' },
-  { key: 'Clients', value: 'clients' },
-  { key: 'Subscriptions', value: 'subscriptions' },
-  { key: 'Reports', value: 'reports' },
-  { key: 'MDM Device', value: 'mdm device' },
-  { key: 'Inventory', value: 'inventory' },
-  { key: 'Audits Log', value: 'audits log' },
-  { key: 'Support Tickets', value: 'support tickets' },
-  { key: 'POS Devices', value: 'pos devices' },
-  { key: 'Settings', value: 'settings' },
-];
 
 // ---------------------------------------------------------------------------
 // Edit Modal
@@ -178,9 +166,9 @@ const EditSubadminModal = ({ subadmin, onClose, onSave, saving }) => {
                 disabled={saving}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
               >
-                <option value={1}>Restaurant Owner</option>
-                <option value={2}>Manager</option>
-                <option value={3}>Cashier</option>
+                <option value={1}>{t('subadmin.responsibilities.owner')}</option>
+                <option value={2}>{t('subadmin.responsibilities.manager')}</option>
+                <option value={3}>{t('subadmin.responsibilities.cashier')}</option>
               </select>
             </div>
             <div>
@@ -215,12 +203,12 @@ const EditSubadminModal = ({ subadmin, onClose, onSave, saving }) => {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {PERMISSION_TYPES.map((p) => {
-                const isChecked = form.permissions.includes(p.value);
+                const isChecked = form.permissions.includes(p.editValue);
                 return (
                   <button
-                    key={p.value}
+                    key={p.editValue}
                     type="button"
-                    onClick={() => togglePermission(p.value)}
+                    onClick={() => togglePermission(p.editValue)}
                     disabled={saving}
                     className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all text-left ${
                       isChecked
@@ -237,7 +225,7 @@ const EditSubadminModal = ({ subadmin, onClose, onSave, saving }) => {
                     >
                       {isChecked && <Check className="w-3 h-3 text-white" />}
                     </span>
-                    <span className="truncate">{p.key}</span>
+                    <span className="truncate">{t(p.labelKey)}</span>
                   </button>
                 );
               })}
@@ -578,14 +566,17 @@ const SubAdminTable = () => {
                       {t('subadmin.noPermissions')}
                     </span>
                   ) : (
-                    permissions.slice(0, 3).map((perm, i) => (
-                      <span
-                        key={i}
-                        className="bg-pink-100 text-black text-[10px] font-semibold px-2 py-0.5 rounded-md"
-                      >
-                        {perm.type}
-                      </span>
-                    ))
+                    permissions.slice(0, 3).map((perm, i) => {
+                      const labelKey = getPermissionLabelKey(perm.type);
+                      return (
+                        <span
+                          key={i}
+                          className="bg-pink-100 text-black text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                        >
+                          {labelKey ? t(labelKey) : perm.type}
+                        </span>
+                      );
+                    })
                   )}
                   {permissions.length > 3 && (
                     <span className="text-[10px] text-gray-500">
