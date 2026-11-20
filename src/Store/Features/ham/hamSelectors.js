@@ -4,24 +4,6 @@ import { createSelector } from '@reduxjs/toolkit';
 const selectHam = (state) => state.ham;
 
 // ---------------------------------------------------------------------------
-// Header numbers — unfiltered, from getInventoryStatus()
-// ---------------------------------------------------------------------------
-export const selectInventorySummary = createSelector([selectHam], (ham) => ({
-  // Records / models
-  models: ham.inventory.totalHardware ?? 0,
-  active: ham.inventory.activeHardware ?? 0,
-  inactive: ham.inventory.inactiveHardware ?? 0,
-  unpaid: ham.inventory.unpaidHardware ?? 0,
-
-  // Physical units
-  units: ham.inventorySummary.totalInventoryItems ?? 0,
-  lowStock: ham.inventorySummary.lowStockItems ?? 0,
-  outOfStock: ham.inventorySummary.outOfStock ?? 0,
-  locations: ham.inventorySummary.totalLocations ?? 0,
-  value: ham.inventorySummary.totalValue ?? 0,
-}));
-
-// ---------------------------------------------------------------------------
 // Per-model assignment rollup — the SINGLE SOURCE OF TRUTH for "assigned"
 // Map<MyDevices_id, { units, printers, systems, active, records }>
 // ---------------------------------------------------------------------------

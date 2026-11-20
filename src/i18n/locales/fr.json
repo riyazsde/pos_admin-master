@@ -219,6 +219,7 @@
       "totalInactiveClients": "Total des clients inactifs",
       "totalRenewalRate": "Taux de renouvellement total"
     },
+    "clientPopulationNote": "Ces nombres proviennent de rapports distincts pour les clients actifs et inactifs. Leurs règles d'éligibilité ne sont pas définies ici et peuvent différer de l'indicateur Clients POS du tableau de bord et de la liste complète des clients.",
     "quickActions": {
       "revenueReports": "Rapports de chiffre d'affaires",
       "subscriptionReports": "Rapports d'abonnement",
@@ -442,6 +443,8 @@
       "subtitle_other": "12 derniers mois · {{formattedCount}} transactions",
       "loading": "Chargement du graphique…",
       "totalTransactions": "Total des transactions",
+      "transactionValue": "Valeur des transactions",
+      "amountBasis": "Total déclaré : somme des montants mensuels renvoyés par l'API du rapport (montants quotidiens utilisés uniquement si les données mensuelles sont indisponibles). Non rapproché de manière indépendante ; le traitement brut/net et des remboursements n'est pas défini.",
       "topMethod": "Méthode principale :",
       "transactions": "transactions",
       "noData": "Aucune transaction",
@@ -1169,15 +1172,13 @@
 
   "ham": {
     "title": "Gestion des actifs matériels (HAM)",
-    "subtitle": "{{count}} appareil{{count, plural}} en stock",
-    "subtitle_one": "{{count}} appareil en stock",
-    "subtitle_other": "{{count}} appareils en stock",
+    "headerSummary": "Stock complet : {{models}} modèles · {{units}} unités au total",
     "addDevice": "Ajouter un appareil",
     "loading": "Chargement des appareils…",
     "noData": "Aucun appareil trouvé",
     "noDataAddFirst": "Ajoutez votre premier appareil pour commencer.",
     "noDataFilter": "Aucun appareil ne correspond à ce filtre.",
-     "summaryBar": "{{models}} modèles · {{units}} unités au total · {{assigned}} affectées",
+     "summaryBar": "{{scope}} : {{models}} modèles · {{units}} unités au total · {{assigned}} affectées",
     "tabs": {
       "all": "Tous les appareils",
       "assigned": "Appareils assignés",

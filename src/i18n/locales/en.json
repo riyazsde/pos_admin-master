@@ -219,6 +219,7 @@
       "totalInactiveClients": "Total Inactive Clients",
       "totalRenewalRate": "Total Renewal Rate"
     },
+    "clientPopulationNote": "These counts come from separate active/inactive report endpoints. Their eligibility rules are not defined here and may differ from the Dashboard POS Clients KPI and the full Clients list.",
     "quickActions": {
       "revenueReports": "Revenue Reports",
       "subscriptionReports": "Subscription Reports",
@@ -442,6 +443,8 @@
       "subtitle_other": "Last 12 months · {{formattedCount}} transactions",
       "loading": "Loading graph…",
       "totalTransactions": "Total Transactions",
+      "transactionValue": "Transaction Value",
+      "amountBasis": "Reported total: sum of the report API's monthly amounts (daily amounts only when monthly data is unavailable). Not independently reconciled; gross/net and refund treatment are unspecified.",
       "topMethod": "Top method:",
       "transactions": "transactions",
       "noData": "No transactions",
@@ -1169,11 +1172,9 @@
 
   "ham": {
     "title": "Hardware Asset Management (HAM)",
-    "subtitle_one":   "{{count}} device model · {{units}} total units in inventory",
-    "subtitle_other": "{{count}} device models · {{units}} total units in inventory",
-    "subtitle": "{{count}} device{{count, plural}} in inventory",
+    "headerSummary": "All inventory: {{models}} models · {{units}} total units",
     "addDevice": "Add Device",
-    "summaryBar": "{{models}} models · {{units}} total units · {{assigned}} assigned",
+    "summaryBar": "{{scope}}: {{models}} models · {{units}} total units · {{assigned}} assigned",
    
     "loading": "Loading devices…",
     "noData": "No devices found",

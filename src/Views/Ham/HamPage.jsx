@@ -9,17 +9,14 @@ import {
   setHamLoading,
   setDevicesData,
   setAssignedDevicesData,
-  setInventoryStatus,
   addDevice,
   setCreating,
   setHamError,
 } from '../../Store/Features/ham/hamSlice';
 import {
-  selectInventorySummary,
   selectFilteredDevices,
   selectTabSummary,
   selectAssignmentByModel,
-  getAssignedUnits,
 } from '../../Store/Features/ham/hamSelectors';
 import { hamService } from '../../Services/apiService';
 
@@ -429,8 +426,8 @@ const HamPage = () => {
 
   const { loading, hasLoaded } = useAppSelector((s) => s.ham);
 
-  // Header — unfiltered, from getInventoryStatus()
-  const inventory = useAppSelector(selectInventorySummary);
+  // Header — all device rows, using the same source as the table and footer.
+  const allSummary = useAppSelector((s) => selectTabSummary(s, 'all'));
 
   // Per-model assignment rollup — single source of truth for "assigned"
   const assignmentByModel = useAppSelector(selectAssignmentByModel);
@@ -470,13 +467,6 @@ const HamPage = () => {
         console.error('Assigned devices fetch error:', err);
       }
 
-      try {
-        const status = await hamService.getInventoryStatus();
-        dispatch(setInventoryStatus(status));
-      } catch (err) {
-        console.error('Inventory status fetch error:', err);
-      }
-
       dispatch(setHamLoading(false));
     };
 
@@ -494,6 +484,8 @@ const HamPage = () => {
   );
 
   const isEmpty = filteredDevices.length === 0;
+  const activeTabLabel =
+    TABS.find((tab) => tab.id === activeTab)?.label || TABS[0].label;
 
   return (
     <div className="min-h-screen px-4 sm:px-6 lg:px-8 py-6 w-full">
@@ -503,11 +495,10 @@ const HamPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             {t('ham.title')}
           </h1>
-          {/* Both numbers, both explicitly labeled */}
           <p className="text-xs text-gray-500 mt-1">
-            {t('ham.subtitle', {
-              count: inventory.models,
-              units: inventory.units,
+            {t('ham.headerSummary', {
+              models: allSummary.models,
+              units: allSummary.units,
             })}
           </p>
         </div>
@@ -617,7 +608,10 @@ const HamPage = () => {
 
             {/* Footer summary — same filter as the rows above */}
             <div className="px-5 py-3 text-xs text-gray-500 border-t border-gray-100 tabular-nums">
-              {t('ham.summaryBar', tabSummary)}
+              {t('ham.summaryBar', {
+                ...tabSummary,
+                scope: activeTabLabel,
+              })}
             </div>
           </>
         )}

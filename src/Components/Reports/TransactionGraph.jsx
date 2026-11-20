@@ -204,7 +204,7 @@ const TransactionGraph = () => {
               {/* Transaction Count */}
               <div>
                 <p className="text-gray-400 text-sm mb-1">
-                  Total Transactions
+                  {t('reports.transactionGraph.totalTransactions')}
                 </p>
 
                 <p className="text-2xl font-bold text-[#941C93] tabular-nums">
@@ -215,7 +215,7 @@ const TransactionGraph = () => {
               {/* Transaction Value */}
               <div className="mt-4">
                 <p className="text-gray-400 text-sm mb-1">
-                  Transaction Value
+                  {t('reports.transactionGraph.transactionValue')}
                 </p>
 
                 <p className="text-xl font-bold text-gray-800 tabular-nums">
@@ -226,8 +226,7 @@ const TransactionGraph = () => {
                 </p>
 
                 <p className="text-[11px] text-gray-400 mt-1">
-                  Amount basis: As reported by transaction API. Gross/net and
-                  refund treatment not specified.
+                  {t('reports.transactionGraph.amountBasis')}
                 </p>
               </div>
 
