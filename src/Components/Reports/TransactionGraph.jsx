@@ -150,7 +150,8 @@ const TransactionGraph = () => {
 
           <p className="text-xs text-gray-500 mt-1">
             {t('reports.transactionGraph.subtitle', {
-              count: formatNumber(totalTransactions),
+              count: totalTransactions,
+              formattedCount: formatNumber(totalTransactions),
             })}
           </p>
 

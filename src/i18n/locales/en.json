@@ -437,9 +437,9 @@
     "transactionGraph": {
       "title": "Transaction Graph",
       "reportLabel": "(Report)",
-      "subtitle": "Last 12 months · {{count}} transaction{{count, plural}}",
-      "subtitle_one": "Last 12 months · {{count}} transaction",
-      "subtitle_other": "Last 12 months · {{count}} transactions",
+      "subtitle": "Last 12 months · {{formattedCount}} transactions",
+      "subtitle_one": "Last 12 months · {{formattedCount}} transaction",
+      "subtitle_other": "Last 12 months · {{formattedCount}} transactions",
       "loading": "Loading graph…",
       "totalTransactions": "Total Transactions",
       "topMethod": "Top method:",

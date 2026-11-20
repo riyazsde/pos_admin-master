@@ -437,9 +437,9 @@
     "transactionGraph": {
       "title": "Graphique des transactions",
       "reportLabel": "(Rapport)",
-      "subtitle": "12 derniers mois · {{count}} transaction{{count, plural}}",
-      "subtitle_one": "12 derniers mois · {{count}} transaction",
-      "subtitle_other": "12 derniers mois · {{count}} transactions",
+      "subtitle": "12 derniers mois · {{formattedCount}} transactions",
+      "subtitle_one": "12 derniers mois · {{formattedCount}} transaction",
+      "subtitle_other": "12 derniers mois · {{formattedCount}} transactions",
       "loading": "Chargement du graphique…",
       "totalTransactions": "Total des transactions",
       "topMethod": "Méthode principale :",
