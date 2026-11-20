@@ -58,7 +58,7 @@ const AppRoutes = () => {
         <Route path="/client-details" element={<ProtectedRoute><ClientDetails /></ProtectedRoute>} />
         <Route path="/renew-management" element={<ProtectedRoute><SubscriptionManagement /></ProtectedRoute>} />
         <Route path="/subscription-list" element={<ProtectedRoute><SubscriptionTable /></ProtectedRoute>} />
-        <Route path="/report" element={<ProtectedRoute><Report /></ProtectedRoute>} />
+        <Route path="/report" element={<ProtectedRoute requiredPermission="Reports"><Report /></ProtectedRoute>} />
          <Route path="/ham" element={<ProtectedRoute><HamPage/></ProtectedRoute>} />
           <Route path="/mom" element={<ProtectedRoute><MomPage/></ProtectedRoute>} />
         <Route path="/audit-log" element={<ProtectedRoute><AuditLogTable /></ProtectedRoute>} />

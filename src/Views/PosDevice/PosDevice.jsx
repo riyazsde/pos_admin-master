@@ -15,7 +15,12 @@ import {
   setPosHardwareData,
   setPosHardwareError,
 } from '../../Store/Features/posHardware/posHardwareSlice';
-import { posHardwareService, hamService } from '../../Services/apiService';
+import {
+  posHardwareService,
+  hamService,
+  mdmService,
+} from '../../Services/apiService';
+import { getMdmBindings } from './posDeviceBinding';
 
 // Helper to format numbers
 const formatNumber = (n) => {
@@ -75,8 +80,9 @@ const PosDevice = () => {
   //   Name, type, Serial_Number, Devices_ModelNo, MyDevices_id,
   //   CreateAt, CreateBy { Name, email, user_id }, location,
   //   isActive, isLocked, _id
-  const mapApiResponseToDevices = (apiData, tFn) => {
+  const mapApiResponseToDevices = (apiData, mdmData, tFn) => {
     if (!Array.isArray(apiData)) return [];
+    const bindings = getMdmBindings(apiData, mdmData);
 
     return apiData.map((item, index) => {
       const condition = item.isLocked
@@ -112,6 +118,7 @@ const PosDevice = () => {
         warrantyExp: '—',
         purchaseDate: safeDate(item.CreateAt),
         condition,
+        binding: bindings[index],
         iconColor: 'bg-purple-100 text-purple-600',
       };
     });
@@ -154,14 +161,23 @@ const PosDevice = () => {
     const fetchDevices = async () => {
       setDevicesLoading(true);
       try {
-        const result = await hamService.getMyDevices();
+        const [result, mdmResult] = await Promise.all([
+          hamService.getMyDevices(),
+          mdmService.getAllDevices().catch((error) => {
+            console.error('MDM device verification error:', error);
+            return null;
+          }),
+        ]);
         // Some endpoints wrap in `{ data: [...] }`, some return raw array
         const rawList = Array.isArray(result)
           ? result
           : Array.isArray(result?.data)
           ? result.data
           : [];
-        setDevices(mapApiResponseToDevices(rawList, t));
+        const mdmList = Array.isArray(mdmResult?.data)
+          ? mdmResult.data
+          : null;
+        setDevices(mapApiResponseToDevices(rawList, mdmList, t));
       } catch (err) {
         console.error('Error fetching devices:', err);
         toast.error(t('posHardware.devicesSection.toasts.devicesFailed'), {
@@ -330,6 +346,9 @@ const PosDevice = () => {
                       {t('posHardware.devicesSection.table.client')}
                     </th>
                     <th className="py-4 px-6 text-sm font-semibold text-gray-900">
+                      {t('posHardware.devicesSection.binding.title')}
+                    </th>
+                    <th className="py-4 px-6 text-sm font-semibold text-gray-900">
                       {t('posHardware.devicesSection.table.warranty')}
                     </th>
                     <th className="py-4 px-6 text-sm font-semibold text-gray-900">
@@ -413,6 +432,28 @@ const PosDevice = () => {
                         <p className="text-xs text-gray-500 mt-0.5">
                           {device.location}
                         </p>
+                      </td>
+
+                      <td className="py-4 px-6">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            device.binding.status === 'matched'
+                              ? 'bg-green-100 text-green-700'
+                              : device.binding.status === 'mismatch'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-amber-100 text-amber-700'
+                          }`}
+                        >
+                          {t(
+                            `posHardware.devicesSection.binding.${device.binding.status}`
+                          )}
+                        </span>
+                        {device.binding.status === 'mismatch' && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            MDM: {device.binding.mdmSerial || '—'} / #
+                            {device.binding.mdmId ?? '—'}
+                          </p>
+                        )}
                       </td>
 
                       <td className="py-4 px-6">

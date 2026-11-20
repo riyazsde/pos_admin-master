@@ -27,6 +27,10 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import { accountSettingsService } from '../../Services/apiService';
 import { setProfile } from '../../Store/Features/subadmin/subadminSlice';
+import {
+  formatLoginTimestamp,
+  isValidTimeZone,
+} from './loginHistoryDateTime';
 
 // ============================================================
 // --- Reusable UI Components ---
@@ -165,8 +169,7 @@ const copyToClipboard = (text) => {
 
 
 // Normalize API timestamp fields and never render "Invalid Date".
-// The API currently returns `occurredAt` for login history; other endpoints
-// may use one of the fallback field names below.
+// Other endpoints may use one of the fallback field names below.
 const getValidTimestamp = (record, fields) => {
   if (!record || typeof record !== 'object') return null;
 
@@ -206,10 +209,6 @@ const formatDateTime = (record, fields) => {
     timeZone: 'Asia/Kolkata',
   }).format(date);
 };
-
-const LOGIN_TIMESTAMP_FIELDS = [
-  'occurredAt', 'occurred_at', 'createdAt', 'created_at', 'timestamp', 'date',
-];
 
 const PASSWORD_RESET_TIMESTAMP_FIELDS = [
   'occurredAt', 'occurred_at', 'resetAt', 'reset_at', 'createdAt', 'created_at',
@@ -664,12 +663,27 @@ const TrustedDevicesModal = ({ onClose, onChanged }) => {
 const LoginHistoryModal = ({ onClose }) => {
   const { t } = useTranslation();
   const [logs, setLogs] = useState([]);
+  const [timeZone, setTimeZone] = useState(() => {
+    const browserTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return isValidTimeZone(browserTimeZone) ? browserTimeZone : 'UTC';
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const response = await accountSettingsService.getLoginHistory(1, 20);
+        const [response, dateTimeSettings] = await Promise.all([
+          accountSettingsService.getLoginHistory(1, 20),
+          accountSettingsService.getDateTime().catch((error) => {
+            console.warn('Failed to load the configured display timezone:', error);
+            return null;
+          }),
+        ]);
+        if (isValidTimeZone(dateTimeSettings?.timezone)) {
+          setTimeZone(dateTimeSettings.timezone);
+        } else if (dateTimeSettings?.timezone) {
+          console.warn('Ignoring an invalid configured display timezone.');
+        }
         setLogs(response.data);
       } catch (err) {
         console.error(err);
@@ -689,6 +703,7 @@ const LoginHistoryModal = ({ onClose }) => {
             <EmptyState message={t('accountSettings.loginHistory.empty')} icon={FileText} />
           ) : logs.map((log, idx) => {
             const isBlocked = log.status?.toLowerCase() === 'blocked';
+            const timestamp = formatLoginTimestamp(log.occurredAt, timeZone);
             return (
               <div key={log.attempt_id || log.id || idx} className={`flex gap-3 p-3 rounded-lg border ${isBlocked ? 'bg-red-50/50 border-red-100' : 'border-gray-100'}`}>
                 <div className="mt-0.5">
@@ -696,7 +711,13 @@ const LoginHistoryModal = ({ onClose }) => {
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
-                    <p className="font-medium text-gray-800 text-sm">{formatDateTime(log, LOGIN_TIMESTAMP_FIELDS)}</p>
+                    <p className="font-medium text-gray-800 text-sm">
+                      <time dateTime={timestamp?.dateTime}>
+                        {timestamp
+                          ? `${timestamp.text} (${timeZone})`
+                          : 'Date unavailable'}
+                      </time>
+                    </p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                       {log.status || t('accountSettings.loginHistory.success')}
                     </span>

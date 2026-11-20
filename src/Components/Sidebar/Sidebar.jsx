@@ -17,6 +17,8 @@ import image8 from '../../assets/Images/admin/SidebarIcon/8.png';
 import image9 from '../../assets/Images/admin/SidebarIcon/9.png';
 
 import { authService } from '../../Services/apiService';
+import { useAppSelector } from '../../Store/hooks';
+import { hasRoutePermission } from '../../Routes/routePermissions';
 
 const CHILDREN_MAP = {
   '/Dashboard': [],
@@ -48,6 +50,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const [isSignOutOpen, setSignOutOpen] = useState(false);
   const { t } = useTranslation();
+  const user = useAppSelector((state) => state.auth?.user);
 
   const dashboardItem = {
     icon: image1,
@@ -66,6 +69,10 @@ export default function Sidebar() {
     { icon: image7, label: t('nav.posDevice'), route: '/pos-device' },
     { icon: image8, label: t('nav.settings'), route: '/settings' },
   ];
+  const visibleNavItems = navItems.filter(
+    (item) =>
+      item.route !== '/report' || hasRoutePermission(user, 'Reports')
+  );
 
   const signOutItem = { icon: image9, label: t('nav.signOut') };
 
@@ -156,7 +163,7 @@ export default function Sidebar() {
         {/* ───── Middle scrollable ───── */}
         <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 hover:scrollbar-thumb-gray-300 scrollbar-track-transparent px-4 py-2">
           <ul className="flex flex-col gap-1 list-none m-0">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.route}>
                 {renderItem(item, checkIsSelected(item.route))}
               </li>

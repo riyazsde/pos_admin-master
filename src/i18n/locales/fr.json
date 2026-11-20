@@ -1564,6 +1564,14 @@
         "warranty": "Garantie",
         "condition": "État"
       },
+      "binding": {
+        "title": "Liaison MDM",
+        "matched": "Correspondance MDM",
+        "mismatch": "Discordance",
+        "notEnrolled": "Non inscrit",
+        "missingIdentity": "ID ou numéro de série manquant",
+        "unavailable": "Vérification impossible"
+      },
       "status": {
         "active": "Actif",
         "inactive": "Inactif"

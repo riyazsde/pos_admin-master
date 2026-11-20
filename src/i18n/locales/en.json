@@ -1565,6 +1565,14 @@
         "warranty": "Warranty",
         "condition": "Condition"
       },
+      "binding": {
+        "title": "MDM Binding",
+        "matched": "Matched to MDM",
+        "mismatch": "Mismatch",
+        "notEnrolled": "Not enrolled",
+        "missingIdentity": "Missing device ID or serial",
+        "unavailable": "Could not verify"
+      },
       "status": {
         "active": "Active",
         "inactive": "Inactive"
