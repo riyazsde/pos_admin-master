@@ -26,7 +26,7 @@ const buildInitialForm = (plan) => ({
     fesilityLine: f.fesilityLine,
     statue: f.statue,
   })),
-  Published: plan?.Published ?? plan?.Status ?? true,
+  Published: plan?.Published ?? plan?.Status ?? false,
 });
 
 const SUBSCRIPTION_TYPES = [

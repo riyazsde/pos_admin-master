@@ -5,8 +5,10 @@ import { createSlice } from '@reduxjs/toolkit';
 const initialState = {
     // KPI metrics
     kpiMetrics: {
+        totalClients: null,
         totalActiveClients: 0,
         totalInactiveClients: 0,
+        totalUnclassifiedClients: null,
         totalRenewalRate: 0,
         totalActiveSubscriptions: 0,
         totalRevenue: 0,

@@ -219,7 +219,7 @@
       "totalInactiveClients": "Total des clients inactifs",
       "totalRenewalRate": "Taux de renouvellement total"
     },
-    "clientPopulationNote": "Ces nombres proviennent de rapports distincts pour les clients actifs et inactifs. Leurs règles d'éligibilité ne sont pas définies ici et peuvent différer de l'indicateur Clients POS du tableau de bord et de la liste complète des clients.",
+    "clientPopulationNote": "Périmètres distincts et non rapprochés : Clients POS du tableau de bord : {{dashboardTotal}} ; liste des clients : {{clientsTotal}}. KPI des rapports : {{kpiTotal}} au total ({{kpiActive}} actifs, {{kpiInactive}} inactifs, {{kpiUnclassified}} non classés). Les rapports séparés des clients actifs/inactifs renvoient {{reportActive}} / {{reportInactive}} enregistrements. Les critères d'éligibilité et les chevauchements ne sont pas établis ; ces chiffres ne sont pas directement comparables ou additionnables et ne prouvent pas à eux seuls une erreur de comptage du backend.",
     "quickActions": {
       "revenueReports": "Rapports de chiffre d'affaires",
       "subscriptionReports": "Rapports d'abonnement",
@@ -630,8 +630,10 @@
       "pricePlaceholder": "ex. 429",
       "features": "Fonctionnalités",
       "featurePlaceholder": "ex. Gestion du POS et des commandes",
-      "keepActive": "Garder ce forfait actif",
-      "activateNow": "Activer ce forfait immédiatement"
+      "keepActive": "Publier ce forfait sur le site public",
+      "activateNow": "Publier ce forfait sur le site public",
+      "published": "Publié",
+      "draft": "Brouillon"
     },
     "validation": {
       "planNameRequired": "Le nom du forfait est requis",

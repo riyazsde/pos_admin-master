@@ -32,7 +32,7 @@ import { setProfile } from '../../Store/Features/subadmin/subadminSlice';
 // --- Reusable UI Components ---
 // ============================================================
 
-const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-lg' }) => {
+const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-lg', ariaDescribedBy }) => {
   const { t } = useTranslation();
   const titleId = useId();
   const dialogRef = useRef(null);
@@ -62,18 +62,36 @@ const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-
       if (!firstElement) {
         event.preventDefault();
         dialogRef.current.focus();
-      } else if (event.shiftKey && (document.activeElement === firstElement || !dialogRef.current.contains(document.activeElement))) {
+      } else if (
+        event.shiftKey &&
+        (document.activeElement === firstElement ||
+          document.activeElement === dialogRef.current ||
+          !dialogRef.current.contains(document.activeElement))
+      ) {
         event.preventDefault();
         lastElement.focus();
-      } else if (!event.shiftKey && (document.activeElement === lastElement || !dialogRef.current.contains(document.activeElement))) {
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === lastElement ||
+          document.activeElement === dialogRef.current ||
+          !dialogRef.current.contains(document.activeElement))
+      ) {
         event.preventDefault();
         firstElement.focus();
       }
     };
 
+    const handleFocusIn = (event) => {
+      if (dialogRef.current && !dialogRef.current.contains(event.target)) {
+        closeButtonRef.current?.focus();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn);
       if (previousActiveElement instanceof HTMLElement && previousActiveElement.isConnected) {
         previousActiveElement.focus();
       }
@@ -87,6 +105,7 @@ const ModalWrapper = ({ title, icon: Icon, onClose, children, maxWidth = 'max-w-
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        aria-describedby={ariaDescribedBy}
         tabIndex={-1}
         className={`bg-white rounded-xl shadow-2xl w-full ${maxWidth} overflow-hidden flex flex-col max-h-[90vh]`}
       >
@@ -270,6 +289,7 @@ const TwoFactorAuthModal = ({ onClose }) => {
 
 const ActiveSessionsModal = ({ onClose, onChanged }) => {
   const { t } = useTranslation();
+  const descriptionId = useId();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -308,8 +328,15 @@ const ActiveSessionsModal = ({ onClose, onChanged }) => {
   if (error) return <ModalWrapper title={t('accountSettings.sessions.title')} icon={Monitor} onClose={handleClose}><EmptyState message={error} /></ModalWrapper>;
 
   return (
-    <ModalWrapper title={t('accountSettings.sessions.title')} icon={Monitor} onClose={handleClose}>
-      <p className="text-sm text-gray-500 mb-4">{t('accountSettings.sessions.description')}</p>
+    <ModalWrapper
+      title={t('accountSettings.sessions.title')}
+      icon={Monitor}
+      onClose={handleClose}
+      ariaDescribedBy={descriptionId}
+    >
+      <p id={descriptionId} className="text-sm text-gray-500 mb-4">
+        {t('accountSettings.sessions.description')}
+      </p>
       
       <div className="space-y-3 mb-6 max-h-[50vh] overflow-y-auto pr-1">
         {sessions.length === 0 ? (

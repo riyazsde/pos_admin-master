@@ -41,7 +41,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
       setLoading(true);
       setError('');
       try {
-        const result = await subscriptionService.getPublicPlans(subscriptionType);
+        const result = await subscriptionService.getAllPlans(subscriptionType);
         if (active) setPlans(result.data);
       } catch (requestError) {
         if (active) {
@@ -195,6 +195,7 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
       ) : (
         <div className="mx-auto grid max-w-[1024px] grid-cols-1 gap-2 min-[520px]:grid-cols-3">
           {plans.map((plan, index) => {
+            const published = plan.Published ?? plan.Status;
             const features = Array.isArray(plan.fesility)
               ? plan.fesility
                   .filter((feature) => feature.statue !== false)
@@ -235,6 +236,19 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-[3px]">
+                    {typeof published === 'boolean' && (
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 text-[8px] font-semibold ${
+                          published
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-gray-100 text-gray-600'
+                        }`}
+                      >
+                        {published
+                          ? t('subscriptions.form.published')
+                          : t('subscriptions.form.draft')}
+                      </span>
+                    )}
                     <button
                       type="button"
                       onClick={() => onEditPlan?.(plan)}

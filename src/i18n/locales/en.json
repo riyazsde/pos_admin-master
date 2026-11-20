@@ -219,7 +219,7 @@
       "totalInactiveClients": "Total Inactive Clients",
       "totalRenewalRate": "Total Renewal Rate"
     },
-    "clientPopulationNote": "These counts come from separate active/inactive report endpoints. Their eligibility rules are not defined here and may differ from the Dashboard POS Clients KPI and the full Clients list.",
+    "clientPopulationNote": "Population scope (separate, unreconciled sources): Dashboard POS Clients: {{dashboardTotal}}; Clients list: {{clientsTotal}}. Reports KPI: {{kpiTotal}} total ({{kpiActive}} active, {{kpiInactive}} inactive, {{kpiUnclassified}} unclassified). Separate active/inactive report endpoints: {{reportActive}} / {{reportInactive}} records. Endpoint eligibility and overlap are not established; these figures are not directly comparable or additive, and do not by themselves establish a backend count error.",
     "quickActions": {
       "revenueReports": "Revenue Reports",
       "subscriptionReports": "Subscription Reports",
@@ -600,7 +600,7 @@
     "updating": "Updating…",
     "updatePlan": "Update Plan",
     "createSuccess": "Plan created successfully!",
-    "createSuccessDesc": "\"{{name}}\" is now available.",
+    "createSuccessDesc": "\"{{name}}\" has been saved to the admin catalog.",
     "createFailed": "Failed to create plan",
     "updateSuccess": "Plan updated successfully!",
     "updateSuccessDesc": "\"{{name}}\" has been updated.",
@@ -630,8 +630,10 @@
       "pricePlaceholder": "e.g. 429",
       "features": "Features",
       "featurePlaceholder": "e.g. POS and order management",
-      "keepActive": "Keep this plan active",
-      "activateNow": "Activate this plan immediately"
+      "keepActive": "Publish this plan on the public site",
+      "activateNow": "Publish this plan on the public site",
+      "published": "Published",
+      "draft": "Draft"
     },
     "validation": {
       "planNameRequired": "Plan Name is required",

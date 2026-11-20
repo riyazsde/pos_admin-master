@@ -63,9 +63,6 @@ function InactiveClientsTable() {
           <p className="text-xs text-gray-500 mt-1">
             {t('reports.inactiveClients.subtitle', { count: totalCount })}
           </p>
-          <p className="text-xs text-gray-400 mt-1 max-w-md">
-            {t('reports.clientPopulationNote')}
-          </p>
         </div>
         <button
           onClick={() => navigate('/clients')}

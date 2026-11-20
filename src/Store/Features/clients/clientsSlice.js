@@ -8,6 +8,7 @@ const initialState = {
   totalCount: 0,
   listLoading: false,
   listError: null,
+  hasLoaded: false,
 
   // Details (keyed by client id for caching)
   detailsById: {}, // { [clientsId]: { data, loading, error } }
@@ -26,6 +27,7 @@ const clientsSlice = createSlice({
       state.totalCount = action.payload.count ?? 0;
       state.listLoading = false;
       state.listError = null;
+      state.hasLoaded = true;
     },
     setClientsError: (state, action) => {
       state.listError = action.payload;
