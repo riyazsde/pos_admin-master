@@ -203,7 +203,10 @@ const SubscriptionPlans = ({ onBack, onGetStarted, onCreateNew, onEditPlan }) =>
               : [];
             const planId = plan.Admin_Plan_id || plan.id || `${plan.PlanName}-${index}`;
             const isPopular = index === 1;
-            const isBundle = isBundleSubscriptionCategory(subscriptionType);
+            const isBundle = isBundleSubscriptionCategory(
+              plan.Subscription_Type,
+              subscriptionType
+            );
             const planLabel = `${plan.PlanName || 'PLAN'}${isBundle ? ' BUNDLE' : ''}`;
 
             return (

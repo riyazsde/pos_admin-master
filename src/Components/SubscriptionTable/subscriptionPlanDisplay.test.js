@@ -10,4 +10,15 @@ describe('subscription catalog category labels', () => {
   it('labels the hardware category as a bundle', () => {
     assert.equal(isBundleSubscriptionCategory('SaaS + Hardware'), true);
   });
+
+  it('uses the plan category instead of a conflicting selected filter', () => {
+    assert.equal(
+      isBundleSubscriptionCategory('SaaS Only', 'SaaS + Hardware'),
+      false
+    );
+  });
+
+  it('falls back to the selected category when a plan category is missing', () => {
+    assert.equal(isBundleSubscriptionCategory(undefined, 'SaaS + Hardware'), true);
+  });
 });
