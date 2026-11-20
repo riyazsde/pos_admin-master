@@ -610,6 +610,7 @@
     "preselectedHint": "Remplissez le formulaire ci-dessous pour créer un nouveau forfait basé sur votre choix.",
     "purchasedOn": "Acheté",
     "viewMore": "Voir plus",
+    "billingHistoryUnavailable": "Aucun historique de facturation n'est disponible pour cet abonnement.",
     "table": {
       "businessName": "Nom de l'entreprise",
       "planPurchased": "Forfait acheté",

@@ -610,6 +610,7 @@
     "preselectedHint": "Fill out the form below to create a new plan based on your choice.",
     "purchasedOn": "Purchased",
     "viewMore": "View more",
+    "billingHistoryUnavailable": "No billing history is available for this subscription.",
     "table": {
       "businessName": "Business Name",
       "planPurchased": "Plan Purchased",

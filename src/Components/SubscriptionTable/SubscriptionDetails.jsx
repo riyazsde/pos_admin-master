@@ -1,65 +1,47 @@
 // src/Components/SubscriptionTable/SubscriptionDetails.jsx
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   ArrowLeft,
   Building2,
   CreditCard,
   FileText,
-  Download,
-  RotateCcw,
-  CheckCircle2,
-  Calendar,
-  DollarSign,
-  AlertCircle,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { getSubscriptionDetailsData } from './subscriptionDetailsData';
 
-// ---------------------------------------------------------------------------
-// Mock Data (Replace with real API data from `subscription` prop)
-// ---------------------------------------------------------------------------
-const MOCK_BILLING_HISTORY = [
-  { date: 'Apr 25, 2028', desc: 'Monthly Subscription - 6 Months Plan', amount: '$299.00', status: 'Paid', invoice: 'INV-2026-04', action: 'Download' },
-  { date: 'Mar 25, 2028', desc: 'Monthly Subscription - 6 Months Plan', amount: '$299.00', status: 'Paid', invoice: 'INV-2026-03', action: 'Download' },
-  { date: 'Feb 25, 2028', desc: 'Monthly Subscription - 6 Months Plan', amount: '$299.00', status: 'Paid', invoice: 'INV-2026-02', action: 'Download' },
-  { date: 'Jan 25, 2028', desc: 'Hardware Device - Terminal #2', amount: '$450.00', status: 'Paid', invoice: 'INV-2026-01', action: 'Download' },
-  { date: 'Dec 25, 2027', desc: 'Monthly Subscription - 6 Months Plan', amount: '$299.00', status: 'Paid', invoice: 'INV-2025-12', action: 'Download' },
-];
+const formatDate = (value) => {
+  if (!value) return '—';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? '—'
+    : date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+};
 
-// ---------------------------------------------------------------------------
-// ETF constants
-// ---------------------------------------------------------------------------
-const ETF_RATE = 0.5;                 // 50% of remaining months
-const MAX_CONTRACT_MONTHS = 24;       // 2-year contract (matches plan copy)
+const formatAmount = (value) => {
+  if (value === null || value === undefined || value === '') return '—';
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount.toLocaleString('en-US') : '—';
+};
 
-/**
- * Returns the ETF calculation for a given number of remaining months.
- * `null` means "invalid input — do not display an estimate".
- */
-const calculateETF = (monthsRemaining, monthlyPrice) => {
-  const months = Number(monthsRemaining);
-  const price = Number(monthlyPrice);
+const displayValue = (value) => {
+  if (value === true) return 'Active';
+  if (value === false) return 'Inactive';
+  return value === null || value === undefined || value === '' ? '—' : value;
+};
 
-  // Reject empty / non-numeric / non-finite input
-  if (
-    monthsRemaining === '' ||
-    monthsRemaining === null ||
-    monthsRemaining === undefined ||
-    !Number.isFinite(months) ||
-    !Number.isFinite(price)
-  ) {
-    return null;
-  }
-
-  // Reject non-integer, negative, or out-of-range durations
-  if (!Number.isInteger(months) || months < 0 || months > MAX_CONTRACT_MONTHS) {
-    return null;
-  }
-
-  return {
-    months,
-    amount: (months * price * ETF_RATE).toFixed(2),
-  };
+const getBillingField = (record, ...fields) => {
+  const field = fields.find(
+    (field) =>
+      record?.[field] !== undefined &&
+      record?.[field] !== null &&
+      record?.[field] !== ''
+  );
+  return field ? record[field] : '—';
 };
 
 // ---------------------------------------------------------------------------
@@ -68,34 +50,22 @@ const calculateETF = (monthsRemaining, monthlyPrice) => {
 const SubscriptionDetails = ({ subscription, onBack }) => {
   const { t } = useTranslation();
 
-  // ETF Calculator State — store raw input value so invalid intermediate
-  // states (empty string, "-", "e") are visible to validation instead of
-  // silently collapsing to 0 or NaN.
-  const [monthsRemaining, setMonthsRemaining] = useState(12);
-
-  // Use mock data or fallback to subscription prop if available
+  const details = getSubscriptionDetailsData(subscription);
+  const numericPlanPrice =
+    details.planPrice === null || details.planPrice === ''
+      ? null
+      : Number(details.planPrice);
   const currentPlan = {
-    name: subscription?.Plan?.PlanName || '6 Months Plan',
-    type: subscription?.Plan?.Subscription_Type || 'SaaS + Hardware Bundle',
-    price: subscription?.Plan?.Price || 299,
+    name: details.planName,
+    type: details.planType,
+    price: Number.isFinite(numericPlanPrice) ? numericPlanPrice : null,
   };
 
-  const renewalDate = subscription?.Renewal_Date
-    ? new Date(subscription.Renewal_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-    : 'June 30, 2026';
-
-  const nextBilling = subscription?.Purchase_Date
-    ? new Date(new Date(subscription.Purchase_Date).setMonth(new Date(subscription.Purchase_Date).getMonth() + 1)).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-    : 'May 30, 2026';
-
-  const contractEndDate = subscription?.Contract_End_Date
-    ? new Date(subscription.Contract_End_Date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-    : 'Dec 30, 2026';
+  const renewalDate = formatDate(details.renewalDate);
+  const nextBilling = formatDate(details.nextBillingDate);
+  const contractEndDate = formatDate(details.contractEndDate);
 
   // Derive validity + estimate from the same source of truth
-  const etfResult = calculateETF(monthsRemaining, currentPlan.price);
-  const isValidDuration = etfResult !== null;
-
   return (
     <div className="p-4 lg:p-6 bg-gray-50 min-h-screen font-poppins">
       {/* ================= BREADCRUMB & HEADER ================= */}
@@ -122,8 +92,10 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
             <p className="text-sm text-white/80 mt-1">{currentPlan.type}</p>
           </div>
           <div className="text-right">
-            <span className="text-xs font-medium text-white/70 uppercase tracking-wider">Monthly Price</span>
-            <div className="text-3xl font-bold mt-1">${currentPlan.price}</div>
+            <span className="text-xs font-medium text-white/70 uppercase tracking-wider">Plan Price</span>
+            <div className="text-3xl font-bold mt-1">
+              {currentPlan.price === null ? '—' : formatAmount(currentPlan.price)}
+            </div>
           </div>
         </div>
 
@@ -134,15 +106,11 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
           </div>
           <div>
             <p className="text-[11px] text-white/60 uppercase tracking-wider mb-0.5">Deposit Status</p>
-            <p className="text-sm font-medium flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-300" /> Paid
-            </p>
+            <p className="text-sm font-medium">{displayValue(details.depositStatus)}</p>
           </div>
           <div>
             <p className="text-[11px] text-white/60 uppercase tracking-wider mb-0.5">Contract Status</p>
-            <p className="text-sm font-medium flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-300" /> Active
-            </p>
+            <p className="text-sm font-medium">{displayValue(details.contractStatus)}</p>
           </div>
           <div>
             <p className="text-[11px] text-white/60 uppercase tracking-wider mb-0.5">Next Billing</p>
@@ -152,8 +120,7 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
       </div>
 
       {/* ================= INFO & ETF CALCULATOR GRID ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
+      <div className="grid grid-cols-1 gap-6 mb-6">
         {/* Account & Subscription Details */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-gray-800 mb-5 flex items-center gap-2">
@@ -161,16 +128,23 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
           </h3>
           <div className="grid grid-cols-2 gap-y-6 gap-x-4">
             <div>
+              <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Customer</p>
+              <p className="flex items-center gap-1.5 text-sm font-medium text-gray-800">
+                <Building2 className="w-4 h-4 text-gray-500" />
+                {details.businessName}
+              </p>
+            </div>
+            <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Purchase Date</p>
-              <p className="text-sm font-medium text-gray-800">Jan 25, 2024</p>
+              <p className="text-sm font-medium text-gray-800">{formatDate(details.purchaseDate)}</p>
             </div>
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">No. of Renewals</p>
-              <p className="text-sm font-medium text-gray-800">3</p>
+              <p className="text-sm font-medium text-gray-800">{details.renewalCount ?? '—'}</p>
             </div>
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Device Count</p>
-              <p className="text-sm font-medium text-gray-800">2</p>
+              <p className="text-sm font-medium text-gray-800">{details.deviceCount ?? '—'}</p>
             </div>
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Contract End Date</p>
@@ -178,166 +152,33 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
             </div>
             <div>
               <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Deposit Amount</p>
-              <p className="text-sm font-medium text-gray-800">$500</p>
+              <p className="text-sm font-medium text-gray-800">{formatAmount(details.depositAmount)}</p>
             </div>
-          </div>
-        </div>
-
-        {/* Early Termination Fee (ETF) Calculator */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="text-sm font-semibold text-gray-800 mb-5 flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-[#D32F2F]" /> Early Termination Fee (ETF) Calculator
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="months-remaining"
-                className="block text-[11px] text-gray-400 uppercase tracking-wider mb-1.5"
-              >
-                Months Remaining on Contract
-              </label>
-              <input
-                id="months-remaining"
-                type="number"
-                value={monthsRemaining}
-                onChange={(e) => setMonthsRemaining(e.target.value)}
-                min="0"
-                max={MAX_CONTRACT_MONTHS}
-                step="1"
-                aria-invalid={!isValidDuration}
-                aria-describedby={!isValidDuration ? 'etf-error' : undefined}
-                className={`w-full px-4 py-2.5 border rounded-lg text-sm text-gray-800 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
-                  isValidDuration
-                    ? 'border-gray-300 focus:ring-purple-500'
-                    : 'border-red-400 focus:ring-red-400 bg-red-50/40'
-                }`}
-              />
-            </div>
-
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-              <p className="text-[11px] text-gray-500 mb-1">ETF Rate</p>
-              <p className="text-sm font-semibold text-gray-800 mb-4">50% of remaining months</p>
-
-              {isValidDuration ? (
-                <>
-                  <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-1">
-                    Calculated ETF Amount
-                  </p>
-                  <p className="text-2xl font-bold text-[#8E24AA]">
-                    ${etfResult.amount}
-                  </p>
-                </>
-              ) : (
-                <div
-                  id="etf-error"
-                  role="alert"
-                  className="flex items-start gap-2 text-sm font-medium text-red-600"
-                >
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>
-                    Enter a whole number between 0 and {MAX_CONTRACT_MONTHS} months.
-                    ETF estimate is unavailable for this value.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <p className="text-[10px] text-gray-400 flex items-start gap-1.5 mt-2">
-              <AlertCircle className="w-3 h-3 shrink-0 mt-0.5" />
-              ETF applies only if contract is terminated before {contractEndDate}.
-            </p>
           </div>
         </div>
       </div>
 
-      {/* ================= UPGRADE / DOWNGRADE PLAN ================= */}
-      <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <RotateCcw className="w-4 h-4 text-gray-500" /> Upgrade / Downgrade Plan
+      {/* ================= SELECTED SUBSCRIPTION PAYMENT ================= */}
+      <div className="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+          <CreditCard className="w-4 h-4 text-[#D32F2F]" /> Payment Details
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          {/* 3 Months Plan */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <h4 className="text-base font-semibold text-gray-800 mb-1">3 Months Plan</h4>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-2xl font-bold text-gray-900">$349</span>
-              <span className="text-xs text-gray-500">/mo</span>
-            </div>
-            <p className="text-xs text-gray-500 mb-4">SaaS Only</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Customer</p>
+            <p className="text-sm font-medium text-gray-800">{details.businessName}</p>
           </div>
-
-          {/* 6 Months Plan (Active) */}
-          <div className="bg-white rounded-xl border-2 border-purple-500 p-5 shadow-md relative">
-            <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#8E24AA] text-white text-[10px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider">
-              Current Plan
-            </span>
-            <h4 className="text-base font-semibold text-gray-800 mb-1">6 Months Plan</h4>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-2xl font-bold text-gray-900">$299</span>
-              <span className="text-xs text-gray-500">/mo</span>
-            </div>
-            <p className="text-xs text-gray-500 mb-4">SaaS + Hardware Bundle</p>
-            <div className="mb-4">
-              <span className="text-xs font-semibold text-green-600">Save 15%</span>
-            </div>
-            <button className="w-full py-2.5 bg-gray-200 text-gray-500 font-semibold text-sm rounded-lg cursor-not-allowed">
-              Active
-            </button>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Payment Method</p>
+            <p className="text-sm font-medium text-gray-800">{details.paymentMethod}</p>
           </div>
-
-          {/* 12 Months Plan */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-            <h4 className="text-base font-semibold text-gray-800 mb-1">12 Months Plan</h4>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-2xl font-bold text-gray-900">$249</span>
-              <span className="text-xs text-gray-500">/mo</span>
-            </div>
-            <p className="text-xs text-gray-500 mb-4">SaaS + Hardware Bundle</p>
-            <div className="mb-4">
-              <span className="text-xs font-semibold text-green-600">Save 30%</span>
-            </div>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Payment Status</p>
+            <p className="text-sm font-medium text-gray-800">{displayValue(details.paymentStatus)}</p>
           </div>
-
-        </div>
-      </div>
-
-      {/* ================= PAYMENT METHOD & QUICK ACTIONS ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-
-        {/* Payment Method */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#D32F2F]" /> Payment Method
-          </h3>
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50/50">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-8 bg-blue-800 rounded flex items-center justify-center">
-                <span className="text-white text-[10px] font-bold italic">VISA</span>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">**** **** **** 4242</p>
-                <p className="text-xs text-gray-500">Expires 12/2028</p>
-              </div>
-            </div>
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
-          </div>
-          <p className="text-xs text-gray-400 mt-3">Restaurant Beef Cairo</p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h3 className="text-sm font-semibold text-gray-800 mb-4">Quick Actions</h3>
-          <div className="space-y-3">
-            <button className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-              <Calendar className="w-4 h-4 text-gray-500" /> View Renewal Schedule
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-              <Download className="w-4 h-4 text-gray-500" /> Download Contract
-            </button>
-            <button className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-100 transition-colors">
-              <RotateCcw className="w-4 h-4 text-gray-500" /> Request Cancellation
-            </button>
+          <div>
+            <p className="text-[11px] text-gray-400 uppercase tracking-wider mb-0.5">Transaction Reference</p>
+            <p className="text-sm font-medium text-gray-800">{details.transactionReference}</p>
           </div>
         </div>
       </div>
@@ -349,40 +190,49 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
             <FileText className="w-4 h-4 text-gray-500" /> Billing History
           </h3>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-gray-100 bg-gray-50/50">
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Description</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Invoice</th>
-                <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MOCK_BILLING_HISTORY.map((item, idx) => (
-                <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-4 text-sm text-gray-600">{item.date}</td>
-                  <td className="px-5 py-4 text-sm text-gray-800 font-medium">{item.desc}</td>
-                  <td className="px-5 py-4 text-sm font-semibold text-gray-800">{item.amount}</td>
-                  <td className="px-5 py-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700">
-                      <CheckCircle2 className="w-3 h-3" /> {item.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-sm text-gray-500 font-mono text-xs">{item.invoice}</td>
-                  <td className="px-5 py-4 text-right">
-                    <button className="text-xs font-semibold text-purple-600 hover:text-purple-800 flex items-center justify-end gap-1 transition-colors">
-                      <Download className="w-3 h-3" /> {item.action}
-                    </button>
-                  </td>
+        {details.billingHistory.length === 0 ? (
+          <p className="px-5 py-8 text-sm text-center text-gray-500">
+            {t('subscriptions.billingHistoryUnavailable')}
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Date</th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Description</th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Invoice</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {details.billingHistory.map((item, index) => (
+                  <tr
+                    key={item.id || item.Invoice || item.invoice || index}
+                    className="border-b border-gray-50"
+                  >
+                    <td className="px-5 py-4 text-sm text-gray-600">
+                      {formatDate(getBillingField(item, 'Date', 'date', 'Purchase_Date', 'createdAt'))}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-800 font-medium">
+                      {getBillingField(item, 'Description', 'description', 'PlanName')}
+                    </td>
+                    <td className="px-5 py-4 text-sm font-semibold text-gray-800">
+                      {formatAmount(getBillingField(item, 'Amount', 'amount'))}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-600">
+                      {getBillingField(item, 'Status', 'status')}
+                    </td>
+                    <td className="px-5 py-4 text-sm text-gray-500 font-mono">
+                      {getBillingField(item, 'Invoice', 'invoice', 'Transaction_Reference')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
     </div>
