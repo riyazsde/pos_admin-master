@@ -17,9 +17,10 @@ const [isLoading, setIsLoading] = useState(false);
   };
 
   return createPortal(
-    <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex justify-center items-center p-4">
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl text-center">
-        <h2 className="text-xl font-semibold mb-4">Would you like to Sign out?</h2>
+    <div className="fixed inset-0 z-50 flex justify-center items-center p-4 bg-white/60 backdrop-blur-[10px] backdrop-saturate-150">
+      <div className="relative overflow-hidden bg-white/95 backdrop-blur-2xl rounded-2xl p-6 max-w-md w-full border border-white/80 shadow-[0_24px_70px_rgba(106,27,154,0.18)] text-center">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-white/90 to-transparent" />
+        <h2 className="relative text-xl font-semibold mb-4">Would you like to Sign out?</h2>
         <label className="flex items-center justify-center gap-2 text-sm mb-6 cursor-pointer">
           <input type="checkbox" className="form-checkbox h-4 w-4 text-purple-600" />
           Do you want to save Password
