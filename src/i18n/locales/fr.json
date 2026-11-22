@@ -215,11 +215,15 @@
       "analytics": "Analyses"
     },
     "metrics": {
-      "totalActiveClients": "Total des clients actifs",
-      "totalInactiveClients": "Total des clients inactifs",
+      "totalActiveClients": "Entreprises clientes activées",
+      "totalInactiveClients": "Entreprises clientes désactivées",
       "totalRenewalRate": "Taux de renouvellement total"
     },
-    "clientPopulationNote": "Périmètres distincts et non rapprochés : Clients POS du tableau de bord : {{dashboardTotal}} ; liste des clients : {{clientsTotal}}. KPI des rapports : {{kpiTotal}} au total ({{kpiActive}} actifs, {{kpiInactive}} inactifs, {{kpiUnclassified}} non classés). Les rapports séparés des clients actifs/inactifs renvoient {{reportActive}} / {{reportInactive}} enregistrements. Les critères d'éligibilité et les chevauchements ne sont pas établis ; ces chiffres ne sont pas directement comparables ou additionnables et ne prouvent pas à eux seuls une erreur de comptage du backend.",
+    "clientPopulationNote": "Il s'agit d'entreprises clientes (clients POS), et non de comptes utilisateur ou d'abonnements. Actif/inactif signifie que le champ Status de l'entreprise est activé/désactivé, indépendamment de l'état de l'abonnement. Le KPI et les listes actives/inactives des rapports utilisent cette même population d'entreprises. Clients POS du tableau de bord : {{dashboardTotal}} (filtre {{dashboardPeriod}} ; choisissez Tout pour comparer) ; liste des clients : {{clientsTotal}} (Tous les clients) ; rapports : {{kpiTotal}} au total ({{kpiActive}} activées, {{kpiInactive}} désactivées, {{kpiUnclassified}} non classées) ; listes actives/inactives des rapports : {{reportActive}} / {{reportInactive}}. Avec le filtre du tableau de bord réglé sur Tout, les totaux du tableau de bord et de la liste des clients doivent correspondre au total des rapports ; les nombres activés, désactivés et non classés doivent composer ce total.",
+    "businessStatus": {
+      "enabled": "Activée",
+      "disabled": "Désactivée"
+    },
     "quickActions": {
       "revenueReports": "Rapports de chiffre d'affaires",
       "subscriptionReports": "Rapports d'abonnement",

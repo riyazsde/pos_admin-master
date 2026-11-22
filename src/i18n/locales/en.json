@@ -215,11 +215,15 @@
       "analytics": "Analytics"
     },
     "metrics": {
-      "totalActiveClients": "Total Active Clients",
-      "totalInactiveClients": "Total Inactive Clients",
+      "totalActiveClients": "Enabled Client Businesses",
+      "totalInactiveClients": "Disabled Client Businesses",
       "totalRenewalRate": "Total Renewal Rate"
     },
-    "clientPopulationNote": "Population scope (separate, unreconciled sources): Dashboard POS Clients: {{dashboardTotal}}; Clients list: {{clientsTotal}}. Reports KPI: {{kpiTotal}} total ({{kpiActive}} active, {{kpiInactive}} inactive, {{kpiUnclassified}} unclassified). Separate active/inactive report endpoints: {{reportActive}} / {{reportInactive}} records. Endpoint eligibility and overlap are not established; these figures are not directly comparable or additive, and do not by themselves establish a backend count error.",
+    "clientPopulationNote": "These are client business records (POS clients), not user accounts or subscriptions. Active/inactive means the business Status is enabled/disabled and is independent of subscription status. Reports KPI and active/inactive lists use this same business population. Dashboard POS Clients: {{dashboardTotal}} ({{dashboardPeriod}} filter; choose All to compare); Clients list: {{clientsTotal}} (All Clients); Reports: {{kpiTotal}} total ({{kpiActive}} enabled, {{kpiInactive}} disabled, {{kpiUnclassified}} unclassified); active/inactive report lists: {{reportActive}} / {{reportInactive}}. With Dashboard set to All, the Dashboard and Clients totals should match the Reports total; the active, inactive, and unclassified counts should reconcile to that total.",
+    "businessStatus": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
     "quickActions": {
       "revenueReports": "Revenue Reports",
       "subscriptionReports": "Subscription Reports",

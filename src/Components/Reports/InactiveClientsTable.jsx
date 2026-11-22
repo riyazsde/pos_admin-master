@@ -139,7 +139,7 @@ function InactiveClientsTable() {
                     <span className="text-center">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                        {client.status || t('common.inactive')}
+                        {t('reports.businessStatus.disabled')}
                       </span>
                     </span>
                   </div>

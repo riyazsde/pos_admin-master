@@ -134,7 +134,7 @@ const ActiveClients = () => {
                     <span className="text-center">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-semibold">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                        {client.status || t('common.active')}
+                        {t('reports.businessStatus.enabled')}
                       </span>
                     </span>
                   </div>

@@ -1235,6 +1235,9 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
       ? state.dashboard.kpis?.totalPOSClients
       : null
   );
+  const dashboardDateFilter = useAppSelector(
+    (state) => state.dashboard.dateFilter
+  );
   const clientsListCount = useAppSelector((state) =>
     state.clients.hasLoaded ? state.clients.totalCount : null
   );
@@ -1303,6 +1306,13 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
         className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
       >
         {t('reports.clientPopulationNote', {
+          dashboardPeriod: t(
+            ({
+              this_week: 'period.thisWeek',
+              three_months: 'period.threeMonth',
+              six_months: 'period.sixMonth',
+            }[dashboardDateFilter] || `period.${dashboardDateFilter}`)
+          ),
           dashboardTotal: formatPopulationCount(dashboardClientsCount),
           clientsTotal: formatPopulationCount(clientsListCount),
           kpiTotal: formatPopulationCount(
