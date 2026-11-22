@@ -18,7 +18,11 @@ describe('subscription catalog category labels', () => {
     );
   });
 
-  it('falls back to the selected category when a plan category is missing', () => {
-    assert.equal(isBundleSubscriptionCategory(undefined, 'SaaS + Hardware'), true);
+  it('does not infer a bundle from the selected category when the plan category is missing', () => {
+    assert.equal(isBundleSubscriptionCategory(undefined), false);
+  });
+
+  it('recognizes the bundle category despite surrounding whitespace or casing', () => {
+    assert.equal(isBundleSubscriptionCategory('  saas + hardware  '), true);
   });
 });

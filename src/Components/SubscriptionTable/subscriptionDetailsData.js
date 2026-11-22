@@ -1,3 +1,20 @@
+export const findSubscriptionById = (subscriptions, subscriptionId) => {
+  if (
+    !Array.isArray(subscriptions) ||
+    subscriptionId === null ||
+    subscriptionId === undefined
+  ) {
+    return null;
+  }
+
+  return (
+    subscriptions.find(
+      (subscription) =>
+        String(subscription?.Subscription_id) === String(subscriptionId)
+    ) || null
+  );
+};
+
 export const getSubscriptionDetailsData = (subscription) => {
   const plan = subscription?.Plan || {};
   const billingHistory = subscription?.Billing_History ?? subscription?.billingHistory;

@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import SubscriptionPlans from '../SubscriptionTable/SubscriptionPlans';
 import CreateSubscriptionForm from '../SubscriptionTable/CreateSubscriptionForm';
 import SubscriptionDetails from '../SubscriptionTable/SubscriptionDetails';
+import { findSubscriptionById } from './subscriptionDetailsData';
 
 import { useAppSelector, useAppDispatch } from '../../Store/hooks';
 import {
@@ -96,7 +97,7 @@ const TableRow = ({ sub, index, onViewMore, t, i18n }) => {
 // ---------------------------------------------------------------------------
 const SubscriptionTable = () => {
   const [currentView, setCurrentView] = useState('list');
-  const [selectedSubscription, setSelectedSubscription] = useState(null);
+  const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
   const [editingPlan, setEditingPlan] = useState(null);
 
   const navigate = useNavigate();
@@ -108,6 +109,10 @@ const SubscriptionTable = () => {
     subscriptionHistoryPagination,
     historyLoading,
   } = useAppSelector((state) => state.subscriptions);
+  const selectedSubscription = findSubscriptionById(
+    subscriptionHistory,
+    selectedSubscriptionId
+  );
 
   // ✅ REMOVE the hasFetched guard so we refetch on every mount / view switch
   useEffect(() => {
@@ -174,9 +179,10 @@ const SubscriptionTable = () => {
   if (currentView === 'details' && selectedSubscription) {
     return (
       <SubscriptionDetails
+        key={String(selectedSubscription.Subscription_id)}
         subscription={selectedSubscription}
         onBack={() => {
-          setSelectedSubscription(null);
+          setSelectedSubscriptionId(null);
           setCurrentView('list');
         }}
       />
@@ -269,7 +275,16 @@ const SubscriptionTable = () => {
                 t={t}
                 i18n={i18n}
                 onViewMore={(s) => {
-                  setSelectedSubscription(s);
+                  if (
+                    s.Subscription_id === null ||
+                    s.Subscription_id === undefined
+                  ) {
+                    toast.error(
+                      'Unable to open subscription because it has no ID.'
+                    );
+                    return;
+                  }
+                  setSelectedSubscriptionId(s.Subscription_id);
                   setCurrentView('details');
                 }}
               />

@@ -1,4 +1,2 @@
-export const isBundleSubscriptionCategory = (
-  subscriptionType,
-  fallbackType
-) => (subscriptionType ?? fallbackType) === 'SaaS + Hardware';
+export const isBundleSubscriptionCategory = (subscriptionType) =>
+  String(subscriptionType ?? '').trim().toLowerCase() === 'saas + hardware';
