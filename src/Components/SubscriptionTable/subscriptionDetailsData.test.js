@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
+  calculateEarlyTerminationFee,
   findSubscriptionById,
   getSubscriptionDetailsData,
 } from './subscriptionDetailsData.js';
@@ -21,7 +22,7 @@ describe('subscription detail context', () => {
     assert.equal(details.businessName, 'HARI Bars');
     assert.equal(details.planName, 'Audit Plan');
     assert.equal(details.planType, 'SaaS');
-    assert.equal(details.planPrice, 125);
+    assert.equal(details.contractMonthlyAmount, 125);
     assert.equal(details.paymentMethod, 'Bank transfer');
     assert.equal(details.transactionReference, 'TX-101');
     assert.deepEqual(details.billingHistory, []);
@@ -55,7 +56,7 @@ describe('subscription detail context', () => {
         Plan: {
           PlanName: 'TRIAXX-AUDIT-20261022',
           Subscription_Type: 'SaaS Only',
-          Price: 1234,
+          Price: 299,
         },
       },
       {
@@ -67,7 +68,7 @@ describe('subscription detail context', () => {
         Plan: {
           PlanName: 'Pro + HW',
           Subscription_Type: 'SaaS + Hardware',
-          Price: 69.99,
+          Price: 299,
         },
       },
       {
@@ -88,11 +89,34 @@ describe('subscription detail context', () => {
 
     assert.equal(hariDetails.businessName, 'HARI Bars');
     assert.equal(hariDetails.planName, 'TRIAXX-AUDIT-20261022');
+    assert.equal(hariDetails.contractMonthlyAmount, 1234);
     assert.equal(hariDetails.transactionReference, 'HARI-TX');
     assert.deepEqual(hariDetails.billingHistory, []);
     assert.equal(riyazDetails.businessName, 'riyaz');
     assert.equal(riyazDetails.planName, 'Pro + HW');
+    assert.equal(riyazDetails.contractMonthlyAmount, 69.99);
     assert.equal(riyazDetails.transactionReference, 'RIYAZ-TX');
     assert.deepEqual(riyazDetails.billingHistory, []);
+  });
+
+  it('uses the selected contract amount and matches the known ETF oracle', () => {
+    const subscriptions = [
+      {
+        Subscription_id: 1,
+        Amount: 299,
+        Plan: { PlanName: 'Selected contract', Price: 349 },
+      },
+      {
+        Subscription_id: 2,
+        Amount: 29,
+        Plan: { PlanName: 'Starter', Price: 29 },
+      },
+    ];
+    const selected = findSubscriptionById(subscriptions, 1);
+    const details = getSubscriptionDetailsData(selected);
+
+    assert.equal(details.contractMonthlyAmount, 299);
+    assert.equal(calculateEarlyTerminationFee(details.contractMonthlyAmount, 12, 50), 1794);
+    assert.equal(calculateEarlyTerminationFee(null, 12, 50), null);
   });
 });

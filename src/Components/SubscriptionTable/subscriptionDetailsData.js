@@ -15,9 +15,52 @@ export const findSubscriptionById = (subscriptions, subscriptionId) => {
   );
 };
 
+export const calculateEarlyTerminationFee = (
+  monthlyAmount,
+  contractMonths,
+  percentage
+) => {
+  if (
+    monthlyAmount === null ||
+    monthlyAmount === undefined ||
+    monthlyAmount === '' ||
+    contractMonths === null ||
+    contractMonths === undefined ||
+    contractMonths === '' ||
+    percentage === null ||
+    percentage === undefined ||
+    percentage === ''
+  ) {
+    return null;
+  }
+
+  const amount = Number(monthlyAmount);
+  const months = Number(contractMonths);
+  const rate = Number(percentage);
+
+  if (
+    !Number.isFinite(amount) ||
+    !Number.isFinite(months) ||
+    !Number.isFinite(rate) ||
+    amount < 0 ||
+    months < 0 ||
+    rate < 0
+  ) {
+    return null;
+  }
+
+  return Math.round(amount * months * (rate / 100) * 100) / 100;
+};
+
 export const getSubscriptionDetailsData = (subscription) => {
   const plan = subscription?.Plan || {};
   const billingHistory = subscription?.Billing_History ?? subscription?.billingHistory;
+  const contractMonthlyAmount =
+    subscription?.Amount ??
+    subscription?.Monthly_Amount ??
+    subscription?.Subscription_Amount ??
+    plan.Price ??
+    null;
 
   return {
     businessName:
@@ -27,7 +70,7 @@ export const getSubscriptionDetailsData = (subscription) => {
       '—',
     planName: plan.PlanName ?? '—',
     planType: plan.Subscription_Type ?? '—',
-    planPrice: plan.Price ?? null,
+    contractMonthlyAmount,
     purchaseDate: subscription?.Purchase_Date ?? null,
     renewalDate: subscription?.Renewal_Date ?? null,
     nextBillingDate:

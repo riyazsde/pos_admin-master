@@ -8,7 +8,13 @@ import {
   FileText,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getSubscriptionDetailsData } from './subscriptionDetailsData';
+import {
+  calculateEarlyTerminationFee,
+  getSubscriptionDetailsData,
+} from './subscriptionDetailsData';
+
+const ETF_CONTRACT_MONTHS = 12;
+const ETF_PERCENTAGE = 50;
 
 const formatDate = (value) => {
   if (!value) return '—';
@@ -26,6 +32,14 @@ const formatAmount = (value) => {
   if (value === null || value === undefined || value === '') return '—';
   const amount = Number(value);
   return Number.isFinite(amount) ? amount.toLocaleString('en-US') : '—';
+};
+
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || value === '') return '—';
+  const amount = Number(value);
+  return Number.isFinite(amount)
+    ? `$${amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+    : '—';
 };
 
 const displayValue = (value) => {
@@ -51,15 +65,22 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
   const { t } = useTranslation();
 
   const details = getSubscriptionDetailsData(subscription);
-  const numericPlanPrice =
-    details.planPrice === null || details.planPrice === ''
+  const numericContractAmount =
+    details.contractMonthlyAmount === null || details.contractMonthlyAmount === ''
       ? null
-      : Number(details.planPrice);
+      : Number(details.contractMonthlyAmount);
   const currentPlan = {
     name: details.planName,
     type: details.planType,
-    price: Number.isFinite(numericPlanPrice) ? numericPlanPrice : null,
+    price: Number.isFinite(numericContractAmount)
+      ? numericContractAmount
+      : null,
   };
+  const earlyTerminationFee = calculateEarlyTerminationFee(
+    currentPlan.price,
+    ETF_CONTRACT_MONTHS,
+    ETF_PERCENTAGE
+  );
 
   const renewalDate = formatDate(details.renewalDate);
   const nextBilling = formatDate(details.nextBillingDate);
@@ -92,9 +113,9 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
             <p className="text-sm text-white/80 mt-1">{currentPlan.type}</p>
           </div>
           <div className="text-right">
-            <span className="text-xs font-medium text-white/70 uppercase tracking-wider">Plan Price</span>
+            <span className="text-xs font-medium text-white/70 uppercase tracking-wider">Monthly Contract Amount</span>
             <div className="text-3xl font-bold mt-1">
-              {currentPlan.price === null ? '—' : formatAmount(currentPlan.price)}
+              {formatCurrency(currentPlan.price)}
             </div>
           </div>
         </div>
@@ -156,6 +177,20 @@ const SubscriptionDetails = ({ subscription, onBack }) => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <h3 className="text-sm font-semibold text-gray-800 mb-3">
+          Early Termination Fee Estimate
+        </h3>
+        <p className="text-sm text-gray-600">
+          Calculation base: {formatCurrency(currentPlan.price)} per month
+        </p>
+        <p className="mt-1 text-sm font-medium text-gray-800">
+          {currentPlan.price === null
+            ? 'Estimate unavailable: monthly contract amount is missing.'
+            : `${formatCurrency(currentPlan.price)} × ${ETF_CONTRACT_MONTHS} months × ${ETF_PERCENTAGE}% = ${formatCurrency(earlyTerminationFee)}`}
+        </p>
       </div>
 
       {/* ================= SELECTED SUBSCRIPTION PAYMENT ================= */}
