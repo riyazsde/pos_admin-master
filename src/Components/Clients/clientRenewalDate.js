@@ -1,5 +1,11 @@
 export const BUSINESS_TIME_ZONE = 'Africa/Johannesburg';
 
+export const getClientRenewalDate = (client) =>
+  client?.AccountSubscriptionDetails?.RenewalDate ??
+  client?.SubscriptionDetails?.RenewalDate ??
+  client?.RenewalDate ??
+  null;
+
 export const toZonedDateKey = (date, timeZone) => {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,

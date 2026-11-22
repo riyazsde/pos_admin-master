@@ -25,6 +25,7 @@ import { clientService } from '../../Services/apiService';
 import ResetPasswordModal from './ResetPasswordModal';
 import {
   BUSINESS_TIME_ZONE,
+  getClientRenewalDate,
   getDaysLeft,
 } from './clientRenewalDate';
 
@@ -144,18 +145,15 @@ const Clients = () => {
   // Use one timestamp for every row so countdowns cannot straddle midnight.
   const rows = paginatedClients.map((client) => {
     // Prefer subscription details when available.
-    const sub = client.AccountSubscriptionDetails || {};
+    const sub =
+      client.AccountSubscriptionDetails ||
+      client.SubscriptionDetails ||
+      {};
 
     // Only compute countdown from an actual renewal date.
-    const renewalSource =
-      sub.RenewalDate ?? client.RenewalDate ?? null;
-    const fallback = client.CreateAt ?? client.CreatedAt ?? null;
-    const fallbackFresh =
-      fallback && getDaysLeft(fallback, BUSINESS_TIME_ZONE, now) > -365
-        ? fallback
-        : null;
+    const renewalSource = getClientRenewalDate(client);
     const daysLeft = getDaysLeft(
-      renewalSource ?? fallbackFresh,
+      renewalSource,
       BUSINESS_TIME_ZONE,
       now
     );

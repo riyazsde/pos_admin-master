@@ -16,12 +16,11 @@ export const SERIES = {
   clientRenewals: {
     id: 'clientRenewals',
     labelKey: 'dashboard.clientRenewals',
-    color: '#6A1B9A',            // same hue family, but rendered faded
-    colorEnd: '#D32F2F',
+    color: '#F8B4C4',            // pale pink — renewal series
+    colorEnd: '#F8B4C4',
     gradientId: 'series-clientRenewals',
     strokeDasharray: '6 3',      // dashed — non-color identifier
-    legendFaded: true,           // legend shows the faded swatch
-    fadeOpacity: 0.45,
+    legendFaded: true,
   },
 };
 

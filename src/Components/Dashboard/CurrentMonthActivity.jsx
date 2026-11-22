@@ -36,20 +36,28 @@ const CurrentMonthActivity = ({ data }) => {
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
-      const row = payload[0].payload;
+      const row = payload[0]?.payload;
+      if (!row) return null;
       return (
         <div className="bg-black text-white p-2 rounded shadow-md text-xs ">
           <p className="font-semibold">{row.period}</p>
-          {getDashboardTooltipEntries(row).map(({ dataKey, value }) => (
-            <p key={dataKey}>
-              {t(
-                dataKey === 'newClients'
-                  ? SERIES.newClients.labelKey
-                  : SERIES.clientRenewals.labelKey
-              )}
-              : {formatNumber(value)}
-            </p>
-          ))}
+          {getDashboardTooltipEntries(row).map(({ dataKey, value }) => {
+            const key = dataKey === 'newClients' ? 'newClients' : 'clientRenewals';
+            const [swatchFrom] = gradientStops(key);
+            return (
+              <p key={dataKey} className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="inline-block w-3 h-3 rounded-full"
+                  style={{
+                    background: swatchFrom,
+                    border: key === 'clientRenewals' ? `1px dashed ${swatchFrom}` : 'none',
+                  }}
+                />
+                {t(SERIES[key].labelKey)}: {formatNumber(value)}
+              </p>
+            );
+          })}
         </div>
       );
     }

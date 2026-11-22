@@ -41,4 +41,44 @@ describe('dashboard chart data', () => {
     );
     assert.deepEqual(getDashboardChartData(null, 'day'), []);
   });
+
+  it('keeps nonzero plotted values and tooltip values identical', () => {
+    const chartData = getDashboardChartData(
+      [
+        { day: '1', newClients: 8, existingClientsRenewal: 0 },
+        { day: '2', newClients: 0, existingClientsRenewal: 5 },
+      ],
+      'day'
+    );
+
+    assert.equal(getDashboardChartMax(chartData), 8);
+    assert.deepEqual(getDashboardTooltipEntries(chartData[0]), [
+      { dataKey: 'newClients', value: 8 },
+      { dataKey: 'renewals', value: 0 },
+    ]);
+    assert.deepEqual(getDashboardTooltipEntries(chartData[1]), [
+      { dataKey: 'newClients', value: 0 },
+      { dataKey: 'renewals', value: 5 },
+    ]);
+  });
+
+  it('clamps negatives and handles renewal field aliases and empty categories', () => {
+    assert.deepEqual(
+      getDashboardChartData(
+        [
+          { day: '1', newClients: -4, existingClientsRenewal: -2 },
+          { day: '2', newClients: '', existingClientsRenewals: '9' },
+          { day: '3', newClients: null, renewals: 6 },
+          { day: '' },
+        ],
+        'day'
+      ),
+      [
+        { period: '1', newClients: 0, renewals: 0 },
+        { period: '2', newClients: 0, renewals: 9 },
+        { period: '3', newClients: 0, renewals: 6 },
+        { period: '', newClients: 0, renewals: 0 },
+      ]
+    );
+  });
 });

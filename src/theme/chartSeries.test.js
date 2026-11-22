@@ -1,4 +1,11 @@
-import { SERIES, seriesColor, seriesGradient, seriesDash } from './chartSeries';
+import {
+  SERIES,
+  seriesColor,
+  seriesGradient,
+  seriesDash,
+  gradientStops,
+  legendSwatchStyle,
+} from './chartSeries';
 
 describe('chart series tokens', () => {
   test('colors are unique (no silent swap)', () => {
@@ -14,8 +21,13 @@ describe('chart series tokens', () => {
   });
 
   test('gradient helper returns matching defs reference', () => {
-    expect(seriesGradient('newClients')).toBe('url(#grad-newClients)');
-    expect(seriesGradient('clientRenewals')).toBe('url(#grad-clientRenewals)');
+    expect(seriesGradient('newClients')).toBe('url(#series-newClients)');
+    expect(seriesGradient('clientRenewals')).toBe('url(#series-clientRenewals)');
+  });
+
+  test('renewal plot and legend colors stay pale', () => {
+    expect(gradientStops('clientRenewals')).toEqual(['rgba(248, 180, 196, 1)', 'rgba(248, 180, 196, 1)']);
+    expect(legendSwatchStyle('clientRenewals').background).toContain('rgba(248, 180, 196, 1)');
   });
 
   test('unknown series falls back safely', () => {

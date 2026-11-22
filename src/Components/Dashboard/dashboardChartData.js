@@ -1,7 +1,7 @@
 const toCount = (value) => {
   if (value === null || value === undefined || value === '') return 0;
   const count = Number(value);
-  return Number.isFinite(count) ? count : 0;
+  return Number.isFinite(count) ? Math.max(0, count) : 0;
 };
 
 export const getDashboardChartData = (items, periodKey) => {
@@ -10,7 +10,11 @@ export const getDashboardChartData = (items, periodKey) => {
   return items.map((item) => ({
     period: item?.[periodKey] ?? '',
     newClients: toCount(item?.newClients),
-    renewals: toCount(item?.existingClientsRenewal),
+    renewals: toCount(
+      item?.existingClientsRenewal ??
+      item?.existingClientsRenewals ??
+      item?.renewals
+    ),
   }));
 };
 
