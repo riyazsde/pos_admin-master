@@ -219,7 +219,6 @@
       "totalInactiveClients": "Disabled Client Businesses",
       "totalRenewalRate": "Total Renewal Rate"
     },
-    "clientPopulationNote": "These are client business records (POS clients), not user accounts or subscriptions. Active/inactive means the business Status is enabled/disabled and is independent of subscription status. Reports KPI and active/inactive lists use this same business population. Dashboard POS Clients: {{dashboardTotal}} ({{dashboardPeriod}} filter; choose All to compare); Clients list: {{clientsTotal}} (All Clients); Reports: {{kpiTotal}} total ({{kpiActive}} enabled, {{kpiInactive}} disabled, {{kpiUnclassified}} unclassified); active/inactive report lists: {{reportActive}} / {{reportInactive}}. With Dashboard set to All, the Dashboard and Clients totals should match the Reports total; the active, inactive, and unclassified counts should reconcile to that total.",
     "businessStatus": {
       "enabled": "Enabled",
       "disabled": "Disabled"
@@ -442,13 +441,12 @@
     "transactionGraph": {
       "title": "Transaction Graph",
       "reportLabel": "(Report)",
-      "subtitle": "Last 12 months · {{formattedCount}} transactions",
-      "subtitle_one": "Last 12 months · {{formattedCount}} transaction",
-      "subtitle_other": "Last 12 months · {{formattedCount}} transactions",
+      "subtitle": "Last 12 months · {{transactionCount}}",
+      "transactionCount_one": "{{formattedCount}} transaction",
+      "transactionCount_other": "{{formattedCount}} transactions",
       "loading": "Loading graph…",
       "totalTransactions": "Total Transactions",
       "transactionValue": "Transaction Value",
-      "amountBasis": "Reported total: sum of the report API's monthly amounts (daily amounts only when monthly data is unavailable). Not independently reconciled; gross/net and refund treatment are unspecified.",
       "topMethod": "Top method:",
       "transactions": "transactions",
       "noData": "No transactions",

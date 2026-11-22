@@ -94,6 +94,13 @@ const TransactionGraph = () => {
 
   const totalTransactions = summary.count;
   const totalAmount = summary.totalAmount;
+  const formatTransactionCount = (count) => {
+    const numericCount = Number(count);
+    return t('reports.transactionGraph.transactionCount', {
+      count: numericCount,
+      formattedCount: formatNumber(numericCount),
+    });
+  };
 
   const topMethods = Array.isArray(transactionGraph?.topPaymentMethods)
     ? transactionGraph.topPaymentMethods
@@ -150,8 +157,7 @@ const TransactionGraph = () => {
 
           <p className="text-xs text-gray-500 mt-1">
             {t('reports.transactionGraph.subtitle', {
-              count: totalTransactions,
-              formattedCount: formatNumber(totalTransactions),
+              transactionCount: formatTransactionCount(totalTransactions),
             })}
           </p>
 
@@ -225,9 +231,6 @@ const TransactionGraph = () => {
                   </span>
                 </p>
 
-                <p className="text-[11px] text-gray-400 mt-1">
-                  {t('reports.transactionGraph.amountBasis')}
-                </p>
               </div>
 
               {/* Top Payment Method */}
@@ -241,7 +244,7 @@ const TransactionGraph = () => {
                   </p>
 
                   <p className="text-xs text-gray-500 mt-1">
-                    {formatNumber(topMethod.count)} transactions
+                    {formatTransactionCount(topMethod.count)}
                   </p>
 
                   <p className="text-xs text-gray-500 mt-1">

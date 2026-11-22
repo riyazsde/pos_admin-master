@@ -219,7 +219,6 @@
       "totalInactiveClients": "Entreprises clientes désactivées",
       "totalRenewalRate": "Taux de renouvellement total"
     },
-    "clientPopulationNote": "Il s'agit d'entreprises clientes (clients POS), et non de comptes utilisateur ou d'abonnements. Actif/inactif signifie que le champ Status de l'entreprise est activé/désactivé, indépendamment de l'état de l'abonnement. Le KPI et les listes actives/inactives des rapports utilisent cette même population d'entreprises. Clients POS du tableau de bord : {{dashboardTotal}} (filtre {{dashboardPeriod}} ; choisissez Tout pour comparer) ; liste des clients : {{clientsTotal}} (Tous les clients) ; rapports : {{kpiTotal}} au total ({{kpiActive}} activées, {{kpiInactive}} désactivées, {{kpiUnclassified}} non classées) ; listes actives/inactives des rapports : {{reportActive}} / {{reportInactive}}. Avec le filtre du tableau de bord réglé sur Tout, les totaux du tableau de bord et de la liste des clients doivent correspondre au total des rapports ; les nombres activés, désactivés et non classés doivent composer ce total.",
     "businessStatus": {
       "enabled": "Activée",
       "disabled": "Désactivée"
@@ -442,13 +441,12 @@
     "transactionGraph": {
       "title": "Graphique des transactions",
       "reportLabel": "(Rapport)",
-      "subtitle": "12 derniers mois · {{formattedCount}} transactions",
-      "subtitle_one": "12 derniers mois · {{formattedCount}} transaction",
-      "subtitle_other": "12 derniers mois · {{formattedCount}} transactions",
+      "subtitle": "12 derniers mois · {{transactionCount}}",
+      "transactionCount_one": "{{formattedCount}} transaction",
+      "transactionCount_other": "{{formattedCount}} transactions",
       "loading": "Chargement du graphique…",
       "totalTransactions": "Total des transactions",
       "transactionValue": "Valeur des transactions",
-      "amountBasis": "Total déclaré : somme des montants mensuels renvoyés par l'API du rapport (montants quotidiens utilisés uniquement si les données mensuelles sont indisponibles). Non rapproché de manière indépendante ; le traitement brut/net et des remboursements n'est pas défini.",
       "topMethod": "Méthode principale :",
       "transactions": "transactions",
       "noData": "Aucune transaction",

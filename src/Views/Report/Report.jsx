@@ -1224,24 +1224,6 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
   const { kpiMetrics, loading, hasLoaded } = useAppSelector(
     (state) => state.reports
   );
-  const activeClientsPagination = useAppSelector(
-    (state) => state.reports.activeClientsPagination
-  );
-  const inactiveClientsPagination = useAppSelector(
-    (state) => state.reports.inactiveClientsPagination
-  );
-  const dashboardClientsCount = useAppSelector((state) =>
-    state.dashboard.hasLoaded
-      ? state.dashboard.kpis?.totalPOSClients
-      : null
-  );
-  const dashboardDateFilter = useAppSelector(
-    (state) => state.dashboard.dateFilter
-  );
-  const clientsListCount = useAppSelector((state) =>
-    state.clients.hasLoaded ? state.clients.totalCount : null
-  );
-
   const fetchedRef = useRef(false);
   useEffect(() => {
     if (hasLoaded || fetchedRef.current) return;
@@ -1266,8 +1248,6 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
 
   const formatNumber = (n) =>
     n === null || n === undefined ? '0' : Number(n).toLocaleString('en-US');
-  const formatPopulationCount = (n) =>
-    n === null || n === undefined ? '—' : Number(n).toLocaleString('en-US');
 
   const metrics = [
     {
@@ -1300,39 +1280,6 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
         </h1>
         <ViewToggle activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
-
-      <p
-        role="note"
-        className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-      >
-        {t('reports.clientPopulationNote', {
-          dashboardPeriod: t(
-            ({
-              this_week: 'period.thisWeek',
-              three_months: 'period.threeMonth',
-              six_months: 'period.sixMonth',
-            }[dashboardDateFilter] || `period.${dashboardDateFilter}`)
-          ),
-          dashboardTotal: formatPopulationCount(dashboardClientsCount),
-          clientsTotal: formatPopulationCount(clientsListCount),
-          kpiTotal: formatPopulationCount(
-            hasLoaded ? kpiMetrics?.totalClients : null
-          ),
-          kpiActive: formatPopulationCount(
-            hasLoaded ? kpiMetrics?.totalActiveClients : null
-          ),
-          kpiInactive: formatPopulationCount(
-            hasLoaded ? kpiMetrics?.totalInactiveClients : null
-          ),
-          kpiUnclassified: formatPopulationCount(
-            hasLoaded ? kpiMetrics?.totalUnclassifiedClients : null
-          ),
-          reportActive: formatPopulationCount(activeClientsPagination?.total),
-          reportInactive: formatPopulationCount(
-            inactiveClientsPagination?.total
-          ),
-        })}
-      </p>
 
       {loading && !hasLoaded ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
