@@ -43,6 +43,7 @@ export const formatLoginTimestamp = (value, timeZone) => {
   if (!date || !isValidTimeZone(timeZone)) return null;
 
   return {
+    sourceTimestamp: value,
     dateTime: date.toISOString(),
     text: new Intl.DateTimeFormat('en-IN', {
       day: '2-digit',

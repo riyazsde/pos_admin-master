@@ -712,7 +712,15 @@ const LoginHistoryModal = ({ onClose }) => {
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1">
                     <p className="font-medium text-gray-800 text-sm">
-                      <time dateTime={timestamp?.dateTime}>
+                      <time
+                        dateTime={timestamp?.dateTime}
+                        title={timestamp
+                          ? `Source timestamp: ${timestamp.sourceTimestamp}; normalized UTC: ${timestamp.dateTime}`
+                          : undefined}
+                        aria-label={timestamp
+                          ? `${timestamp.text} (${timeZone}). Source timestamp ${timestamp.sourceTimestamp}; normalized UTC ${timestamp.dateTime}.`
+                          : undefined}
+                      >
                         {timestamp
                           ? `${timestamp.text} (${timeZone})`
                           : 'Date unavailable'}

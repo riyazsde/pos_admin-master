@@ -30,6 +30,7 @@ describe('login history timestamps', () => {
     );
 
     assert.deepEqual(formatted, {
+      sourceTimestamp: '2026-11-16T12:00:00Z',
       dateTime: '2026-11-16T12:00:00.000Z',
       text: '16 Nov 2026, 05:30:00 pm',
     });
