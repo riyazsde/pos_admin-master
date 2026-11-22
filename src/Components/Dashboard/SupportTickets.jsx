@@ -103,7 +103,7 @@ const SupportTickets = () => {
       <div className="w-full h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+            <h2 className="text-xl sm:text-2xl font-bold text-black">
               {t('dashboard.openTicket')}
             </h2>
             <select
@@ -143,7 +143,7 @@ const SupportTickets = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+          <h2 className="text-xl sm:text-2xl font-bold text-black">
             {t('dashboard.openTicket')}
           </h2>
           <select
@@ -160,7 +160,7 @@ const SupportTickets = () => {
           </select>
         </div>
         <button
-          className="text-xs sm:text-sm font-semibold text-black font-['Poppins'] hover:underline"
+          className="text-xs sm:text-sm font-semibold text-black hover:underline"
           onClick={() => navigate('/supports')}
         >
           {t('common.seeAll')}
@@ -202,7 +202,7 @@ const SupportTickets = () => {
                       {/* Info */}
                       <div className="flex flex-col min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-black font-['Poppins'] truncate">
+                          <span className="text-sm font-bold text-black truncate">
                             {getDisplayName(ticket) || t('common.unknown')}
                           </span>
                           {ticket.Priority && (
@@ -215,7 +215,7 @@ const SupportTickets = () => {
                             </span>
                           )}
                         </div>
-                        <span className="text-xs sm:text-sm text-gray-400 font-['Poppins'] truncate">
+                        <span className="text-xs sm:text-sm text-gray-400 truncate">
                           {getIssuePreview(ticket) || t('common.noData')}
                         </span>
                       </div>
@@ -224,7 +224,7 @@ const SupportTickets = () => {
                     {/* Resolve button */}
                     <button
                       onClick={() => navigate('/supports')}
-                      className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium font-['Poppins'] hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
+                      className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium hover:opacity-90 transition-opacity whitespace-nowrap shrink-0"
                     >
                       {t('dashboard.resolve')}
                     </button>

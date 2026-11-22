@@ -78,6 +78,11 @@
   font-family: var(--dashboard-font-family);
 }
 
+.dashboard-typography *,
+.dashboard-typography svg text {
+  font-family: var(--dashboard-font-family);
+}
+
 /* Keep chart text on the same local system font as dashboard headings. */
 .dashboard-typography svg text,
 .dashboard-typography .recharts-label,

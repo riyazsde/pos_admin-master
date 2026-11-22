@@ -97,7 +97,7 @@ const SubscriptionRenewalAlert = () => {
     return (
       <div className="w-full h-full flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+          <h2 className="text-xl sm:text-2xl font-bold text-black">
             {t('dashboard.subscriptionRenewalAlert')}
           </h2>
         </div>
@@ -119,11 +119,11 @@ const SubscriptionRenewalAlert = () => {
     <div className="w-full h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold text-black font-['Poppins']">
+        <h2 className="text-xl sm:text-2xl font-bold text-black">
           {t('dashboard.subscriptionRenewalAlert')}
         </h2>
         <button
-          className="text-xs sm:text-sm font-semibold text-black font-['Poppins'] hover:underline"
+          className="text-xs sm:text-sm font-semibold text-black hover:underline"
           onClick={() => navigate('/subscription-list')}
         >
           {t('common.seeAll')}
@@ -135,16 +135,16 @@ const SubscriptionRenewalAlert = () => {
         {/* Table Header */}
         <div className="bg-gradient-to-r from-[#F3E5F5] to-[#FFEBEE] px-6 sm:px-8 py-5 border-b border-gray-100 shrink-0">
           <div className="grid grid-cols-12 gap-4 items-center">
-            <span className="col-span-2 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins']">
+            <span className="col-span-2 text-xs sm:text-sm font-semibold text-gray-500">
               #
             </span>
-            <span className="col-span-4 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins']">
+            <span className="col-span-4 text-xs sm:text-sm font-semibold text-gray-500">
               {t('dashboard.table.businessName')}
             </span>
-            <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins'] text-center">
+            <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 text-center">
               {t('dashboard.table.renewalDate')}
             </span>
-            <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 font-['Poppins'] text-center">
+            <span className="col-span-3 text-xs sm:text-sm font-semibold text-gray-500 text-center">
               {t('dashboard.table.notifyClient')}
             </span>
           </div>
@@ -188,14 +188,14 @@ const SubscriptionRenewalAlert = () => {
                     className="px-6 sm:px-8 py-5 border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors"
                   >
                     <div className="grid grid-cols-12 gap-4 items-center">
-                      <span className="col-span-2 text-sm font-bold text-black font-['Poppins']">
+                      <span className="col-span-2 text-sm font-bold text-black">
                         {id}
                       </span>
-                      <span className="col-span-4 text-sm font-bold text-black font-['Poppins'] truncate">
+                      <span className="col-span-4 text-sm font-bold text-black truncate">
                         {businessName}
                       </span>
                       <span
-                        className={`col-span-3 text-sm font-medium font-['Poppins'] text-center ${
+                        className={`col-span-3 text-sm font-medium text-center ${
                           urgent ? 'text-[#FF4D4D]' : 'text-gray-600'
                         }`}
                       >
@@ -206,7 +206,7 @@ const SubscriptionRenewalAlert = () => {
                           onClick={() =>
                             handleSendAlert({ ...item, businessName })
                           }
-                          className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium font-['Poppins'] hover:opacity-90 transition-opacity w-full sm:w-auto flex items-center justify-center gap-1.5"
+                          className="bg-gradient-to-b from-[#7B1FA2] to-[#D32F2F] text-white px-4 py-2 rounded-lg text-xs sm:text-sm font-medium hover:opacity-90 transition-opacity w-full sm:w-auto flex items-center justify-center gap-1.5"
                         >
                           <Bell className="w-3.5 h-3.5" />
                           {t('dashboard.sendAlert')}
@@ -220,7 +220,7 @@ const SubscriptionRenewalAlert = () => {
 
             {/* Pagination Footer */}
             <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100 bg-gray-50 shrink-0">
-              <span className="text-xs text-gray-500 font-['Poppins']">
+              <span className="text-xs text-gray-500">
                 Page {currentPage}
               </span>
               <div className="flex gap-2">

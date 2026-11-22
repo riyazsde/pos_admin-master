@@ -21,6 +21,7 @@ import deleteIcon from '../../assets/Images/Settings/1.png';
 import CreateSubAdminModal from './CreateSubAdminModal';
 import {
   getPermissionLabelKey,
+  getPermissionEditValue,
   PERMISSION_TYPES,
 } from './subadminPermissions';
 import ConfirmationModal from './ConfirmationModalAdmin';
@@ -51,7 +52,10 @@ const EditSubadminModal = ({ subadmin, onClose, onSave, saving }) => {
     Status: subadmin?.Status ?? true,
     permissions: (subadmin?.SubAdmin_Permissions?.IsPermissons || [])
       .filter((p) => p.status)
-      .map((p) => String(p.type).toLowerCase()),
+      .map((p) =>
+        getPermissionEditValue(p.type) ||
+        String(p.type).toLowerCase()
+      ),
   });
 
   const update = (key, value) => setForm((p) => ({ ...p, [key]: value }));

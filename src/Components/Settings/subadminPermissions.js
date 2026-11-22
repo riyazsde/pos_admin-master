@@ -23,6 +23,7 @@ export const PERMISSION_TYPES = [
     labelKey: 'subadmin.permissions.momDevice',
     createValue: 'MDM Device',
     editValue: 'mdm device',
+    aliases: ['mdm', 'mom', 'mom device'],
   },
   {
     labelKey: 'subadmin.permissions.inventory',
@@ -56,6 +57,17 @@ export const getPermissionLabelKey = (value) => {
   return PERMISSION_TYPES.find(
     (permission) =>
       permission.createValue.toLowerCase() === normalizedValue ||
-      permission.editValue === normalizedValue
+      permission.editValue === normalizedValue ||
+      permission.aliases?.includes(normalizedValue)
   )?.labelKey;
+};
+
+export const getPermissionEditValue = (value) => {
+  const normalizedValue = String(value ?? '').trim().toLowerCase();
+  return PERMISSION_TYPES.find(
+    (permission) =>
+      permission.createValue.toLowerCase() === normalizedValue ||
+      permission.editValue === normalizedValue ||
+      permission.aliases?.includes(normalizedValue)
+  )?.editValue;
 };
