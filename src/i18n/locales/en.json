@@ -1180,7 +1180,7 @@
 
   "ham": {
     "title": "Hardware Asset Management (HAM)",
-    "headerSummary": "All inventory: {{models}} models · {{units}} total units",
+    "headerSummary": "All inventory: {{models}} models · {{units}} total units · {{assigned}} assigned",
     "addDevice": "Add Device",
     "summaryBar": "{{scope}}: {{models}} models · {{units}} total units · {{assigned}} assigned",
    

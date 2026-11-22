@@ -1180,7 +1180,7 @@
 
   "ham": {
     "title": "Gestion des actifs matériels (HAM)",
-    "headerSummary": "Stock complet : {{models}} modèles · {{units}} unités au total",
+    "headerSummary": "Stock complet : {{models}} modèles · {{units}} unités au total · {{assigned}} affectées",
     "addDevice": "Ajouter un appareil",
     "loading": "Chargement des appareils…",
     "noData": "Aucun appareil trouvé",

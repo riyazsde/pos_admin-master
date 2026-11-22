@@ -499,6 +499,7 @@ const HamPage = () => {
             {t('ham.headerSummary', {
               models: allSummary.models,
               units: allSummary.units,
+              assigned: allSummary.assigned,
             })}
           </p>
         </div>
