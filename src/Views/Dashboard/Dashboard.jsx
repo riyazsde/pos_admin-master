@@ -178,6 +178,7 @@ const Dashboard = () => {
     {
       title: t('dashboard.totalPosClients'),
       value: formatNumber(kpis?.totalPOSClients),
+      scope: t('dashboard.posClientScope'),
       icon: Users,
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
@@ -320,6 +321,11 @@ const Dashboard = () => {
                   <p className="text-gray-900 font-bold text-lg md:text-xl">
                     {metric.value}
                   </p>
+                  {metric.scope && (
+                    <p className="mt-1 text-[10px] text-gray-400">
+                      {metric.scope}
+                    </p>
+                  )}
                 </div>
               </div>
             );

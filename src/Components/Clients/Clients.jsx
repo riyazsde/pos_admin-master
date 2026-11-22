@@ -296,9 +296,17 @@ const Clients = () => {
       <div className="w-full">
         {/* ============================ Header ============================ */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
-          <h1 className="text-2xl font-bold text-black tracking-tight">
-            {t('clients.title') || 'Clients'}
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold text-black tracking-tight">
+              {t('clients.title') || 'Clients'}
+            </h1>
+            <p className="mt-1 text-xs text-gray-500">
+              {t('clients.recordScope', {
+                count: filteredClients.length,
+                defaultValue: `${filteredClients.length} records in the selected client-status scope`,
+              })}
+            </p>
+          </div>
 
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full sm:w-auto relative">
             <button

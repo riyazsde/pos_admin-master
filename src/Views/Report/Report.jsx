@@ -1253,12 +1253,14 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
     {
       title: t('reports.metrics.totalActiveClients'),
       value: formatNumber(kpiMetrics?.totalActiveClients),
+      scope: t('reports.metrics.statusScope'),
       imageSrc: money,
       bgColor: 'bg-orange-100',
     },
     {
       title: t('reports.metrics.totalInactiveClients'),
       value: formatNumber(kpiMetrics?.totalInactiveClients),
+      scope: t('reports.metrics.statusScope'),
       imageSrc: bill,
       bgColor: 'bg-pink-100',
       valueColor: 'text-red-500',
@@ -1330,6 +1332,11 @@ const ReportsView = ({ activeTab, setActiveTab }) => {
                     {metric.trend === 'up' && <span className="mr-2">↑</span>}
                     {metric.value}
                   </p>
+                  {metric.scope && (
+                    <p className="mt-1 text-[11px] text-gray-400">
+                      {metric.scope}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

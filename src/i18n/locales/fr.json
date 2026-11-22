@@ -158,6 +158,7 @@
     "mrr": "MRR",
     "monthlyRecurringRevenue": "Revenu récurrent mensuel",
     "totalPosClients": "Total clients POS",
+    "posClientScope": "Population des clients POS pour la période sélectionnée",
     "activeRestaurants": "Restaurants actifs",
     "activeSubscriptions": "Abonnements actifs",
     "criticalTickets": "Tickets critiques",
@@ -217,6 +218,7 @@
     "metrics": {
       "totalActiveClients": "Entreprises clientes activées",
       "totalInactiveClients": "Entreprises clientes désactivées",
+      "statusScope": "Toutes les entreprises clientes, réparties par statut activé/désactivé",
       "totalRenewalRate": "Taux de renouvellement total"
     },
     "businessStatus": {
@@ -1021,6 +1023,7 @@
 
   "clients": {
     "title": "Clients",
+    "recordScope": "{{count}} enregistrements dans le périmètre de statut sélectionné",
     "clientSingular": "client",
     "clientPlural": "clients",
     "createClient": "Créer un client",
