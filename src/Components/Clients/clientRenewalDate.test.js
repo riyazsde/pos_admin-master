@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import {
   BUSINESS_TIME_ZONE,
+  getClientDaysUntilRenewal,
   getClientRenewalDate,
+  getClientTimeZone,
   getDaysLeft,
   toZonedDateKey,
 } from './clientRenewalDate.js';
@@ -19,6 +21,39 @@ describe('client renewal countdowns', () => {
   it('treats date-only values as calendar dates, not UTC instants', () => {
     const pacificNow = new Date('2026-11-16T12:00:00.000Z');
     assert.equal(getDaysLeft('2026-11-16', 'Pacific/Honolulu', pacificNow), 0);
+  });
+
+  it('uses the client timezone when calculating the renewal calendar day', () => {
+    const dubaiCafe = { Time_Zone: 'Africa/Cairo' };
+    const now = new Date('2026-07-01T21:30:00.000Z');
+
+    assert.equal(getClientTimeZone(dubaiCafe), 'Africa/Cairo');
+    assert.equal(
+      getClientDaysUntilRenewal(
+        { ...dubaiCafe, RenewalDate: '2026-07-02' },
+        now
+      ),
+      0
+    );
+    assert.equal(getDaysLeft('2026-07-02', BUSINESS_TIME_ZONE, now), 1);
+  });
+
+  it('uses the days remaining calculated in the API response when available', () => {
+    assert.equal(
+      getClientDaysUntilRenewal(
+        { DaysUntilRenewal: 20, RenewalDate: '2026-11-15' },
+        now
+      ),
+      20
+    );
+  });
+
+  it('uses the business timezone when the client timezone is missing or invalid', () => {
+    assert.equal(getClientTimeZone({}), BUSINESS_TIME_ZONE);
+    assert.equal(
+      getClientTimeZone({ Time_Zone: 'Not/A_Timezone' }),
+      BUSINESS_TIME_ZONE
+    );
   });
 
   it('uses the business calendar day for timestamps around midnight', () => {
@@ -59,9 +94,7 @@ describe('client renewal countdowns', () => {
     ];
 
     const calculate = () =>
-      clients.map((client) =>
-        getDaysLeft(getClientRenewalDate(client), BUSINESS_TIME_ZONE, now)
-      );
+      clients.map((client) => getClientDaysUntilRenewal(client, now));
 
     assert.deepEqual(calculate(), [-1, 20, null, 0, 1, 14, 15, 46]);
     assert.deepEqual(calculate(), [-1, 20, null, 0, 1, 14, 15, 46]);

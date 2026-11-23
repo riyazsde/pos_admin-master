@@ -6,6 +6,18 @@ export const getClientRenewalDate = (client) =>
   client?.RenewalDate ??
   null;
 
+export const getClientTimeZone = (client) => {
+  const timeZone = client?.Time_Zone;
+  if (typeof timeZone !== 'string' || !timeZone) return BUSINESS_TIME_ZONE;
+
+  try {
+    new Intl.DateTimeFormat('en', { timeZone });
+    return timeZone;
+  } catch {
+    return BUSINESS_TIME_ZONE;
+  }
+};
+
 export const toZonedDateKey = (date, timeZone) => {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -49,4 +61,23 @@ export const getDaysLeft = (
   const todayUtc = Date.parse(`${todayKey}T00:00:00Z`);
   const targetUtc = Date.parse(`${targetDateKey}T00:00:00Z`);
   return Math.round((targetUtc - todayUtc) / msPerDay);
+};
+
+export const getClientDaysUntilRenewal = (client, now = new Date()) => {
+  const apiValue = client?.DaysUntilRenewal;
+  const apiDays = Number(apiValue);
+  if (
+    apiValue !== null &&
+    apiValue !== undefined &&
+    apiValue !== '' &&
+    Number.isFinite(apiDays)
+  ) {
+    return apiDays;
+  }
+
+  return getDaysLeft(
+    getClientRenewalDate(client),
+    getClientTimeZone(client),
+    now
+  );
 };

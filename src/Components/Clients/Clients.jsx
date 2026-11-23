@@ -23,11 +23,7 @@ import {
 } from '../../Store/Features/clients/clientsSlice';
 import { clientService } from '../../Services/apiService';
 import ResetPasswordModal from './ResetPasswordModal';
-import {
-  BUSINESS_TIME_ZONE,
-  getClientRenewalDate,
-  getDaysLeft,
-} from './clientRenewalDate';
+import { getClientDaysUntilRenewal } from './clientRenewalDate';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -150,13 +146,7 @@ const Clients = () => {
       client.SubscriptionDetails ||
       {};
 
-    // Only compute countdown from an actual renewal date.
-    const renewalSource = getClientRenewalDate(client);
-    const daysLeft = getDaysLeft(
-      renewalSource,
-      BUSINESS_TIME_ZONE,
-      now
-    );
+    const daysLeft = getClientDaysUntilRenewal(client, now);
 
     return {
       client,
